@@ -9,6 +9,7 @@ class StreamDataTaskTests: XCTestCase {
 	var utilities: FakeHttpUtilities!
 	var httpClient: HttpClientProtocol!
 	var streamObserver: NSURLSessionDataEventsObserver!
+	let waitTimeout: Double = 2
 	
 	override func setUp() {
 		super.setUp()
@@ -84,7 +85,7 @@ class StreamDataTaskTests: XCTestCase {
 		}.addDisposableTo(bag)
 		
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
@@ -106,7 +107,7 @@ class StreamDataTaskTests: XCTestCase {
 			}
 		}.addDisposableTo(bag)
 
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	func testDidReceiveResponse() {
@@ -136,7 +137,7 @@ class StreamDataTaskTests: XCTestCase {
 			}
 		}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		XCTAssertEqual(disposition, NSURLSessionResponseDisposition.Allow, "Check correct completion disposition in completionHandler")
 	}
 	

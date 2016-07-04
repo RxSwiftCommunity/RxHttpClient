@@ -3,37 +3,38 @@ import RxSwift
 @testable import RxHttpClient
 
 class MemoryCacheProviderTests: XCTestCase {
-		var bag: DisposeBag!
-		var request: FakeRequest!
-		var session: FakeSession!
-		var utilities: FakeHttpUtilities!
-		var httpClient: HttpClientProtocol!
-		var streamObserver: NSURLSessionDataEventsObserver!
+	var bag: DisposeBag!
+	var request: FakeRequest!
+	var session: FakeSession!
+	var utilities: FakeHttpUtilities!
+	var httpClient: HttpClientProtocol!
+	var streamObserver: NSURLSessionDataEventsObserver!
+	let waitTimeout: Double = 2
 	
-		override func setUp() {
-			super.setUp()
-			// Put setup code here. This method is called before the invocation of each test method in the class.
+	override func setUp() {
+		super.setUp()
+		// Put setup code here. This method is called before the invocation of each test method in the class.
+		
+		bag = DisposeBag()
+		streamObserver = NSURLSessionDataEventsObserver()
+		request = FakeRequest(url: NSURL(string: "https://test.com"))
+		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		utilities = FakeHttpUtilities()
+		utilities.fakeSession = session
+		utilities.streamObserver = streamObserver
+		httpClient = HttpClient(httpUtilities: utilities)
+	}
 	
-			bag = DisposeBag()
-			streamObserver = NSURLSessionDataEventsObserver()
-			request = FakeRequest(url: NSURL(string: "https://test.com"))
-			session = FakeSession(fakeTask: FakeDataTask(completion: nil))
-			utilities = FakeHttpUtilities()
-			utilities.fakeSession = session
-			utilities.streamObserver = streamObserver
-			httpClient = HttpClient(httpUtilities: utilities)
-		}
-	
-		override func tearDown() {
-			// Put teardown code here. This method is called after the invocation of each test method in the class.
-			super.tearDown()
-			bag = nil
-			request = nil
-			session = nil
-			utilities.streamObserver = nil
-			utilities = nil
-			streamObserver = nil
-		}
+	override func tearDown() {
+		// Put teardown code here. This method is called after the invocation of each test method in the class.
+		super.tearDown()
+		bag = nil
+		request = nil
+		session = nil
+		utilities.streamObserver = nil
+		utilities = nil
+		streamObserver = nil
+	}
 	
 	func testCacheCorrectData() {
 		let testData = ["First", "Second", "Third", "Fourth"]
@@ -64,9 +65,6 @@ class MemoryCacheProviderTests: XCTestCase {
 				// task will be canceled if method cancelAndInvalidate invoked on FakeSession,
 				// so fulfill expectation here after checking if session was invalidated
 				if self.session.isInvalidatedAndCanceled {
-					// set reference to nil (simutale real session dispose)
-					self.utilities.streamObserver = nil
-					self.streamObserver = nil
 					sessionInvalidationExpectation.fulfill()
 				}
 			}
@@ -91,9 +89,9 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.ReceiveData = box.value {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-		}.addDisposableTo(bag)
+			}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(2, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
@@ -163,7 +161,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		task.resume()
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
@@ -196,7 +194,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		let successExpectation = expectationWithDescription("Should successfuly cache data")
-	
+		
 		// create memory cache provider with explicitly specified mime type
 		httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString, contentMimeType: "application/octet-stream")).bindNext { result in
 			guard case Result.success(let box) = result else { return }
@@ -209,7 +207,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}
 			}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
