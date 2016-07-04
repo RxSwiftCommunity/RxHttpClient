@@ -22,7 +22,7 @@ before_script:
 script: 
 - open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID
 #- set -o pipefail && xcodebuild -scheme "$FRAMEWORK_SCHEME" -project "$PROJECT" -sdk "$SDK" -configuration Debug ONLY_ACTIVE_ARCH=YES -destination "$DESTINATION_PLATFORM" GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES clean build  | xcpretty -c
-- set -o pipefail && xcodebuild -scheme "$FRAMEWORK_SCHEME" -project "$PROJECT" -sdk "$SDK" -configuration Debug ONLY_ACTIVE_ARCH=YES -destination "$DESTINATION_PLATFORM" -enableCodeCoverage YES GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES clean build test  | xcpretty -c
+- set -o pipefail && xcodebuild -scheme "$FRAMEWORK_SCHEME" -project "$PROJECT" -sdk "$SDK" -configuration Debug ONLY_ACTIVE_ARCH=YES -destination "$DESTINATION_PLATFORM" -enableCodeCoverage YES GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES clean test  | xcpretty -c
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
