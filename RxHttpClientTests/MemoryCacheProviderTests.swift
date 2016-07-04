@@ -77,6 +77,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let successExpectation = expectationWithDescription("Should successfuly cache data")
 		
 		httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).bindNext { result in
+			XCTFail("should fail")
 			guard case Result.success(let box) = result else { return }
 			if case StreamTaskEvents.CacheData = box.value {
 				receiveChunkCounter += 1
