@@ -56,7 +56,7 @@ class MemoryCacheProviderTests: XCTestCase {
 						dataSended.appendData(sendData)
 						self.streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
 						// simulate delay
-						NSThread.sleepForTimeInterval(0.01)
+						//NSThread.sleepForTimeInterval(0.01)
 					}
 					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
@@ -93,7 +93,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}
 		}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(2, handler: nil)
 		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
