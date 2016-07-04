@@ -15,7 +15,7 @@ public protocol HttpClientProtocol {
 
 public class HttpClient {
 	public let httpUtilities: HttpUtilitiesProtocol
-	internal let scheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 	
 	public init(httpUtilities: HttpUtilitiesProtocol = HttpUtilities()) {
 		
