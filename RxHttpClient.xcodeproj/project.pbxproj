@@ -242,8 +242,8 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/iOS/RxSwift.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/RxCocoa.framework",
+				"$(SRCROOT)/Dependencies/iOS/RxSwift.framework",
+				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
 			);
 			name = "Copy carthage frameworks";
 			outputPaths = (
@@ -258,8 +258,8 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/Dependencies/RxSwift.framework",
-				"$(SRCROOT)/Dependencies/RxCocoa.framework",
+				"$(SRCROOT)/Dependencies/iOS/RxSwift.framework",
+				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
 			);
 			outputPaths = (
 			);
