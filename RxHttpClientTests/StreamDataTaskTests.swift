@@ -1,5 +1,6 @@
 import XCTest
 import RxSwift
+import OHHTTPStubs
 @testable import RxHttpClient
 
 class StreamDataTaskTests: XCTestCase {
@@ -148,5 +149,47 @@ class StreamDataTaskTests: XCTestCase {
 		XCTAssertEqual(task.sessionConfiguration, config)
 		XCTAssertTrue(task.dataTask.getOriginalMutableUrlRequest() as? FakeRequest === request)
 		XCTAssertNil(task.cacheProvider, "Cache provider should not be specified")
+	}
+	
+	func testLoadCorrectData() {
+		let sendData = "testData".dataUsingEncoding(NSUTF8StringEncoding)!
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: sendData, statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should return correct data")
+		client.loadData(request).bindNext { e in
+			if case HttpRequestResult.successData(let data) = e {
+				XCTAssertTrue(data.isEqualToData(sendData), "Received data should be equal to sended")
+				expectation.fulfill()
+			}
+			}.addDisposableTo(bag)
+		
+		waitForExpectationsWithTimeout(1, handler: nil)
+	}
+	
+	func testReturnErrorWhileLoadingData() {
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(error: NSError(domain: "TestDomain", code: 1, userInfo: nil))
+		}
+		
+		let client = HttpClient()
+		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should return error")
+		client.loadData(request).bindNext { e in
+			if case HttpRequestResult.error(let error as NSError) = e {
+				XCTAssertEqual(error.code, 1, "Check error code")
+				XCTAssertEqual(error.domain, "TestDomain", "Check error domain")
+				expectation.fulfill()
+			}
+			}.addDisposableTo(bag)
+		
+		waitForExpectationsWithTimeout(1, handler: nil)
 	}
 }
