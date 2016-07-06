@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol CacheProvider {
+public protocol CacheProviderType {
 	var uid: String { get }
 	var currentDataLength: UInt64 { get }
 	var expectedDataLength: Int64 { get set }
@@ -35,7 +35,7 @@ public class MemoryCacheProvider {
 	}
 }
 
-extension MemoryCacheProvider : CacheProvider {
+extension MemoryCacheProvider : CacheProviderType {
 	/// Set content MIME type. 
 	///Only if now contentMimeType property is nil
 	public func setContentMimeTypeIfEmpty(mimeType: String) {

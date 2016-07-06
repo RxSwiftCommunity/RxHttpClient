@@ -8,7 +8,7 @@ class HttpClientBasicTests: XCTestCase {
 	var request: FakeRequest!
 	var session: FakeSession!
 	var utilities: FakeHttpUtilities!
-	var httpClient: HttpClientProtocol!
+	var httpClient: HttpClientType!
 	var streamObserver: NSURLSessionDataEventsObserver!
 	
 	override func setUp() {

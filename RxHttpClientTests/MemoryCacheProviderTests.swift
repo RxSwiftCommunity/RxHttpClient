@@ -7,7 +7,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	var request: FakeRequest!
 	var session: FakeSession!
 	var utilities: FakeHttpUtilities!
-	var httpClient: HttpClientProtocol!
+	var httpClient: HttpClientType!
 	var streamObserver: NSURLSessionDataEventsObserver!
 	let waitTimeout: Double = 2
 	
