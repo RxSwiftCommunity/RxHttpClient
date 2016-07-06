@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6E5B3CE81D2D1F7400775D9F /* HttpClientBasicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */; };
 		6E75E5D71D2AAD55003B8800 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */; };
 		6E75E5D81D2AAD55003B8800 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E75E5D61D2AAD55003B8800 /* RxSwift.framework */; };
 		6E9360EF1D2AABE100F80F76 /* RxHttpClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClientBasicTests.swift; sourceTree = "<group>"; };
 		6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxCocoa.framework; path = Dependencies/iOS/RxCocoa.framework; sourceTree = "<group>"; };
 		6E75E5D61D2AAD55003B8800 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Dependencies/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RxHttpClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -120,6 +122,7 @@
 				6EFB9EF01D2A587100E30A5D /* Fake.swift */,
 				6EFB9EEA1D2A57B600E30A5D /* MemoryCacheProviderTests.swift */,
 				6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */,
+				6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */,
 				6EFB9EC91D2A4E2600E30A5D /* Info.plist */,
 				6EFB9EE91D2A57B600E30A5D /* RxHttpClientTests-Bridging-Header.h */,
 			);
@@ -287,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6EFB9F051D2A5EE200E30A5D /* StreamDataTaskTests.swift in Sources */,
+				6E5B3CE81D2D1F7400775D9F /* HttpClientBasicTests.swift in Sources */,
 				6EFB9EFE1D2A5C8E00E30A5D /* Fake.swift in Sources */,
 				6EFB9F041D2A5EE000E30A5D /* MemoryCacheProviderTests.swift in Sources */,
 			);
