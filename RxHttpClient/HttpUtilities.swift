@@ -9,7 +9,9 @@ public protocol HttpUtilitiesProtocol {
 	func createStreamDataTask(taskUid: String, request: NSMutableURLRequestProtocol, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProvider?) -> StreamDataTaskProtocol
 }
 
-public class HttpUtilities { }
+public class HttpUtilities {
+	public init() { }
+}
 
 extension HttpUtilities : HttpUtilitiesProtocol {
 	public func createUrlRequest(baseUrl: String, parameters: [String : String]?) -> NSMutableURLRequestProtocol? {
