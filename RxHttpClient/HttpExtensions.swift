@@ -2,80 +2,80 @@ import Foundation
 
 
 // NSHTTPURLResponseProtocol
-public protocol NSHTTPURLResponseProtocol {
+public protocol NSHTTPURLResponseType {
 	var expectedContentLength: Int64 { get }
 	var MIMEType: String? { get }
 	func getMimeType() -> String
 }
-extension NSHTTPURLResponse : NSHTTPURLResponseProtocol { }
-extension NSHTTPURLResponseProtocol {
+extension NSHTTPURLResponse : NSHTTPURLResponseType { }
+extension NSHTTPURLResponseType {
 	public func getMimeType() -> String {
 		return MIMEType ?? ""
 	}
 }
 
 // NSURLResponse
-public protocol NSURLResponseProtocol { }
-extension NSURLResponse : NSURLResponseProtocol { }
+public protocol NSURLResponseType { }
+extension NSURLResponse : NSURLResponseType { }
 
 
 // NSURLRequestProtocol
-public protocol NSURLRequestProtocol {
+public protocol NSURLRequestType {
 	var HTTPMethod: String? { get }
 }
-extension NSURLRequest : NSURLRequestProtocol { }
+extension NSURLRequest : NSURLRequestType { }
 
 
 // NSMutableURLRequestProtocol
-public protocol NSMutableURLRequestProtocol : NSURLRequestProtocol {
+public protocol NSMutableURLRequestType : NSURLRequestType {
 	func addValue(value: String, forHTTPHeaderField: String)
 	var URL: NSURL? { get }
 	var allHTTPHeaderFields: [String: String]? { get }
 	func setHttpMethod(method: String)
 }
-extension NSMutableURLRequest : NSMutableURLRequestProtocol {
+extension NSMutableURLRequest : NSMutableURLRequestType {
 	public func setHttpMethod(method: String) {
 		HTTPMethod = method
 	}
 }
 
 
-public protocol NSURLSessionTaskProtocol { }
-extension NSURLSessionTask : NSURLSessionTaskProtocol { }
+public protocol NSURLSessionTaskType { }
+extension NSURLSessionTask : NSURLSessionTaskType { }
 
 // NSURLSessionDataTaskProtocol
-public protocol NSURLSessionDataTaskProtocol : NSURLSessionTaskProtocol {
+public protocol NSURLSessionDataTaskType : NSURLSessionTaskType {
 	func resume()
 	func suspend()
 	func cancel()
-	func getOriginalMutableUrlRequest() -> NSMutableURLRequestProtocol?
+	func getOriginalMutableUrlRequest() -> NSMutableURLRequestType?
 }
-extension NSURLSessionDataTask : NSURLSessionDataTaskProtocol {
-	public func getOriginalMutableUrlRequest() -> NSMutableURLRequestProtocol? {
-		return originalRequest as? NSMutableURLRequestProtocol
+extension NSURLSessionDataTask : NSURLSessionDataTaskType {
+	public func getOriginalMutableUrlRequest() -> NSMutableURLRequestType? {
+		return originalRequest as? NSMutableURLRequestType
 	}
 }
 
 
 // NSURLSessionProtocol
 public typealias DataTaskResult = (NSData?, NSURLResponse?, NSError?) -> Void
-public protocol NSURLSessionProtocol {
+public protocol NSURLSessionType {
 	var configuration: NSURLSessionConfiguration { get }
 	func invalidateAndCancel()
-	func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult)	-> NSURLSessionDataTaskProtocol
-	func dataTaskWithRequest(request: NSMutableURLRequestProtocol, completionHandler: DataTaskResult) -> NSURLSessionDataTaskProtocol
-	func dataTaskWithRequest(request: NSMutableURLRequestProtocol) -> NSURLSessionDataTaskProtocol
+	func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult)	-> NSURLSessionDataTaskType
+	func dataTaskWithRequest(request: NSMutableURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType
+	func dataTaskWithRequest(request: NSMutableURLRequestType) -> NSURLSessionDataTaskType
 }
-extension NSURLSession : NSURLSessionProtocol {
-	public func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskProtocol {
+extension NSURLSession : NSURLSessionType {
+	public func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
 		return dataTaskWithURL(url, completionHandler: completionHandler) as NSURLSessionDataTask
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestProtocol, completionHandler: DataTaskResult) -> NSURLSessionDataTaskProtocol {
+	public func dataTaskWithRequest(request: NSMutableURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
 		return dataTaskWithRequest(request as! NSMutableURLRequest, completionHandler: completionHandler) as NSURLSessionDataTask
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestProtocol) -> NSURLSessionDataTaskProtocol {
+	public func dataTaskWithRequest(request: NSMutableURLRequestType) -> NSURLSessionDataTaskType {
 		return dataTaskWithRequest(request as! NSURLRequest) as NSURLSessionDataTask
 	}
 }

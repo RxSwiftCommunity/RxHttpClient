@@ -2,7 +2,7 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-public protocol StreamTaskProtocol {
+public protocol StreamTaskType {
 	var uid: String { get }
 	func resume()
 	func suspend()
@@ -10,18 +10,18 @@ public protocol StreamTaskProtocol {
 	var resumed: Bool { get }
 }
 
-public protocol StreamTaskEventsProtocol { }
+public protocol StreamTaskEventsType { }
 
 public typealias StreamTaskResult = Result<StreamTaskEvents>
 
-public enum StreamTaskEvents : StreamTaskEventsProtocol {
+public enum StreamTaskEvents : StreamTaskEventsType {
 	/// Send this event if CacheProvider specified
-	case CacheData(CacheProvider)
+	case CacheData(CacheProviderType)
 	/// Send this event only if CacheProvider is nil
 	case ReceiveData(NSData)
-	case ReceiveResponse(NSHTTPURLResponseProtocol)
+	case ReceiveResponse(NSHTTPURLResponseType)
 	//case Error(NSError)
-	case Success(cache: CacheProvider?)
+	case Success(cache: CacheProviderType?)
 }
 
 extension StreamTaskEvents {
@@ -30,9 +30,9 @@ extension StreamTaskEvents {
 	}
 }
 
-public protocol StreamDataTaskProtocol : StreamTaskProtocol {
+public protocol StreamDataTaskType : StreamTaskType {
 	var taskProgress: Observable<StreamTaskResult> { get }
-	var cacheProvider: CacheProvider? { get }
+	var cacheProvider: CacheProviderType? { get }
 }
 
 public class StreamDataTask {
@@ -40,27 +40,27 @@ public class StreamDataTask {
 	public let uid: String
 	public var resumed = false
 	
-	public let request: NSMutableURLRequestProtocol
-	public let httpUtilities: HttpUtilitiesProtocol
+	public let request: NSMutableURLRequestType
+	public let httpUtilities: HttpUtilitiesType
 	public let sessionConfiguration: NSURLSessionConfiguration
-	public internal(set) var cacheProvider: CacheProvider?
-	internal var response: NSHTTPURLResponseProtocol?
+	public internal(set) var cacheProvider: CacheProviderType?
+	internal var response: NSHTTPURLResponseType?
 	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 		
-	internal lazy var dataTask: NSURLSessionDataTaskProtocol = { [unowned self] in
+	internal lazy var dataTask: NSURLSessionDataTaskType = { [unowned self] in
 		return self.session.dataTaskWithRequest(self.request)
 		}()
 	
-	internal lazy var observer: NSURLSessionDataEventsObserverProtocol = { [unowned self] in
+	internal lazy var observer: NSURLSessionDataEventsObserverType = { [unowned self] in
 			return self.httpUtilities.createUrlSessionStreamObserver()
 		}()
 	
-	internal lazy var session: NSURLSessionProtocol = { [unowned self] in
+	internal lazy var session: NSURLSessionType = { [unowned self] in
 		return self.httpUtilities.createUrlSession(self.sessionConfiguration, delegate: self.observer as? NSURLSessionDataDelegate, queue: nil)
 		}()
 	
-	public init(taskUid: String, request: NSMutableURLRequestProtocol, httpUtilities: HttpUtilitiesProtocol,
-	            sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProvider?) {
+	public init(taskUid: String, request: NSMutableURLRequestType, httpUtilities: HttpUtilitiesType,
+	            sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) {
 		self.request = request
 		self.httpUtilities = httpUtilities
 		self.sessionConfiguration = sessionConfiguration
@@ -75,12 +75,12 @@ public class StreamDataTask {
 			let disposable = object.observer.sessionEvents.observeOn(object.scheduler).filter { e in
 				if case .didReceiveResponse(_, _, let response, let completionHandler) = e {
 					completionHandler(.Allow)
-					return response as? NSHTTPURLResponseProtocol != nil
+					return response as? NSHTTPURLResponseType != nil
 				} else { return true }
 				}.bindNext { e in
 					switch e {
 					case .didReceiveResponse(_, _, let response, _):
-						object.response = response as? NSHTTPURLResponseProtocol
+						object.response = response as? NSHTTPURLResponseType
 						object.cacheProvider?.expectedDataLength = object.response!.expectedContentLength
 						object.cacheProvider?.setContentMimeTypeIfEmpty(object.response!.getMimeType())
 						observer.onNext(StreamTaskEvents.ReceiveResponse(object.response!).asResult())
@@ -111,7 +111,7 @@ public class StreamDataTask {
 	}()
 }
 
-extension StreamDataTask : StreamDataTaskProtocol {
+extension StreamDataTask : StreamDataTaskType {
 	public func resume() {
 		dispatch_sync(queue) {
 			if !self.resumed { self.resumed = true; self.dataTask.resume() }

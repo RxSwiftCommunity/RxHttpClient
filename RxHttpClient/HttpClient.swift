@@ -7,24 +7,24 @@ public enum HttpRequestResult {
 	case error(ErrorType)
 }
 
-public protocol HttpClientProtocol {
-	var httpUtilities: HttpUtilitiesProtocol { get }
-	func loadData(request: NSMutableURLRequestProtocol) -> Observable<HttpRequestResult>
-	func loadStreamData(request: NSMutableURLRequestProtocol, cacheProvider: CacheProvider?) -> Observable<StreamTaskResult>
+public protocol HttpClientType {
+	var httpUtilities: HttpUtilitiesType { get }
+	func loadData(request: NSMutableURLRequestType) -> Observable<HttpRequestResult>
+	func loadStreamData(request: NSMutableURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskResult>
 }
 
 public class HttpClient {
-	public let httpUtilities: HttpUtilitiesProtocol
+	public let httpUtilities: HttpUtilitiesType
 	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 	
-	public init(httpUtilities: HttpUtilitiesProtocol = HttpUtilities()) {
+	public init(httpUtilities: HttpUtilitiesType = HttpUtilities()) {
 		
 		self.httpUtilities = httpUtilities
 	}
 }
 
-extension HttpClient : HttpClientProtocol {
-	public func loadData(request: NSMutableURLRequestProtocol)
+extension HttpClient : HttpClientType {
+	public func loadData(request: NSMutableURLRequestType)
 		-> Observable<HttpRequestResult> {
 			return Observable.create { [weak self] observer in
 				guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
@@ -63,7 +63,7 @@ extension HttpClient : HttpClientProtocol {
 			}.observeOn(scheduler).shareReplay(0)
 	}
 	
-	public func loadStreamData(request: NSMutableURLRequestProtocol, cacheProvider: CacheProvider?)
+	public func loadStreamData(request: NSMutableURLRequestType, cacheProvider: CacheProviderType?)
 		-> Observable<StreamTaskResult> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
