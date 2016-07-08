@@ -2,7 +2,7 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
-public class FakeRequest : NSMutableURLRequestProtocol {
+public class FakeRequest : NSMutableURLRequestType {
 	public var HTTPMethod: String? = "GET"
 	var headers = [String: String]()
 	public var URL: NSURL?
@@ -23,7 +23,7 @@ public class FakeRequest : NSMutableURLRequestProtocol {
 	}
 }
 
-public class FakeResponse : NSURLResponseProtocol, NSHTTPURLResponseProtocol {
+public class FakeResponse : NSURLResponseType, NSHTTPURLResponseType {
 	public var expectedContentLength: Int64
 	public var MIMEType: String?
 	
@@ -38,11 +38,11 @@ public enum FakeDataTaskMethods {
 	case cancel(FakeDataTask)
 }
 
-public class FakeDataTask : NSURLSessionDataTaskProtocol {
+public class FakeDataTask : NSURLSessionDataTaskType {
 	@available(*, unavailable, message="completion unavailiable. Use FakeSession.sendData instead (session observer will used to send data)")
 	var completion: DataTaskResult?
 	let taskProgress = PublishSubject<FakeDataTaskMethods>()
-	var originalRequest: NSMutableURLRequestProtocol?
+	var originalRequest: NSMutableURLRequestType?
 	var isCancelled = false
 	var resumeInvokeCount = 0
 	
@@ -66,12 +66,12 @@ public class FakeDataTask : NSURLSessionDataTaskProtocol {
 		}
 	}
 	
-	public func getOriginalMutableUrlRequest() -> NSMutableURLRequestProtocol? {
+	public func getOriginalMutableUrlRequest() -> NSMutableURLRequestType? {
 		return originalRequest
 	}
 }
 
-public class FakeSession : NSURLSessionProtocol {
+public class FakeSession : NSURLSessionType {
 	var task: FakeDataTask?
 	var isInvalidatedAndCanceled = false
 	
@@ -82,7 +82,7 @@ public class FakeSession : NSURLSessionProtocol {
 	}
 	
 	/// Send data as stream (this data should be received through session delegate)
-	public func sendData(task: NSURLSessionDataTaskProtocol, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
+	public func sendData(task: NSURLSessionDataTaskType, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
 		if let data = data {
 			streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self, dataTask: task, data: data))
 		}
@@ -91,11 +91,11 @@ public class FakeSession : NSURLSessionProtocol {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: nil))
 	}
 	
-	public func sendError(task: NSURLSessionDataTaskProtocol, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
+	public func sendError(task: NSURLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: error))
 	}
 	
-	public func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskProtocol {
+	public func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
 		guard let task = self.task else {
 			return FakeDataTask(completion: completionHandler)
 		}
@@ -103,7 +103,7 @@ public class FakeSession : NSURLSessionProtocol {
 		return task
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestProtocol, completionHandler: DataTaskResult) -> NSURLSessionDataTaskProtocol {
+	public func dataTaskWithRequest(request: NSMutableURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
 		fatalError("should not invoke dataTaskWithRequest with completion handler")
 		guard let task = self.task else {
 			return FakeDataTask(completion: completionHandler)
@@ -113,7 +113,7 @@ public class FakeSession : NSURLSessionProtocol {
 		return task
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestProtocol) -> NSURLSessionDataTaskProtocol {
+	public func dataTaskWithRequest(request: NSMutableURLRequestType) -> NSURLSessionDataTaskType {
 		guard let task = self.task else {
 			return FakeDataTask(completion: nil)
 		}
@@ -130,35 +130,35 @@ public class FakeSession : NSURLSessionProtocol {
 	}
 }
 
-public class FakeHttpUtilities : HttpUtilitiesProtocol {
-	//var fakeObserver: UrlSessionStreamObserverProtocol?
-	var streamObserver: NSURLSessionDataEventsObserverProtocol?
-	var fakeSession: NSURLSessionProtocol?
+public class FakeHttpUtilities : HttpUtilitiesType {
+	//var fakeObserver: UrlSessionStreamObserverType?
+	var streamObserver: NSURLSessionDataEventsObserverType?
+	var fakeSession: NSURLSessionType?
 	
-	public func createUrlRequest(baseUrl: String, parameters: [String : String]?) -> NSMutableURLRequestProtocol? {
+	public func createUrlRequest(baseUrl: String, parameters: [String : String]?) -> NSMutableURLRequestType? {
 		return FakeRequest(url: NSURL(baseUrl: baseUrl, parameters: parameters))
 	}
 	
-	public func createUrlRequest(baseUrl: String, parameters: [String : String]?, headers: [String : String]?) -> NSMutableURLRequestProtocol? {
+	public func createUrlRequest(baseUrl: String, parameters: [String : String]?, headers: [String : String]?) -> NSMutableURLRequestType? {
 		let req = createUrlRequest(baseUrl, parameters: parameters)
 		headers?.forEach { req?.addValue($1, forHTTPHeaderField: $0) }
 		return req
 	}
 	
-	public func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestProtocol {
+	public func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestType {
 		let req = FakeRequest(url: url)
 		headers?.forEach { req.addValue($1, forHTTPHeaderField: $0) }
 		return req
 	}
 	
-	public func createUrlSession(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate?, queue: NSOperationQueue?) -> NSURLSessionProtocol {
+	public func createUrlSession(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate?, queue: NSOperationQueue?) -> NSURLSessionType {
 		guard let session = fakeSession else {
 			return FakeSession()
 		}
 		return session
 	}
 	
-	public func createUrlSessionStreamObserver() -> NSURLSessionDataEventsObserverProtocol {
+	public func createUrlSessionStreamObserver() -> NSURLSessionDataEventsObserverType {
 		//		guard let observer = fakeObserver else {
 		//			return FakeUrlSessionStreamObserver()
 		//		}
@@ -169,7 +169,7 @@ public class FakeHttpUtilities : HttpUtilitiesProtocol {
 		return observer
 	}
 	
-	public func createStreamDataTask(taskUid: String, request: NSMutableURLRequestProtocol, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProvider?) -> StreamDataTaskProtocol {
+	public func createStreamDataTask(taskUid: String, request: NSMutableURLRequestType, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
 		return StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: self, sessionConfiguration: sessionConfiguration, cacheProvider: cacheProvider)
 		//return FakeStreamDataTask(request: request, observer: createUrlSessionStreamObserver(), httpUtilities: self)
 	}

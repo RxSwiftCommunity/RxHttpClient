@@ -1,0 +1,10 @@
+framework module RxHttpClient {
+  umbrella header "RxHttpClient.h"
+
+  export *
+  module * { export * }
+}
+
+module RxHttpClient.Swift {
+    header "RxHttpClient-Swift.h"
+}

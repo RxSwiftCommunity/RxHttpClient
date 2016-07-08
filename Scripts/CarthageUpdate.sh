@@ -1,4 +1,5 @@
-carthage checkout
+carthage update --no-build
 carthage build --platform iOS
 mkdir -p ./Dependencies/iOS
-cp -R ./Carthage/Build/iOS/*.framework ./Dependencies/iOS
+./Scripts/CopyFrameworks.sh
+#cp -R ./Carthage/Build/iOS/*.framework ./Dependencies/iOS

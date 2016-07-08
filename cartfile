@@ -1,1 +1,2 @@
 github "ReactiveX/RxSwift" == 2.6
+github "AliSoftware/OHHTTPStubs" == 5.1.0

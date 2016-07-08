@@ -2,17 +2,17 @@ import Foundation
 import RxSwift
 
 public enum SessionDataEvents {
-	case didReceiveResponse(session: NSURLSessionProtocol, dataTask: NSURLSessionDataTaskProtocol, response: NSURLResponseProtocol,
+	case didReceiveResponse(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, response: NSURLResponseType,
 		completion: (NSURLSessionResponseDisposition) -> Void)
-	case didReceiveData(session: NSURLSessionProtocol, dataTask: NSURLSessionDataTaskProtocol, data: NSData)
-	case didCompleteWithError(session: NSURLSessionProtocol, dataTask: NSURLSessionTaskProtocol, error: NSError?)
+	case didReceiveData(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, data: NSData)
+	case didCompleteWithError(session: NSURLSessionType, dataTask: NSURLSessionTaskType, error: NSError?)
 }
 
-public protocol NSURLSessionDataEventsObserverProtocol {
+public protocol NSURLSessionDataEventsObserverType {
 	var sessionEvents: Observable<SessionDataEvents> { get }
 }
 
-extension NSURLSessionDataEventsObserver : NSURLSessionDataEventsObserverProtocol {
+extension NSURLSessionDataEventsObserver : NSURLSessionDataEventsObserverType {
 	public var sessionEvents: Observable<SessionDataEvents> {
 		return sessionEventsSubject
 	}
