@@ -163,7 +163,6 @@
 				6EFB9EB41D2A4E2600E30A5D /* Frameworks */,
 				6EFB9EB51D2A4E2600E30A5D /* Headers */,
 				6EFB9EB61D2A4E2600E30A5D /* Resources */,
-				6EFB9EE41D2A544B00E30A5D /* Copy carthage frameworks */,
 			);
 			buildRules = (
 			);
@@ -257,22 +256,6 @@
 				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
 				"$(SRCROOT)/Dependencies/iOS/OHHTTPStubs.framework",
 			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks";
-		};
-		6EFB9EE41D2A544B00E30A5D /* Copy carthage frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Dependencies/iOS/RxSwift.framework",
-				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
-			);
-			name = "Copy carthage frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
