@@ -21,7 +21,9 @@ extension NSURLResponse : NSURLResponseType { }
 
 // NSURLRequestProtocol
 public protocol NSURLRequestType {
+	var URL: NSURL? { get }	
 	var HTTPMethod: String? { get }
+	var allHTTPHeaderFields: [String: String]? { get }	
 }
 extension NSURLRequest : NSURLRequestType { }
 
@@ -29,8 +31,6 @@ extension NSURLRequest : NSURLRequestType { }
 // NSMutableURLRequestProtocol
 public protocol NSMutableURLRequestType : NSURLRequestType {
 	func addValue(value: String, forHTTPHeaderField: String)
-	var URL: NSURL? { get }
-	var allHTTPHeaderFields: [String: String]? { get }
 	func setHttpMethod(method: String)
 }
 extension NSMutableURLRequest : NSMutableURLRequestType {
@@ -40,7 +40,9 @@ extension NSMutableURLRequest : NSMutableURLRequestType {
 }
 
 
-public protocol NSURLSessionTaskType { }
+public protocol NSURLSessionTaskType {
+	func isEqual(object: AnyObject?) -> Bool
+}
 extension NSURLSessionTask : NSURLSessionTaskType { }
 
 // NSURLSessionDataTaskProtocol
@@ -48,11 +50,11 @@ public protocol NSURLSessionDataTaskType : NSURLSessionTaskType {
 	func resume()
 	func suspend()
 	func cancel()
-	func getOriginalMutableUrlRequest() -> NSMutableURLRequestType?
+	func getOriginalUrlRequest() -> NSURLRequestType?
 }
 extension NSURLSessionDataTask : NSURLSessionDataTaskType {
-	public func getOriginalMutableUrlRequest() -> NSMutableURLRequestType? {
-		return originalRequest as? NSMutableURLRequestType
+	public func getOriginalUrlRequest() -> NSURLRequestType? {
+		return originalRequest as? NSURLRequestType
 	}
 }
 
@@ -63,19 +65,19 @@ public protocol NSURLSessionType {
 	var configuration: NSURLSessionConfiguration { get }
 	func invalidateAndCancel()
 	func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult)	-> NSURLSessionDataTaskType
-	func dataTaskWithRequest(request: NSMutableURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType
-	func dataTaskWithRequest(request: NSMutableURLRequestType) -> NSURLSessionDataTaskType
+	func dataTaskWithRequest(request: NSURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType
+	func dataTaskWithRequest(request: NSURLRequestType) -> NSURLSessionDataTaskType
 }
 extension NSURLSession : NSURLSessionType {
 	public func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
 		return dataTaskWithURL(url, completionHandler: completionHandler) as NSURLSessionDataTask
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
-		return dataTaskWithRequest(request as! NSMutableURLRequest, completionHandler: completionHandler) as NSURLSessionDataTask
+	public func dataTaskWithRequest(request: NSURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
+		return dataTaskWithRequest(request as! NSURLRequest, completionHandler: completionHandler) as NSURLSessionDataTask
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestType) -> NSURLSessionDataTaskType {
+	public func dataTaskWithRequest(request: NSURLRequestType) -> NSURLSessionDataTaskType {
 		return dataTaskWithRequest(request as! NSURLRequest) as NSURLSessionDataTask
 	}
 }

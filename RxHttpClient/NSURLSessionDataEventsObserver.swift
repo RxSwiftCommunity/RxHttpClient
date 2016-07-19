@@ -1,7 +1,7 @@
 import Foundation
 import RxSwift
 
-enum SessionDataEvents {
+public enum SessionDataEvents {
 	case didReceiveResponse(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, response: NSURLResponseType,
 		completion: (NSURLSessionResponseDisposition) -> Void)
 	case didReceiveData(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, data: NSData)

@@ -111,12 +111,12 @@
 			isa = PBXGroup;
 			children = (
 				6EFB9EE71D2A575A00E30A5D /* Result.swift */,
+				6EFB9ED81D2A53FD00E30A5D /* StreamDataTask.swift */,
 				6EFB9ED21D2A53FD00E30A5D /* CacheProvider.swift */,
 				6EFB9ED31D2A53FD00E30A5D /* HttpClient.swift */,
 				6EFB9ED41D2A53FD00E30A5D /* HttpExtensions.swift */,
 				6EFB9ED51D2A53FD00E30A5D /* HttpUtilities.swift */,
 				6EFB9ED71D2A53FD00E30A5D /* NSURLSessionDataEventsObserver.swift */,
-				6EFB9ED81D2A53FD00E30A5D /* StreamDataTask.swift */,
 				6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */,
 				6EFB9EBD1D2A4E2600E30A5D /* Info.plist */,
 				6EFB9EBB1D2A4E2600E30A5D /* RxHttpClient.h */,

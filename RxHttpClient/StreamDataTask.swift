@@ -5,16 +5,14 @@ import RxCocoa
 public protocol StreamTaskType {
 	var uid: String { get }
 	func resume()
-	func suspend()
+	//func suspend()
 	func cancel()
 	var resumed: Bool { get }
 }
 
-public protocol StreamTaskEventsType { }
-
 public typealias StreamTaskResult = Result<StreamTaskEvents>
 
-public enum StreamTaskEvents : StreamTaskEventsType {
+public enum StreamTaskEvents {
 	/// Send this event if CacheProvider specified
 	case CacheData(CacheProviderType)
 	/// Send this event only if CacheProvider is nil
@@ -25,7 +23,7 @@ public enum StreamTaskEvents : StreamTaskEventsType {
 }
 
 extension StreamTaskEvents {
-	public func asResult() -> StreamTaskResult {
+	func asResult() -> StreamTaskResult {
 		return Result.success(Box(value: self))
 	}
 }
@@ -36,67 +34,57 @@ public protocol StreamDataTaskType : StreamTaskType {
 }
 
 public class StreamDataTask {
-	internal let queue = dispatch_queue_create("com.cloudmusicplayer.streamdatatask.serialqueue.\(NSUUID().UUIDString)", DISPATCH_QUEUE_SERIAL)
 	public let uid: String
 	public internal (set) var resumed = false
-	
-	public let request: NSMutableURLRequestType
-	internal let httpUtilities: HttpUtilitiesType
-	public let sessionConfiguration: NSURLSessionConfiguration
 	public internal(set) var cacheProvider: CacheProviderType?
+
+	internal let queue = dispatch_queue_create("StreamDataTask.SerialQueue", DISPATCH_QUEUE_SERIAL)
+	internal let httpClient: HttpClientType
 	internal var response: NSHTTPURLResponseType?
 	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-		
-	internal lazy var dataTask: NSURLSessionDataTaskType = { [unowned self] in
-		return self.session.dataTaskWithRequest(self.request)
-		}()
-	
-	internal lazy var observer: NSURLSessionDataEventsObserverType = { [unowned self] in
-			return self.httpUtilities.createUrlSessionStreamObserver()
-		}()
-	
-	internal lazy var session: NSURLSessionType = { [unowned self] in
-		return self.httpUtilities.createUrlSession(self.sessionConfiguration, delegate: self.observer as? NSURLSessionDataDelegate, queue: nil)
-		}()
-	
-	internal init(taskUid: String, request: NSMutableURLRequestType, httpUtilities: HttpUtilitiesType,
-	            sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) {
-		self.request = request
-		self.httpUtilities = httpUtilities
-		self.sessionConfiguration = sessionConfiguration
+	internal let dataTask: NSURLSessionDataTaskType
+	internal let sessionEvents: Observable<SessionDataEvents>
+
+	public init(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
+	            cacheProvider: CacheProviderType?) {
+		self.dataTask = dataTask
+		self.httpClient = httpClient
+		self.sessionEvents = sessionEvents
 		self.cacheProvider = cacheProvider
 		uid = taskUid
-	}
-	
-	public convenience init(taskUid: String, request: NSMutableURLRequestType, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) {
-		self.init(taskUid: taskUid, request: request, httpUtilities: HttpUtilities(), sessionConfiguration: sessionConfiguration, cacheProvider: cacheProvider)
 	}
 	
 	public lazy var taskProgress: Observable<StreamTaskResult> = {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
 			
-			let disposable = object.observer.sessionEvents.observeOn(object.scheduler).filter { e in
-				if case .didReceiveResponse(_, _, let response, let completionHandler) = e {
+			let disposable = object.sessionEvents.observeOn(object.scheduler).filter { e in
+				if case .didReceiveResponse(_, let task, let response, let completionHandler) = e {
+					guard task.isEqual(object.dataTask as? AnyObject) else { return true }
 					completionHandler(.Allow)
 					return response as? NSHTTPURLResponseType != nil
 				} else { return true }
 				}.bindNext { e in
 					switch e {
-					case .didReceiveResponse(_, _, let response, _):
+					case .didReceiveResponse(_, let task, let response, _):
+						guard task.isEqual(object.dataTask as? AnyObject) else { return }
 						object.response = response as? NSHTTPURLResponseType
 						object.cacheProvider?.expectedDataLength = object.response!.expectedContentLength
 						object.cacheProvider?.setContentMimeTypeIfEmpty(object.response!.getMimeType())
 						observer.onNext(StreamTaskEvents.ReceiveResponse(object.response!).asResult())
-					case .didReceiveData(_, _, let data):
+					case .didReceiveData(_, let task, let data):
+						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						
 						if let cacheProvider = object.cacheProvider {
 							cacheProvider.appendData(data)
 							observer.onNext(StreamTaskEvents.CacheData(cacheProvider).asResult())
 						} else {
 							observer.onNext(StreamTaskEvents.ReceiveData(data).asResult())
 						}
-					case .didCompleteWithError(let session, _, let error):
-						session.invalidateAndCancel()
+					case .didCompleteWithError(let session, let task, let error):
+						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						
+						object.resumed = false
 						
 						if let error = error {
 							observer.onNext(Result.error(error))
@@ -122,14 +110,15 @@ extension StreamDataTask : StreamDataTaskType {
 		}
 	}
 	
+	/*
 	public func suspend() {
 		self.resumed = false
 		dataTask.suspend()
 	}
+	*/
 	
 	public func cancel() {
 		resumed = false
 		dataTask.cancel()
-		session.invalidateAndCancel()
 	}
 }

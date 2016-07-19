@@ -1,4 +1,5 @@
 import Foundation
+import RxSwift
 
 protocol HttpUtilitiesType {
 	func createUrlRequest(baseUrl: String, parameters: [String: String]?) -> NSMutableURLRequestType?
@@ -6,11 +7,11 @@ protocol HttpUtilitiesType {
 	func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestType
 	func createUrlSession(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate?, queue: NSOperationQueue?) -> NSURLSessionType
 	func createUrlSessionStreamObserver() -> NSURLSessionDataEventsObserverType
-	func createStreamDataTask(taskUid: String, request: NSMutableURLRequestType, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?)
-		-> StreamDataTaskType
+	func createStreamDataTask(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
+	                          cacheProvider: CacheProviderType?) -> StreamDataTaskType
 }
 
-class HttpUtilities { }
+struct HttpUtilities { }
 
 extension HttpUtilities : HttpUtilitiesType {
 	func createUrlRequest(baseUrl: String, parameters: [String : String]?) -> NSMutableURLRequestType? {
@@ -45,8 +46,8 @@ extension HttpUtilities : HttpUtilitiesType {
 		return NSURLSessionDataEventsObserver()
 	}
 	
-	func createStreamDataTask(taskUid: String, request: NSMutableURLRequestType,
-	                                 sessionConfiguration: NSURLSessionConfiguration = .defaultSessionConfiguration(), cacheProvider: CacheProviderType?) -> StreamDataTaskType {
-		return StreamDataTask(taskUid: taskUid, request: request, httpUtilities: self, sessionConfiguration: sessionConfiguration, cacheProvider: cacheProvider)
+	func createStreamDataTask(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
+	                          cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, httpClient: httpClient, sessionEvents: sessionEvents, cacheProvider: cacheProvider)
 	}
 }

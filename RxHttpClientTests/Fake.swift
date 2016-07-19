@@ -38,11 +38,11 @@ public enum FakeDataTaskMethods {
 	case cancel(FakeDataTask)
 }
 
-public class FakeDataTask : NSURLSessionDataTaskType {
+public class FakeDataTask : NSObject, NSURLSessionDataTaskType {
 	@available(*, unavailable, message="completion unavailiable. Use FakeSession.sendData instead (session observer will used to send data)")
 	var completion: DataTaskResult?
 	let taskProgress = PublishSubject<FakeDataTaskMethods>()
-	var originalRequest: NSMutableURLRequestType?
+	var originalRequest: NSURLRequestType?
 	var isCancelled = false
 	var resumeInvokeCount = 0
 	
@@ -66,7 +66,7 @@ public class FakeDataTask : NSURLSessionDataTaskType {
 		}
 	}
 	
-	public func getOriginalMutableUrlRequest() -> NSMutableURLRequestType? {
+	public func getOriginalUrlRequest() -> NSURLRequestType? {
 		return originalRequest
 	}
 }
@@ -103,7 +103,7 @@ public class FakeSession : NSURLSessionType {
 		return task
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
+	public func dataTaskWithRequest(request: NSURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
 		fatalError("should not invoke dataTaskWithRequest with completion handler")
 		guard let task = self.task else {
 			return FakeDataTask(completion: completionHandler)
@@ -113,7 +113,7 @@ public class FakeSession : NSURLSessionType {
 		return task
 	}
 	
-	public func dataTaskWithRequest(request: NSMutableURLRequestType) -> NSURLSessionDataTaskType {
+	public func dataTaskWithRequest(request: NSURLRequestType) -> NSURLSessionDataTaskType {
 		guard let task = self.task else {
 			return FakeDataTask(completion: nil)
 		}
@@ -169,8 +169,8 @@ public class FakeHttpUtilities : HttpUtilitiesType {
 		return observer
 	}
 	
-	public func createStreamDataTask(taskUid: String, request: NSMutableURLRequestType, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
-		return StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: self, sessionConfiguration: sessionConfiguration, cacheProvider: cacheProvider)
-		//return FakeStreamDataTask(request: request, observer: createUrlSessionStreamObserver(), httpUtilities: self)
+	func createStreamDataTask(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType,
+	                          sessionEvents: Observable<SessionDataEvents>, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+		return StreamDataTask(taskUid: NSUUID().UUIDString, dataTask: dataTask, httpClient: httpClient, sessionEvents: sessionEvents, cacheProvider: cacheProvider)
 	}
 }
