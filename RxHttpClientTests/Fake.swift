@@ -82,7 +82,7 @@ public class FakeSession : NSURLSessionType {
 	}
 	
 	/// Send data as stream (this data should be received through session delegate)
-	public func sendData(task: NSURLSessionDataTaskType, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
+	func sendData(task: NSURLSessionDataTaskType, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
 		if let data = data {
 			streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self, dataTask: task, data: data))
 		}
@@ -91,7 +91,7 @@ public class FakeSession : NSURLSessionType {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: nil))
 	}
 	
-	public func sendError(task: NSURLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
+	func sendError(task: NSURLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: error))
 	}
 	
@@ -158,7 +158,7 @@ public class FakeHttpUtilities : HttpUtilitiesType {
 		return session
 	}
 	
-	public func createUrlSessionStreamObserver() -> NSURLSessionDataEventsObserverType {
+	func createUrlSessionStreamObserver() -> NSURLSessionDataEventsObserverType {
 		//		guard let observer = fakeObserver else {
 		//			return FakeUrlSessionStreamObserver()
 		//		}

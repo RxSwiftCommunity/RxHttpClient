@@ -8,18 +8,21 @@ public enum HttpRequestResult {
 }
 
 public protocol HttpClientType {
-	var httpUtilities: HttpUtilitiesType { get }
+	//var httpUtilities: HttpUtilitiesType { get }
 	func loadData(request: NSMutableURLRequestType) -> Observable<HttpRequestResult>
 	func loadStreamData(request: NSMutableURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskResult>
 }
 
 public class HttpClient {
-	public let httpUtilities: HttpUtilitiesType
+	internal let httpUtilities: HttpUtilitiesType
 	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	
-	public init(httpUtilities: HttpUtilitiesType = HttpUtilities()) {
-		
+
+	internal init(httpUtilities: HttpUtilitiesType) {
 		self.httpUtilities = httpUtilities
+	}
+	
+	public convenience init() {
+		self.init(httpUtilities: HttpUtilities())
 	}
 }
 

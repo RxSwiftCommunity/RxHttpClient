@@ -38,10 +38,10 @@ public protocol StreamDataTaskType : StreamTaskType {
 public class StreamDataTask {
 	internal let queue = dispatch_queue_create("com.cloudmusicplayer.streamdatatask.serialqueue.\(NSUUID().UUIDString)", DISPATCH_QUEUE_SERIAL)
 	public let uid: String
-	public var resumed = false
+	public internal (set) var resumed = false
 	
 	public let request: NSMutableURLRequestType
-	public let httpUtilities: HttpUtilitiesType
+	internal let httpUtilities: HttpUtilitiesType
 	public let sessionConfiguration: NSURLSessionConfiguration
 	public internal(set) var cacheProvider: CacheProviderType?
 	internal var response: NSHTTPURLResponseType?
@@ -59,13 +59,17 @@ public class StreamDataTask {
 		return self.httpUtilities.createUrlSession(self.sessionConfiguration, delegate: self.observer as? NSURLSessionDataDelegate, queue: nil)
 		}()
 	
-	public init(taskUid: String, request: NSMutableURLRequestType, httpUtilities: HttpUtilitiesType,
+	internal init(taskUid: String, request: NSMutableURLRequestType, httpUtilities: HttpUtilitiesType,
 	            sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) {
 		self.request = request
 		self.httpUtilities = httpUtilities
 		self.sessionConfiguration = sessionConfiguration
 		self.cacheProvider = cacheProvider
 		uid = taskUid
+	}
+	
+	public convenience init(taskUid: String, request: NSMutableURLRequestType, sessionConfiguration: NSURLSessionConfiguration, cacheProvider: CacheProviderType?) {
+		self.init(taskUid: taskUid, request: request, httpUtilities: HttpUtilities(), sessionConfiguration: sessionConfiguration, cacheProvider: cacheProvider)
 	}
 	
 	public lazy var taskProgress: Observable<StreamTaskResult> = {
