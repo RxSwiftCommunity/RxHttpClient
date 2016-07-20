@@ -230,6 +230,13 @@ class HttpClientBasicTests: XCTestCase {
 		XCTAssertEqual(true, (utilities.fakeSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
+	func testDeinitOfHttpClientNotInvalidatesPassedSession() {
+		var httpClient: HttpClient? = HttpClient(urlSession: FakeSession())
+		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
+		httpClient = nil
+		XCTAssertEqual(false, (utilities.fakeSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be invalidated")
+	}
+	
 	func testCreateHttpClientWithCorrectConfiguration() {
 		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
 		config.HTTPCookieAcceptPolicy = .Always
