@@ -22,7 +22,7 @@ class HttpClientBasicTests: XCTestCase {
 		utilities = FakeHttpUtilities()
 		utilities.fakeSession = session
 		utilities.streamObserver = streamObserver
-		httpClient = HttpClient(httpUtilities: utilities)
+		httpClient = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
 	}
 	
 	override func tearDown() {
@@ -140,7 +140,7 @@ class HttpClientBasicTests: XCTestCase {
 			}
 			}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(2, handler: nil)
 	}
 	
 	func testReturnErrorWhileLoadingData() {
@@ -162,5 +162,85 @@ class HttpClientBasicTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(1, handler: nil)
+	}
+	
+	func testReturnCorrectDataForMultipleRequests() {
+		let data1 = "testData1".dataUsingEncoding(NSUTF8StringEncoding)!
+		let data2 = "testData2".dataUsingEncoding(NSUTF8StringEncoding)!
+		let data3 = "testData3".dataUsingEncoding(NSUTF8StringEncoding)!
+		
+		stub({ $0.URL?.absoluteString == "https://test.com/json1"	}) { _ in
+			return OHHTTPStubsResponse(data: data1, statusCode: 200, headers: nil).responseTime(OHHTTPStubsDownloadSpeed1KBPS)
+		}
+		
+		stub({ $0.URL?.absoluteString == "https://test.com/json2"	}) { _ in
+			return OHHTTPStubsResponse(data: data2, statusCode: 200, headers: nil).responseTime(OHHTTPStubsDownloadSpeed1KBPS)
+		}
+		
+		stub({ $0.URL?.absoluteString == "https://test.com/json3"	}) { _ in
+			return OHHTTPStubsResponse(data: data3, statusCode: 200, headers: nil).responseTime(OHHTTPStubsDownloadSpeed1KBPS)
+		}
+		
+		let client = HttpClient()
+		let bag = DisposeBag()
+		
+		let request1 = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json1", parameters: nil)!)
+		let request2 = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json2", parameters: nil)!)
+		let request3 = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json3", parameters: nil)!)
+		
+		let expectation1 = expectationWithDescription("Should return correct data1")
+		let expectation2 = expectationWithDescription("Should return correct data2")
+		let expectation3 = expectationWithDescription("Should return correct data3")
+		
+		let task1 = client.loadData(request1).doOnNext { e in
+			if case HttpRequestResult.successData(let data) = e {
+				XCTAssertTrue(data.isEqualToData(data1), "Received data should be equal to sended")
+				expectation1.fulfill()
+			}
+		}
+		
+		let task2 = client.loadData(request2).doOnNext { e in
+			if case HttpRequestResult.successData(let data) = e {
+				XCTAssertTrue(data.isEqualToData(data2), "Received data should be equal to sended")
+				expectation2.fulfill()
+			}
+		}
+		
+		let task3 = client.loadData(request3).doOnNext { e in
+			if case HttpRequestResult.successData(let data) = e {
+				XCTAssertTrue(data.isEqualToData(data3), "Received data should be equal to sended")
+				expectation3.fulfill()
+			}
+		}
+		
+		let concurrent = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+		task1.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
+		task2.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
+		task3.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
+		
+		waitForExpectationsWithTimeout(1, handler: nil)
+	}
+	
+	func testDeinitOfHttpClientInvalidatesSession() {
+		let utilities = FakeHttpUtilities()
+		utilities.fakeSession = FakeSession()
+		var httpClient: HttpClient? = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
+		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
+		httpClient = nil
+		XCTAssertEqual(true, (utilities.fakeSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be invalidated")
+	}
+	
+	func testDeinitOfHttpClientNotInvalidatesPassedSession() {
+		var httpClient: HttpClient? = HttpClient(urlSession: FakeSession())
+		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
+		httpClient = nil
+		XCTAssertEqual(false, (utilities.fakeSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be invalidated")
+	}
+	
+	func testCreateHttpClientWithCorrectConfiguration() {
+		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
+		config.HTTPCookieAcceptPolicy = .Always
+		let client = HttpClient(sessionConfiguration: config)
+		XCTAssertEqual(config, client.urlSession.configuration)
 	}
 }

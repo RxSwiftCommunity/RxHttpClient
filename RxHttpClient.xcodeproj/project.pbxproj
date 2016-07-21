@@ -111,12 +111,12 @@
 			isa = PBXGroup;
 			children = (
 				6EFB9EE71D2A575A00E30A5D /* Result.swift */,
+				6EFB9ED81D2A53FD00E30A5D /* StreamDataTask.swift */,
 				6EFB9ED21D2A53FD00E30A5D /* CacheProvider.swift */,
 				6EFB9ED31D2A53FD00E30A5D /* HttpClient.swift */,
 				6EFB9ED41D2A53FD00E30A5D /* HttpExtensions.swift */,
 				6EFB9ED51D2A53FD00E30A5D /* HttpUtilities.swift */,
 				6EFB9ED71D2A53FD00E30A5D /* NSURLSessionDataEventsObserver.swift */,
-				6EFB9ED81D2A53FD00E30A5D /* StreamDataTask.swift */,
 				6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */,
 				6EFB9EBD1D2A4E2600E30A5D /* Info.plist */,
 				6EFB9EBB1D2A4E2600E30A5D /* RxHttpClient.h */,
@@ -163,7 +163,6 @@
 				6EFB9EB41D2A4E2600E30A5D /* Frameworks */,
 				6EFB9EB51D2A4E2600E30A5D /* Headers */,
 				6EFB9EB61D2A4E2600E30A5D /* Resources */,
-				6EFB9EE41D2A544B00E30A5D /* Copy carthage frameworks */,
 			);
 			buildRules = (
 			);
@@ -257,22 +256,6 @@
 				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
 				"$(SRCROOT)/Dependencies/iOS/OHHTTPStubs.framework",
 			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "/usr/local/bin/carthage copy-frameworks";
-		};
-		6EFB9EE41D2A544B00E30A5D /* Copy carthage frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/Dependencies/iOS/RxSwift.framework",
-				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
-			);
-			name = "Copy carthage frameworks";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;

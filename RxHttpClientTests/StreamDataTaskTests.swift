@@ -7,7 +7,7 @@ class StreamDataTaskTests: XCTestCase {
 	var request: FakeRequest!
 	var session: FakeSession!
 	var utilities: FakeHttpUtilities!
-	var httpClient: HttpClientType!
+	var httpClient: HttpClient!
 	var streamObserver: NSURLSessionDataEventsObserver!
 	let waitTimeout: Double = 2
 	
@@ -22,7 +22,7 @@ class StreamDataTaskTests: XCTestCase {
 		utilities = FakeHttpUtilities()
 		utilities.fakeSession = session
 		utilities.streamObserver = streamObserver
-		httpClient = HttpClient(httpUtilities: utilities)
+		httpClient = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
 	}
 	
 	override func tearDown() {
@@ -40,7 +40,7 @@ class StreamDataTaskTests: XCTestCase {
 		let testData = ["First", "Second", "Third", "Fourth"]
 		let dataSended = NSMutableData()
 		
-		let expectation = expectationWithDescription("Should return correct data and invalidate session (testReceiveCorrectData)")
+		let expectation = expectationWithDescription("Should return correct data and not invalidate session")
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
 			if case .resume(let tsk) = progress {
@@ -57,14 +57,10 @@ class StreamDataTaskTests: XCTestCase {
 					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			} else if case .cancel = progress {
-				// task will be canceled if method cancelAndInvalidate invoked on FakeSession,
-				// so fulfill expectation here after checking if session was invalidated
-				if self.session.isInvalidatedAndCanceled {
-					// set reference to nil (simutale real session dispose)
-					self.utilities.streamObserver = nil
-					self.streamObserver = nil
-					expectation.fulfill()
-				}
+				// set reference to nil (simutale real session dispose)
+				self.utilities.streamObserver = nil
+				self.streamObserver = nil
+				expectation.fulfill()
 			}
 		}.addDisposableTo(bag)
 		
@@ -86,7 +82,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
 	}
 	
 	func testReturnNSError() {
@@ -144,9 +140,14 @@ class StreamDataTaskTests: XCTestCase {
 	func testCreateCorrectTask() {
 		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
 		config.HTTPCookieAcceptPolicy = .Always
-		let task = StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: utilities, sessionConfiguration: config, cacheProvider: nil)
-		XCTAssertEqual(task.sessionConfiguration, config)
-		XCTAssertTrue(task.dataTask.getOriginalMutableUrlRequest() as? FakeRequest === request)
-		XCTAssertNil(task.cacheProvider, "Cache provider should not be specified")
+		let dataTask = session.dataTaskWithRequest(request)
+		let streamTask = StreamDataTask(taskUid: NSUUID().UUIDString,
+		                                dataTask: dataTask, httpClient: httpClient,
+		                                sessionEvents: httpClient.sessionObserver.sessionEvents,
+		                                cacheProvider: nil)
+		//let task = StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: utilities, sessionConfiguration: config, cacheProvider: nil)
+		//XCTAssertEqual(streamTask.sessionConfiguration, config)
+		XCTAssertTrue(streamTask.dataTask.getOriginalUrlRequest() as? FakeRequest === request)
+		XCTAssertNil(streamTask.cacheProvider, "Cache provider should not be specified")
 	}
 }

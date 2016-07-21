@@ -7,7 +7,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	var request: FakeRequest!
 	var session: FakeSession!
 	var utilities: FakeHttpUtilities!
-	var httpClient: HttpClientType!
+	var httpClient: HttpClient!
 	var streamObserver: NSURLSessionDataEventsObserver!
 	let waitTimeout: Double = 2
 	
@@ -22,7 +22,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		utilities = FakeHttpUtilities()
 		utilities.fakeSession = session
 		utilities.streamObserver = streamObserver
-		httpClient = HttpClient(httpUtilities: utilities)
+		httpClient = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
 	}
 	
 	override func tearDown() {
@@ -42,7 +42,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let fakeResponse = FakeResponse(contentLenght: Int64(26))
 		fakeResponse.MIMEType = "audio/mpeg"
 		
-		let sessionInvalidationExpectation = expectationWithDescription("Should return correct data and invalidate session")
+		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate tession")
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
 			if case .resume(let tsk) = progress {
@@ -62,11 +62,7 @@ class MemoryCacheProviderTests: XCTestCase {
 					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			} else if case .cancel = progress {
-				// task will be canceled if method cancelAndInvalidate invoked on FakeSession,
-				// so fulfill expectation here after checking if session was invalidated
-				if self.session.isInvalidatedAndCanceled {
-					sessionInvalidationExpectation.fulfill()
-				}
+				taskCancelExpectation.fulfill()
 			}
 			}.addDisposableTo(bag)
 		
@@ -92,7 +88,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
 	}
 	
 	func testCacheCorrectDataIfDataTaskHasMoreThanOneObserver() {
@@ -100,8 +96,6 @@ class MemoryCacheProviderTests: XCTestCase {
 		let dataSended = NSMutableData()
 		let fakeResponse = FakeResponse(contentLenght: Int64(26))
 		fakeResponse.MIMEType = "audio/mpeg"
-		
-		let sessionInvalidationExpectation = expectationWithDescription("Should return correct data and invalidate session")
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
 			if case .resume(let tsk) = progress {
@@ -116,28 +110,25 @@ class MemoryCacheProviderTests: XCTestCase {
 						dataSended.appendData(sendData)
 						self.streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
 						// simulate delay
-						NSThread.sleepForTimeInterval(0.01)
+						NSThread.sleepForTimeInterval(0.001)
 					}
 					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
-			} else if case .cancel = progress {
-				// task will be canceled if method cancelAndInvalidate invoked on FakeSession,
-				// so fulfill expectation here after checking if session was invalidated
-				if self.session.isInvalidatedAndCanceled {
-					// set reference to nil (simutale real session dispose)
-					self.utilities.streamObserver = nil
-					self.streamObserver = nil
-					sessionInvalidationExpectation.fulfill()
-				}
 			}
-			}.addDisposableTo(bag)
+		}.addDisposableTo(bag)
 		
 		var receiveChunkCounter = 0
 		
 		let successExpectation = expectationWithDescription("Should successfuly cache data")
 		
-		let task = StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: utilities,
-		                          sessionConfiguration: NSURLSession.defaultConfig, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
+		let dataTask = session.dataTaskWithRequest(request)
+		let task = StreamDataTask(taskUid: NSUUID().UUIDString,
+		                          dataTask: dataTask,
+		                          httpClient: httpClient,
+		                          sessionEvents: httpClient.sessionObserver.sessionEvents,
+		                          cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
+		//let task = StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: utilities,
+		//                          sessionConfiguration: NSURLSession.defaultConfig, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
 		//httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).bindNext { result in
 		task.taskProgress.bindNext { result in
 			guard case Result.success(let box) = result else { return }
@@ -162,14 +153,15 @@ class MemoryCacheProviderTests: XCTestCase {
 		task.resume()
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
+		XCTAssertFalse(task.resumed, "Task should not be resumed")
 	}
 	
 	func testNotOverrideMimeType() {
 		let fakeResponse = FakeResponse(contentLenght: Int64(26))
 		fakeResponse.MIMEType = "audio/mpeg"
 		
-		let sessionInvalidationExpectation = expectationWithDescription("Should return correct data and invalidate session")
+		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate session")
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
 			if case .resume(let tsk) = progress {
@@ -182,14 +174,9 @@ class MemoryCacheProviderTests: XCTestCase {
 					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			} else if case .cancel = progress {
-				// task will be canceled if method cancelAndInvalidate invoked on FakeSession,
-				// so fulfill expectation here after checking if session was invalidated
-				if self.session.isInvalidatedAndCanceled {
-					// set reference to nil (simutale real session dispose)
-					self.utilities.streamObserver = nil
-					self.streamObserver = nil
-					sessionInvalidationExpectation.fulfill()
-				}
+				self.utilities.streamObserver = nil
+				self.streamObserver = nil
+				taskCancelExpectation.fulfill()
 			}
 			}.addDisposableTo(bag)
 		
@@ -208,7 +195,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertTrue(self.session.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
 	}
 	
 	func testSaveDataOnDisk() {
