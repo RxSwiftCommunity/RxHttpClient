@@ -65,25 +65,41 @@ class HttpUtilitiesTests: XCTestCase {
 	}
 	
 	func testCreateStreamDataTaskWithoutCacheProvider() {
-		let utilities = HttpUtilities()
+		let session = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		let utilities = FakeHttpUtilities()
+		utilities.fakeSession = session
 		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
 		config.HTTPCookieAcceptPolicy = .Always
-		let task = utilities.createStreamDataTask(NSUUID().UUIDString, request: request, sessionConfiguration: config, cacheProvider: nil)
-		XCTAssertEqual((task as? StreamDataTask)?.request.URL?.absoluteString, request.URL?.absoluteString, "Check correct request url")
-		XCTAssertTrue((task as? StreamDataTask)?.httpUtilities as? HttpUtilities === utilities, "Check correct HttpUtilities was passed")
-		XCTAssertEqual((task as? StreamDataTask)?.sessionConfiguration, config, "Check correct sessionConfig was passed")
+		let httpClient = HttpClient(sessionConfiguration: config, httpUtilities: utilities)
+		let task = utilities.createStreamDataTask(NSUUID().UUIDString,
+		                                          dataTask: httpClient.urlSession.dataTaskWithRequest(request),
+		                                          httpClient: httpClient,
+		                                          sessionEvents: httpClient.sessionObserver.sessionEvents,
+		                                          cacheProvider: nil)
+		//let task = utilities.createStreamDataTask(NSUUID().UUIDString, request: request, sessionConfiguration: config, cacheProvider: nil)
+		XCTAssertEqual((task as? StreamDataTask)?.dataTask.getOriginalUrlRequest()?.URL?.absoluteString, request.URL?.absoluteString, "Check correct request url")
+		//XCTAssertTrue((task as? StreamDataTask)?.httpUtilities as? HttpUtilities === utilities, "Check correct HttpUtilities was passed")
+		//XCTAssertEqual((task as? StreamDataTask)?.sessionConfiguration, config, "Check correct sessionConfig was passed")
 		XCTAssertNil(task.cacheProvider)
 	}
 	
 	func testCreateStreamDataTaskWithSpecifiedCacheProvider() {
-		let utilities = HttpUtilities()
+		let session = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		let utilities = FakeHttpUtilities()
+		utilities.fakeSession = session
 		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
 		config.HTTPCookieAcceptPolicy = .Always
 		let cacheProvider = MemoryCacheProvider(uid: NSUUID().UUIDString)
-		let task = utilities.createStreamDataTask(NSUUID().UUIDString, request: request, sessionConfiguration: config, cacheProvider: cacheProvider)
-		XCTAssertEqual((task as? StreamDataTask)?.request.URL?.absoluteString, request.URL?.absoluteString, "Check correct request url")
-		XCTAssertTrue((task as? StreamDataTask)?.httpUtilities as? HttpUtilities === utilities, "Check correct HttpUtilities was passed")
-		XCTAssertEqual((task as? StreamDataTask)?.sessionConfiguration, config, "Check correct sessionConfig was passed")
+		let httpClient = HttpClient(sessionConfiguration: config, httpUtilities: utilities)
+		let task = utilities.createStreamDataTask(NSUUID().UUIDString,
+		                                          dataTask: httpClient.urlSession.dataTaskWithRequest(request),
+		                                          httpClient: httpClient,
+		                                          sessionEvents: httpClient.sessionObserver.sessionEvents,
+		                                          cacheProvider: cacheProvider)
+		//let task = utilities.createStreamDataTask(NSUUID().UUIDString, request: request, sessionConfiguration: config, cacheProvider: cacheProvider)
+		XCTAssertEqual((task as? StreamDataTask)?.dataTask.getOriginalUrlRequest()?.URL?.absoluteString, request.URL?.absoluteString, "Check correct request url")
+		//XCTAssertTrue((task as? StreamDataTask)?.httpUtilities as? HttpUtilities === utilities, "Check correct HttpUtilities was passed")
+		//XCTAssertEqual((task as? StreamDataTask)?.sessionConfiguration, config, "Check correct sessionConfig was passed")
 		XCTAssertTrue(task.cacheProvider as? MemoryCacheProvider === cacheProvider)
 	}
 }

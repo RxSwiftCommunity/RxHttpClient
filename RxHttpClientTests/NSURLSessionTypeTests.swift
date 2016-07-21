@@ -30,14 +30,14 @@ class NSURLSessionProtocolTests: XCTestCase {
 	func testCreateDataTaskWithRequest() {
 		let request = HttpUtilities().createUrlRequest(url, headers: ["header": "headerValue"])
 		let dataTask = session.dataTaskWithRequest(request)
-		XCTAssertEqual(request.URL, dataTask.getOriginalMutableUrlRequest()?.URL)
-		XCTAssertEqual(request.allHTTPHeaderFields?["header"], dataTask.getOriginalMutableUrlRequest()?.allHTTPHeaderFields?["header"])
+		XCTAssertEqual(request.URL, dataTask.getOriginalUrlRequest()?.URL)
+		XCTAssertEqual(request.allHTTPHeaderFields?["header"], dataTask.getOriginalUrlRequest()?.allHTTPHeaderFields?["header"])
 	}
 	
 	func testCreateDataTaskWithRequestAndCompletionHandler() {
 		let request = HttpUtilities().createUrlRequest(url, headers: ["header": "headerValue"])
 		let dataTask = session.dataTaskWithRequest(request, completionHandler: { _ in })
-		XCTAssertEqual(request.URL, dataTask.getOriginalMutableUrlRequest()?.URL)
-		XCTAssertEqual(request.allHTTPHeaderFields?["header"], dataTask.getOriginalMutableUrlRequest()?.allHTTPHeaderFields?["header"])
+		XCTAssertEqual(request.URL, dataTask.getOriginalUrlRequest()?.URL)
+		XCTAssertEqual(request.allHTTPHeaderFields?["header"], dataTask.getOriginalUrlRequest()?.allHTTPHeaderFields?["header"])
 	}
 }
