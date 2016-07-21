@@ -13,6 +13,7 @@ public protocol CacheProviderType {
 	func saveData(destinationDirectory: NSURL, fileExtension: String?) -> NSURL?
 	func saveData(destinationDirectory: NSURL) -> NSURL?
 	func setContentMimeTypeIfEmpty(mimeType: String)
+	func clearData()
 }
 
 public class MemoryCacheProvider {
@@ -36,6 +37,13 @@ public class MemoryCacheProvider {
 }
 
 extension MemoryCacheProvider : CacheProviderType {
+	public func clearData() {
+		invokeSerial {
+			guard self.cacheData.length > 0 else { return }
+			self.cacheData.setData(NSData())
+		}
+	}
+	
 	/// Set content MIME type. 
 	///Only if now contentMimeType property is nil
 	public func setContentMimeTypeIfEmpty(mimeType: String) {

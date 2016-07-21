@@ -10,26 +10,18 @@ public protocol StreamTaskType {
 	var resumed: Bool { get }
 }
 
-public typealias StreamTaskResult = Result<StreamTaskEvents>
-
 public enum StreamTaskEvents {
 	/// Send this event if CacheProvider specified
-	case CacheData(CacheProviderType)
+	case cacheData(CacheProviderType)
 	/// Send this event only if CacheProvider is nil
-	case ReceiveData(NSData)
-	case ReceiveResponse(NSHTTPURLResponseType)
-	//case Error(NSError)
-	case Success(cache: CacheProviderType?)
-}
-
-extension StreamTaskEvents {
-	func asResult() -> StreamTaskResult {
-		return Result.success(Box(value: self))
-	}
+	case receiveData(NSData)
+	case receiveResponse(NSHTTPURLResponseType)
+	case error(ErrorType)
+	case success(cache: CacheProviderType?)
 }
 
 public protocol StreamDataTaskType : StreamTaskType {
-	var taskProgress: Observable<StreamTaskResult> { get }
+	var taskProgress: Observable<StreamTaskEvents> { get }
 	var cacheProvider: CacheProviderType? { get }
 }
 
@@ -54,32 +46,31 @@ public class StreamDataTask {
 		uid = taskUid
 	}
 	
-	public lazy var taskProgress: Observable<StreamTaskResult> = {
+	public lazy var taskProgress: Observable<StreamTaskEvents> = {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
 			
-			let disposable = object.sessionEvents.observeOn(object.scheduler).filter { e in
-				if case .didReceiveResponse(_, let task, let response, let completionHandler) = e {
-					guard task.isEqual(object.dataTask as? AnyObject) else { return true }
-					completionHandler(.Allow)
-					return response as? NSHTTPURLResponseType != nil
-				} else { return true }
-				}.bindNext { e in
+			let disposable = object.sessionEvents.observeOn(object.scheduler).bindNext { e in
 					switch e {
-					case .didReceiveResponse(_, let task, let response, _):
+					case .didReceiveResponse(_, let task, let response, let completionHandler):
+						guard let response = response as? NSHTTPURLResponseType else { return }
+						
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
-						object.response = response as? NSHTTPURLResponseType
-						object.cacheProvider?.expectedDataLength = object.response!.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(object.response!.getMimeType())
-						observer.onNext(StreamTaskEvents.ReceiveResponse(object.response!).asResult())
+						
+						completionHandler(.Allow)
+						
+						object.response = response
+						object.cacheProvider?.expectedDataLength = response.expectedContentLength
+						object.cacheProvider?.setContentMimeTypeIfEmpty(response.getMimeType())
+						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
 						
 						if let cacheProvider = object.cacheProvider {
 							cacheProvider.appendData(data)
-							observer.onNext(StreamTaskEvents.CacheData(cacheProvider).asResult())
+							observer.onNext(StreamTaskEvents.cacheData(cacheProvider))
 						} else {
-							observer.onNext(StreamTaskEvents.ReceiveData(data).asResult())
+							observer.onNext(StreamTaskEvents.receiveData(data))
 						}
 					case .didCompleteWithError(let session, let task, let error):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
@@ -87,9 +78,9 @@ public class StreamDataTask {
 						object.resumed = false
 						
 						if let error = error {
-							observer.onNext(Result.error(error))
+							observer.onNext(StreamTaskEvents.error(error))
 						} else {
-							observer.onNext(StreamTaskEvents.Success(cache: object.cacheProvider).asResult())
+							observer.onNext(StreamTaskEvents.success(cache: object.cacheProvider))
 						}
 
 						observer.onCompleted()

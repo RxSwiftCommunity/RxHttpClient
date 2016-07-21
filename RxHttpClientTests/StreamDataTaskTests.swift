@@ -67,13 +67,11 @@ class StreamDataTaskTests: XCTestCase {
 		var receiveCounter = 0
 		let dataReceived = NSMutableData()
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
-			guard case Result.success(let box) = result else { return }
-			if case .ReceiveData(let dataChunk) = box.value {
+			if case .receiveData(let dataChunk) = result {
 				XCTAssertEqual(String(data: dataChunk, encoding: NSUTF8StringEncoding), testData[receiveCounter], "Check correct chunk of data received")
 				dataReceived.appendData(dataChunk)
 				receiveCounter += 1
-			} else if case .Success(let cacheProvider) = box.value {
-				//XCTAssertEqual(dataReceived, dataSended, "Should receive correct amount of data")
+			} else if case .success(let cacheProvider) = result {
 				XCTAssertNil(cacheProvider, "Cache provider should be nil")
 				XCTAssertTrue(dataReceived.isEqualToData(dataSended), "Received data should be equal to sended data")
 				XCTAssertEqual(receiveCounter, testData.count, "Should receive correct amount of data chuncks")
@@ -97,7 +95,7 @@ class StreamDataTaskTests: XCTestCase {
 
 		let expectation = expectationWithDescription("Should return NSError")
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
-			guard case Result.error(let error) = result else { return }
+			guard case .error(let error) = result else { return }
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
 			}
@@ -126,8 +124,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let expectation = expectationWithDescription("Should return correct response")
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
-			guard case Result.success(let box) = result else { return }
-			if case .ReceiveResponse(let response) = box.value {
+			if case .receiveResponse(let response) = result {
 				XCTAssertEqual(response.expectedContentLength, fakeResponse.expectedContentLength)
 				expectation.fulfill()
 			}
@@ -145,8 +142,7 @@ class StreamDataTaskTests: XCTestCase {
 		                                dataTask: dataTask, httpClient: httpClient,
 		                                sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                                cacheProvider: nil)
-		//let task = StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: utilities, sessionConfiguration: config, cacheProvider: nil)
-		//XCTAssertEqual(streamTask.sessionConfiguration, config)
+
 		XCTAssertTrue(streamTask.dataTask.getOriginalUrlRequest() as? FakeRequest === request)
 		XCTAssertNil(streamTask.cacheProvider, "Cache provider should not be specified")
 	}

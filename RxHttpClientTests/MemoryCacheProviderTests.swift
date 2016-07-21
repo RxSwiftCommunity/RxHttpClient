@@ -71,18 +71,16 @@ class MemoryCacheProviderTests: XCTestCase {
 		let successExpectation = expectationWithDescription("Should successfuly cache data")
 		
 		httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).bindNext { result in
-			guard case Result.success(let box) = result else { return }
-			if case StreamTaskEvents.CacheData = box.value {
+			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
-			} else if case .Success(let cacheProvider) = box.value {
+			} else if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(fakeResponse.expectedContentLength, cacheProvider?.expectedDataLength, "Should have expectedDataLength same as length in response")
 				XCTAssertEqual(fakeResponse.MIMEType, cacheProvider?.contentMimeType, "Should have mime type same as mime type of request")
-				//XCTAssertEqual(cacheProvider?.getData().length, dataSended, "Should cache all sended data")
 				XCTAssertEqual(testData.count, receiveChunkCounter, "Should cache correct data chunk amount")
 				XCTAssertEqual(true, cacheProvider?.getCurrentData().isEqualToData(dataSended), "Sended data end cached data should be equal")
 				successExpectation.fulfill()
-			} else if case StreamTaskEvents.ReceiveData = box.value {
+			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
 			}.addDisposableTo(bag)
@@ -127,22 +125,18 @@ class MemoryCacheProviderTests: XCTestCase {
 		                          httpClient: httpClient,
 		                          sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                          cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
-		//let task = StreamDataTask(taskUid: NSUUID().UUIDString, request: request, httpUtilities: utilities,
-		//                          sessionConfiguration: NSURLSession.defaultConfig, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
-		//httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).bindNext { result in
+
 		task.taskProgress.bindNext { result in
-			guard case Result.success(let box) = result else { return }
-			if case StreamTaskEvents.CacheData = box.value {
+			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
-			} else if case .Success(let cacheProvider) = box.value {
+			} else if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(fakeResponse.expectedContentLength, cacheProvider?.expectedDataLength, "Should have expectedDataLength same as length in response")
 				XCTAssertEqual(fakeResponse.MIMEType, cacheProvider?.contentMimeType, "Should have mime type same as mime type of request")
-				//XCTAssertEqual(cacheProvider?.getData().length, dataSended, "Should cache all sended data")
 				XCTAssertEqual(testData.count, receiveChunkCounter, "Should cache correct data chunk amount")
 				XCTAssertEqual(true, cacheProvider?.getCurrentData().isEqualToData(dataSended), "Sended data end cached data should be equal")
 				successExpectation.fulfill()
-			} else if case StreamTaskEvents.ReceiveData = box.value {
+			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
 			}.addDisposableTo(bag)
@@ -184,12 +178,11 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		// create memory cache provider with explicitly specified mime type
 		httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString, contentMimeType: "application/octet-stream")).bindNext { result in
-			guard case Result.success(let box) = result else { return }
-			if case .Success(let cacheProvider) = box.value {
+			if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(cacheProvider?.contentMimeType, "application/octet-stream", "Mime type should be preserved")
 				successExpectation.fulfill()
-			} else if case StreamTaskEvents.ReceiveData = box.value {
+			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
 			}.addDisposableTo(bag)
@@ -223,5 +216,14 @@ class MemoryCacheProviderTests: XCTestCase {
 		if let savedDataUrl = savedDataUrl {
 			try! NSFileManager.defaultManager().removeItemAtURL(savedDataUrl)
 		}
+	}
+	
+	func testClearData() {
+		let provider = MemoryCacheProvider(uid: NSUUID().UUIDString)
+		let testData = "Some test data string".dataUsingEncoding(NSUTF8StringEncoding)!
+		provider.appendData(testData)
+		XCTAssertTrue(provider.currentDataLength > 0, "Should have cached data")
+		provider.clearData()
+		XCTAssertEqual(0, provider.currentDataLength, "Should have clean cache data")
 	}
 }
