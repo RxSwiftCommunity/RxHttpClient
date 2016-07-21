@@ -90,8 +90,6 @@ extension HttpClient : HttpClientType {
 				observer.onCompleted()
 				return Observable.empty()
 			}.bindNext { result in
-				if case Result.success(let box) = result {
-				}
 				observer.onNext(result)
 				
 				if case Result.success(let box) = result, case .Success = box.value {

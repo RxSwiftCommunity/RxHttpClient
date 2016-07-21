@@ -140,7 +140,7 @@ class HttpClientBasicTests: XCTestCase {
 			}
 			}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(2, handler: nil)
 	}
 	
 	func testReturnErrorWhileLoadingData() {
