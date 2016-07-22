@@ -67,7 +67,8 @@ extension HttpClient : HttpClientType {
 	}
 	
 	public func loadData(request: NSURLRequestType)	-> Observable<HttpRequestResult> {
-		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).flatMapLatest { result -> Observable<HttpRequestResult> in		
+		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).observeOn(concurrentScheduler)
+			.flatMapLatest { result -> Observable<HttpRequestResult> in
 
 			if case StreamTaskEvents.error(let error) = result {
 				return Observable.just(.error(error))
@@ -79,7 +80,7 @@ extension HttpClient : HttpClientType {
 
 			return Observable.just(.successData(cacheProvider.getCurrentData()))
 			
-		}.observeOn(concurrentScheduler)
+		}
 	}
 	
 	public func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
@@ -91,7 +92,7 @@ extension HttpClient : HttpClientType {
 			
 			let task = object.createStreamDataTask(request, cacheProvider: cacheProvider)
 			
-			let disposable = task.taskProgress.catchError { error in
+			let disposable = task.taskProgress.observeOn(object.serialScheduler).catchError { error in
 				observer.onNext(StreamTaskEvents.error(error))
 				observer.onCompleted()
 				return Observable.empty()
@@ -109,7 +110,7 @@ extension HttpClient : HttpClientType {
 				task.cancel()
 				disposable.dispose()
 			}
-		}.observeOn(serialScheduler)
+		}
 	}
 	
 	public func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
