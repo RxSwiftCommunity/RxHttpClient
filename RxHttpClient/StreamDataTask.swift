@@ -25,7 +25,7 @@ public protocol StreamDataTaskType : StreamTaskType {
 	var cacheProvider: CacheProviderType? { get }
 }
 
-public class StreamDataTask {
+public final class StreamDataTask {
 	public let uid: String
 	public internal (set) var resumed = false
 	public internal(set) var cacheProvider: CacheProviderType?

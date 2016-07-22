@@ -31,4 +31,10 @@ class NSURLTests: XCTestCase {
 		let url = NSURL(baseUrl: "some string", parameters: ["param1": "value1", "param2": "value2"])
 		XCTAssertNil(url)
 	}
+	
+	func testIsEqualsToUrl() {
+		let first = NSURL(baseUrl: "https://test.com", parameters: ["param1": "val1", "param2": "val2"])!
+		let second = NSURL(baseUrl: "https://test.com", parameters: ["param2": "val2", "param1": "val1"])!
+		XCTAssertTrue(first.isEqualsToUrl(second))
+	}
 }

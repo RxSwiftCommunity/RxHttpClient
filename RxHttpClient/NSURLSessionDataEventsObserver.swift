@@ -18,7 +18,7 @@ extension NSURLSessionDataEventsObserver : NSURLSessionDataEventsObserverType {
 	}
 }
 
-class NSURLSessionDataEventsObserver : NSObject, NSURLSessionDataDelegate {
+final class NSURLSessionDataEventsObserver : NSObject, NSURLSessionDataDelegate {
 	internal let sessionEventsSubject = PublishSubject<SessionDataEvents>()
 }
 

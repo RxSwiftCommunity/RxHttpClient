@@ -226,4 +226,37 @@ class MemoryCacheProviderTests: XCTestCase {
 		provider.clearData()
 		XCTAssertEqual(0, provider.currentDataLength, "Should have clean cache data")
 	}
+	
+	func testReturnCurrentData() {
+		let provider = MemoryCacheProvider(uid: NSUUID().UUIDString)
+		let testData = "Some test data string".dataUsingEncoding(NSUTF8StringEncoding)!
+		provider.appendData(testData)
+		XCTAssertTrue(testData.isEqualToData(provider.getCurrentData()))
+	}
+	
+	func testReturnCurrentDataOffset() {
+		let provider = MemoryCacheProvider(uid: NSUUID().UUIDString)
+		let testData = "Some test data string".dataUsingEncoding(NSUTF8StringEncoding)!
+		provider.appendData(testData)
+		//XCTAssertTrue(testData.isEqualToData(provider.getCurrentData()))
+		let chunkLen = provider.currentDataLength - 2
+		let chunk = provider.getCurrentData(1, length: chunkLen)
+		XCTAssertTrue(chunk.isEqualToData(testData.subdataWithRange(NSRange(location: 1, length: chunkLen))))
+	}
+	func testSaveDataToSpecificDir() {
+		let dir = NSURL(fileURLWithPath: NSTemporaryDirectory()).URLByAppendingPathComponent(NSUUID().UUIDString)
+		try! NSFileManager.defaultManager().createDirectoryAtURL(dir, withIntermediateDirectories: false, attributes: nil)
+		let provider = MemoryCacheProvider(uid: "test")
+		let testData = "Some test data string".dataUsingEncoding(NSUTF8StringEncoding)!
+		provider.appendData(testData)
+		let savedDataUrl = provider.saveData(dir)
+		XCTAssertNotNil(savedDataUrl, "Should save data end return url")
+		XCTAssertEqual(savedDataUrl?.pathExtension, "dat", "Should set default file extension (dat)")
+		if let savedDataUrl = savedDataUrl, data = NSData(contentsOfURL: savedDataUrl) {
+			XCTAssertTrue(testData.isEqualToData(data), "Saved on disk data should be same as cached data")
+			try! NSFileManager.defaultManager().removeItemAtURL(dir)
+		} else {
+			XCTFail("Cached data should be equal to sended data")
+		}
+	}
 }

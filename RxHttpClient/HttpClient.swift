@@ -15,7 +15,7 @@ public protocol HttpClientType {
 	func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType
 }
 
-public class HttpClient {
+public final class HttpClient {
 	internal let httpUtilities: HttpUtilitiesType
 	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 	internal let concurrentScheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
