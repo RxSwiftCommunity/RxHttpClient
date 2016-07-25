@@ -243,6 +243,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let chunk = provider.getCurrentData(1, length: chunkLen)
 		XCTAssertTrue(chunk.isEqualToData(testData.subdataWithRange(NSRange(location: 1, length: chunkLen))))
 	}
+	
 	func testSaveDataToSpecificDir() {
 		let dir = NSURL(fileURLWithPath: NSTemporaryDirectory()).URLByAppendingPathComponent(NSUUID().UUIDString)
 		try! NSFileManager.defaultManager().createDirectoryAtURL(dir, withIntermediateDirectories: false, attributes: nil)

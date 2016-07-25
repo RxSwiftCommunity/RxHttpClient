@@ -13,6 +13,7 @@ public protocol HttpClientType {
 	func loadData(request: NSURLRequestType) -> Observable<HttpRequestResult>
 	func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents>
 	func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType
+	func createStreamDataTask(taskUid: String, request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType	
 }
 
 public final class HttpClient {
@@ -41,6 +42,10 @@ public final class HttpClient {
 		shouldInvalidateSession = false
 		self.sessionConfiguration = urlSession.configuration
 		self.urlSession = urlSession
+	}
+	
+	internal convenience init(httpUtilities: HttpUtilitiesType) {
+		self.init(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: httpUtilities)
 	}
 	
 	public convenience init(urlSession: NSURLSessionType) {
@@ -114,8 +119,12 @@ extension HttpClient : HttpClientType {
 	}
 	
 	public func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+		return createStreamDataTask(NSUUID().UUIDString, request: request, cacheProvider: cacheProvider)
+	}
+
+	public func createStreamDataTask(taskUid: String, request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
-		return httpUtilities.createStreamDataTask(NSUUID().UUIDString,
+		return httpUtilities.createStreamDataTask(taskUid,
 		                                          dataTask: dataTask,
 		                                          httpClient: self,
 		                                          sessionEvents: sessionObserver.sessionEvents,
