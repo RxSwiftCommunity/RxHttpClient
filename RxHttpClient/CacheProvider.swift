@@ -2,7 +2,7 @@ import Foundation
 
 public protocol CacheProviderType {
 	var uid: String { get }
-	var currentDataLength: UInt64 { get }
+	var currentDataLength: Int { get }
 	var expectedDataLength: Int64 { get set }
 	var contentMimeType: String? { get }
 	func appendData(data: NSData)
@@ -13,15 +13,16 @@ public protocol CacheProviderType {
 	func saveData(destinationDirectory: NSURL, fileExtension: String?) -> NSURL?
 	func saveData(destinationDirectory: NSURL) -> NSURL?
 	func setContentMimeTypeIfEmpty(mimeType: String)
+	func clearData()
 }
 
-public class MemoryCacheProvider {
+public final class MemoryCacheProvider {
 	public var expectedDataLength: Int64 = 0
 	internal let cacheData = NSMutableData()
 	public var contentMimeType: String?
 	public let uid: String
 	
-	internal let queue = dispatch_queue_create("com.cloudmusicplayer.memorycacheprovider.serialqueue.\(NSUUID().UUIDString)", DISPATCH_QUEUE_SERIAL)
+	internal let queue = dispatch_queue_create("MemoryCacheProvider.SerialQueue", DISPATCH_QUEUE_SERIAL)
 	
 	public init(uid: String, contentMimeType: String? = nil) {
 		self.uid = uid
@@ -36,6 +37,13 @@ public class MemoryCacheProvider {
 }
 
 extension MemoryCacheProvider : CacheProviderType {
+	public func clearData() {
+		invokeSerial {
+			guard self.cacheData.length > 0 else { return }
+			self.cacheData.setData(NSData())
+		}
+	}
+	
 	/// Set content MIME type. 
 	///Only if now contentMimeType property is nil
 	public func setContentMimeTypeIfEmpty(mimeType: String) {
@@ -46,10 +54,10 @@ extension MemoryCacheProvider : CacheProviderType {
 		}
 	}
 	
-	public var currentDataLength: UInt64 {
-		var len: UInt64!
+	public var currentDataLength: Int {
+		var len: Int!
 		invokeSerial {
-			len = UInt64(self.cacheData.length)
+			len = self.cacheData.length
 		}
 		return len
 	}

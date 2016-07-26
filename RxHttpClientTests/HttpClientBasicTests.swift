@@ -143,6 +143,47 @@ class HttpClientBasicTests: XCTestCase {
 		waitForExpectationsWithTimeout(2, handler: nil)
 	}
 	
+	func testLoadCorrectDataAndRetryAfterError() {
+		let totalSendedData = NSMutableData()
+		var stubIncrement = 0
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			stubIncrement += 1
+			let sendData = "testData-\(stubIncrement)".dataUsingEncoding(NSUTF8StringEncoding)!
+			totalSendedData.appendData(sendData)
+			return OHHTTPStubsResponse(data: sendData, statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let totalReceivedData = NSMutableData()
+		var errorCounter = 0
+		let expectation = expectationWithDescription("Should return correct data")
+		client.loadData(request).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)).doOnNext { e in
+				if case HttpRequestResult.successData(let data) = e {
+					totalReceivedData.appendData(data)
+				}
+		}
+		.flatMapLatest { _ -> Observable<Void> in
+			errorCounter += 1
+			guard errorCounter < 5 else { return Observable<Void>.empty() }
+			return Observable<Void>.error(NSError(domain: "TestDomain", code: 1, userInfo: nil))
+		}
+		.retryWhen { errorObservable -> Observable<Void> in
+				return errorObservable.flatMapLatest { error in
+					return Observable.just()
+				}
+			}.doOnCompleted { expectation.fulfill() }.subscribe().addDisposableTo(bag)
+		
+		
+		waitForExpectationsWithTimeout(2, handler: nil)
+		
+		XCTAssertEqual(5, stubIncrement)
+		XCTAssertEqual(5, errorCounter)
+		XCTAssertEqual(totalSendedData, totalReceivedData)
+	}
+	
 	func testReturnErrorWhileLoadingData() {
 		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
 			return OHHTTPStubsResponse(error: NSError(domain: "TestDomain", code: 1, userInfo: nil))

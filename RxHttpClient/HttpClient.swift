@@ -11,13 +11,15 @@ public protocol HttpClientType {
 	func createUrlRequest(url: NSURL) -> NSMutableURLRequestType
 	func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestType
 	func loadData(request: NSURLRequestType) -> Observable<HttpRequestResult>
-	func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskResult>
+	func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents>
 	func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType
+	func createStreamDataTask(taskUid: String, request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType	
 }
 
-public class HttpClient {
+public final class HttpClient {
 	internal let httpUtilities: HttpUtilitiesType
-	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	internal let concurrentScheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 	internal let sessionConfiguration: NSURLSessionConfiguration
 	internal let shouldInvalidateSession: Bool
 	
@@ -40,6 +42,10 @@ public class HttpClient {
 		shouldInvalidateSession = false
 		self.sessionConfiguration = urlSession.configuration
 		self.urlSession = urlSession
+	}
+	
+	internal convenience init(httpUtilities: HttpUtilitiesType) {
+		self.init(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: httpUtilities)
 	}
 	
 	public convenience init(urlSession: NSURLSessionType) {
@@ -66,33 +72,39 @@ extension HttpClient : HttpClientType {
 	}
 	
 	public func loadData(request: NSURLRequestType)	-> Observable<HttpRequestResult> {
-		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).flatMapLatest { result -> Observable<HttpRequestResult> in		
-			switch result {
-			case Result.error(let error): return Observable.just(.error(error))
-			case Result.success(let box):
-				guard case StreamTaskEvents.Success(let cache) = box.value else { return Observable.empty() }
-				
-				guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
+		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).observeOn(concurrentScheduler)
+			.flatMapLatest { result -> Observable<HttpRequestResult> in
 
-				return Observable.just(.successData(cacheProvider.getCurrentData()))
+			if case StreamTaskEvents.error(let error) = result {
+				return Observable.just(.error(error))
 			}
-		}.observeOn(scheduler).shareReplay(0)
+
+			guard case StreamTaskEvents.success(let cache) = result else { return Observable.empty() }
+				
+			guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
+
+			return Observable.just(.successData(cacheProvider.getCurrentData()))
+			
+		}
 	}
 	
-	public func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskResult> {
+	public func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
 			
+			// clears cache provider before start
+			if let cacheProvider = cacheProvider { cacheProvider.clearData() }
+			
 			let task = object.createStreamDataTask(request, cacheProvider: cacheProvider)
 			
-			let disposable = task.taskProgress.catchError { error in
-				observer.onNext(Result.error(error))
+			let disposable = task.taskProgress.observeOn(object.serialScheduler).catchError { error in
+				observer.onNext(StreamTaskEvents.error(error))
 				observer.onCompleted()
 				return Observable.empty()
 			}.bindNext { result in
 				observer.onNext(result)
-				
-				if case Result.success(let box) = result, case .Success = box.value {
+
+				if case .success = result {
 					observer.onCompleted()
 				}
 			}
@@ -103,12 +115,16 @@ extension HttpClient : HttpClientType {
 				task.cancel()
 				disposable.dispose()
 			}
-		}.observeOn(scheduler).shareReplay(0)
+		}
 	}
 	
 	public func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+		return createStreamDataTask(NSUUID().UUIDString, request: request, cacheProvider: cacheProvider)
+	}
+
+	public func createStreamDataTask(taskUid: String, request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
-		return httpUtilities.createStreamDataTask(NSUUID().UUIDString,
+		return httpUtilities.createStreamDataTask(taskUid,
 		                                          dataTask: dataTask,
 		                                          httpClient: self,
 		                                          sessionEvents: sessionObserver.sessionEvents,
