@@ -5,121 +5,36 @@ import OHHTTPStubs
 
 class HttpClientBasicTests: XCTestCase {
 	var bag: DisposeBag!
-	var request: FakeRequest!
 	var session: FakeSession!
-	var utilities: FakeHttpUtilities!
-	var httpClient: HttpClientType!
-	var streamObserver: NSURLSessionDataEventsObserver!
+	var httpClient: HttpClient!
 	
 	override func setUp() {
 		super.setUp()
-		// Put setup code here. This method is called before the invocation of each test method in the class.
 		
 		bag = DisposeBag()
-		streamObserver = NSURLSessionDataEventsObserver()
-		request = FakeRequest()
 		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
-		utilities = FakeHttpUtilities()
-		utilities.fakeSession = session
-		utilities.streamObserver = streamObserver
-		httpClient = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
+		httpClient = HttpClient(session: session)
 	}
 	
 	override func tearDown() {
-		// Put teardown code here. This method is called after the invocation of each test method in the class.
 		super.tearDown()
 		bag = nil
-		request = nil
 		session = nil
-		utilities = nil
-	}
-	
-	func testReturnData() {
-		session.task?.taskProgress.bindNext { progress in
-			if case .resume(let tsk) = progress {
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) {
-					//tsk.completion?("Test data".dataUsingEncoding(NSUTF8StringEncoding), nil, nil)
-					self.session.sendData(tsk, data: "Test data".dataUsingEncoding(NSUTF8StringEncoding), streamObserver: self.streamObserver)
-				}
-			}
-			}.addDisposableTo(bag)
-		
-		let expectation = expectationWithDescription("Should return string as NSData")
-		
-		httpClient.loadData(request).bindNext { result in
-			if case .successData(let data) = result where String(data: data, encoding: NSUTF8StringEncoding) == "Test data" {
-				expectation.fulfill()
-			}
-			}.addDisposableTo(bag)
-		
-		waitForExpectationsWithTimeout(1, handler: nil)
-	}
-	
-	func testReturnNilData() {
-		session.task?.taskProgress.bindNext { progress in
-			if case .resume(let tsk) = progress {
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) {
-					//tsk.completion?(nil, nil, nil)
-					self.session.sendData(tsk, data: nil, streamObserver: self.streamObserver)
-				}
-			}
-			}.addDisposableTo(bag)
-		
-		let expectation = expectationWithDescription("Should return nil (as simple Success)")
-		
-		httpClient.loadData(request).bindNext { result in
-			if case .success = result {
-				expectation.fulfill()
-			}
-			}.addDisposableTo(bag)
-		
-		waitForExpectationsWithTimeout(1, handler: nil)
-	}
-	
-	func testReturnNSError() {
-		session.task?.taskProgress.bindNext { progress in
-			if case .resume(let tsk) = progress {
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) {
-					//tsk.completion?(nil, nil, NSError(domain: "HttpRequestTests", code: 1, userInfo: nil))
-					self.session.sendError(tsk, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil), streamObserver: self.streamObserver)
-				}
-			}
-			}.addDisposableTo(bag)
-		
-		let expectation = expectationWithDescription("Should return NSError")
-		
-		httpClient.loadData(request).bindNext { result in
-			guard case HttpRequestResult.error(let error) = result else { return }
-			if (error as NSError).code == 1 {
-				expectation.fulfill()
-			}
-			}.addDisposableTo(bag)
-		
-		waitForExpectationsWithTimeout(1, handler: nil)
 	}
 	
 	func testTerminateRequest() {
-		let expectation = expectationWithDescription("Should cancel task")
+		let fakeSession = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		let client = HttpClient(session: fakeSession)
+		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let disposable = client.loadData(request).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility))
+			.doOnNext { e in
+			XCTFail("Should not receive responce")
+		}.subscribe()
 		
-		session.task?.taskProgress.bindNext { progress in
-			if case .resume(let tsk) = progress {
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) {
-					for _ in 0...10 {
-						sleep(1)
-					}
-					//tsk.completion?(nil, nil, nil)
-					self.session.sendData(tsk, data: nil, streamObserver: self.streamObserver)
-				}
-			} else if case .cancel(_) = progress {
-				expectation.fulfill()
-			}
-			}.addDisposableTo(bag)
-		
-		let loadRequest = httpClient.loadData(request).bindNext { _ in
-		}
-		loadRequest.dispose()
-		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		XCTAssertEqual(false, fakeSession.task?.isCancelled)
+		NSThread.sleepForTimeInterval(0.05)
+		disposable.dispose()
+		XCTAssertEqual(true, fakeSession.task!.isCancelled)
 	}
 	
 	func testLoadCorrectData() {
@@ -136,6 +51,25 @@ class HttpClientBasicTests: XCTestCase {
 		client.loadData(request).bindNext { e in
 			if case HttpRequestResult.successData(let data) = e {
 				XCTAssertTrue(data.isEqualToData(sendData), "Received data should be equal to sended")
+				expectation.fulfill()
+			}
+			}.addDisposableTo(bag)
+		
+		waitForExpectationsWithTimeout(2, handler: nil)
+	}
+	
+	func testLoadCorrectEmptyData() {
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: NSData(), statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should return correct data")
+		client.loadData(request).bindNext { e in
+			if case HttpRequestResult.success = e {
 				expectation.fulfill()
 			}
 			}.addDisposableTo(bag)
@@ -263,19 +197,21 @@ class HttpClientBasicTests: XCTestCase {
 	}
 	
 	func testDeinitOfHttpClientInvalidatesSession() {
-		let utilities = FakeHttpUtilities()
-		utilities.fakeSession = FakeSession()
-		var httpClient: HttpClient? = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
+		let fakeSession = FakeSession()
+		var httpClient: HttpClient? = HttpClient(session: fakeSession)
+		// force httpClinet to invalidete session
+		httpClient?.shouldInvalidateSession = true
 		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
 		httpClient = nil
-		XCTAssertEqual(true, (utilities.fakeSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertEqual(true, fakeSession.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
 	func testDeinitOfHttpClientNotInvalidatesPassedSession() {
-		var httpClient: HttpClient? = HttpClient(urlSession: FakeSession())
+		let fakeSession = FakeSession()
+		var httpClient: HttpClient? = HttpClient(session: fakeSession)
 		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
 		httpClient = nil
-		XCTAssertEqual(false, (utilities.fakeSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertEqual(false, fakeSession.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
 	
 	func testCreateHttpClientWithCorrectConfiguration() {
@@ -283,5 +219,27 @@ class HttpClientBasicTests: XCTestCase {
 		config.HTTPCookieAcceptPolicy = .Always
 		let client = HttpClient(sessionConfiguration: config)
 		XCTAssertEqual(config, client.urlSession.configuration)
+	}
+	
+	func testCreateHttpClientWithCorrectUrlSession() {
+		let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
+		let httpClient = HttpClient(urlSession: session)
+		XCTAssertEqual(session, httpClient.urlSession as? NSURLSession)
+	}
+	
+	func testCreateRequest() {
+		let httpClient = HttpClient()
+		let url = NSURL(string: "https://test.com")!
+		let request = httpClient.createUrlRequest(url)
+		XCTAssertEqual(url, request.URL)
+	}
+	
+	func testCreateRequestWithHeaders() {
+		let httpClient = HttpClient()
+		let url = NSURL(string: "https://test.com")!
+		let headers = ["header1": "value1", "header2": "value2"]
+		let request = httpClient.createUrlRequest(url, headers: headers)
+		XCTAssertEqual(url, request.URL)
+		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
 	}
 }

@@ -4,11 +4,9 @@ import RxSwift
 
 class MemoryCacheProviderTests: XCTestCase {
 	var bag: DisposeBag!
-	var request: FakeRequest!
+	var request: NSURLRequest = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 	var session: FakeSession!
-	var utilities: FakeHttpUtilities!
 	var httpClient: HttpClient!
-	var streamObserver: NSURLSessionDataEventsObserver!
 	let waitTimeout: Double = 2
 	
 	override func setUp() {
@@ -16,31 +14,21 @@ class MemoryCacheProviderTests: XCTestCase {
 		// Put setup code here. This method is called before the invocation of each test method in the class.
 		
 		bag = DisposeBag()
-		streamObserver = NSURLSessionDataEventsObserver()
-		request = FakeRequest(url: NSURL(string: "https://test.com"))
 		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
-		utilities = FakeHttpUtilities()
-		utilities.fakeSession = session
-		utilities.streamObserver = streamObserver
-		httpClient = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
+		httpClient = HttpClient(session: session)
 	}
 	
 	override func tearDown() {
 		// Put teardown code here. This method is called after the invocation of each test method in the class.
 		super.tearDown()
 		bag = nil
-		request = nil
 		session = nil
-		utilities.streamObserver = nil
-		utilities = nil
-		streamObserver = nil
 	}
 	
 	func testCacheCorrectData() {
 		let testData = ["First", "Second", "Third", "Fourth"]
 		let dataSended = NSMutableData()
-		let fakeResponse = FakeResponse(contentLenght: Int64(26))
-		fakeResponse.MIMEType = "audio/mpeg"
+		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		
 		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate tession")
 		
@@ -49,17 +37,15 @@ class MemoryCacheProviderTests: XCTestCase {
 				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
 				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
 					
-					self.streamObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response:
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response:
 						fakeResponse, completion: { _ in }))
 					
 					for i in 0...testData.count - 1 {
 						let sendData = testData[i].dataUsingEncoding(NSUTF8StringEncoding)!
 						dataSended.appendData(sendData)
-						self.streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
-						// simulate delay
-						//NSThread.sleepForTimeInterval(0.01)
+						self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
 					}
-					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			} else if case .cancel = progress {
 				taskCancelExpectation.fulfill()
@@ -92,25 +78,24 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testCacheCorrectDataIfDataTaskHasMoreThanOneObserver() {
 		let testData = ["First", "Second", "Third", "Fourth"]
 		let dataSended = NSMutableData()
-		let fakeResponse = FakeResponse(contentLenght: Int64(26))
-		fakeResponse.MIMEType = "audio/mpeg"
+		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
 			if case .resume(let tsk) = progress {
 				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
 				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
 					
-					self.streamObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response:
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response:
 						fakeResponse, completion: { _ in }))
 					
 					for i in 0...testData.count - 1 {
 						let sendData = testData[i].dataUsingEncoding(NSUTF8StringEncoding)!
 						dataSended.appendData(sendData)
-						self.streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
+						self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
 						// simulate delay
 						NSThread.sleepForTimeInterval(0.001)
 					}
-					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			}
 		}.addDisposableTo(bag)
@@ -152,8 +137,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	}
 	
 	func testNotOverrideMimeType() {
-		let fakeResponse = FakeResponse(contentLenght: Int64(26))
-		fakeResponse.MIMEType = "audio/mpeg"
+		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		
 		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate session")
 		
@@ -162,14 +146,12 @@ class MemoryCacheProviderTests: XCTestCase {
 				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
 				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
 					
-					self.streamObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response:
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response:
 						fakeResponse, completion: { _ in }))
 					
-					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			} else if case .cancel = progress {
-				self.utilities.streamObserver = nil
-				self.streamObserver = nil
 				taskCancelExpectation.fulfill()
 			}
 			}.addDisposableTo(bag)

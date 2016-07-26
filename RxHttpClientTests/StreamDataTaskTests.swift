@@ -4,36 +4,24 @@ import RxSwift
 
 class StreamDataTaskTests: XCTestCase {
 	var bag: DisposeBag!
-	var request: FakeRequest!
+	var request: NSURLRequest = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 	var session: FakeSession!
-	var utilities: FakeHttpUtilities!
 	var httpClient: HttpClient!
-	var streamObserver: NSURLSessionDataEventsObserver!
 	let waitTimeout: Double = 2
 	
 	override func setUp() {
 		super.setUp()
-		// Put setup code here. This method is called before the invocation of each test method in the class.
 		
 		bag = DisposeBag()
-		streamObserver = NSURLSessionDataEventsObserver()
-		request = FakeRequest(url: NSURL(string: "https://test.com"))
 		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
-		utilities = FakeHttpUtilities()
-		utilities.fakeSession = session
-		utilities.streamObserver = streamObserver
-		httpClient = HttpClient(sessionConfiguration: NSURLSessionConfiguration.defaultSessionConfiguration(), httpUtilities: utilities)
+		httpClient = HttpClient(session: session)
 	}
 	
 	override func tearDown() {
 		// Put teardown code here. This method is called after the invocation of each test method in the class.
 		super.tearDown()
 		bag = nil
-		request = nil
 		session = nil
-		utilities.streamObserver = nil
-		utilities = nil
-		streamObserver = nil
 	}
 	
 	func testReceiveCorrectData() {
@@ -50,16 +38,13 @@ class StreamDataTaskTests: XCTestCase {
 						let sendData = testData[i].dataUsingEncoding(NSUTF8StringEncoding)!
 						//dataSended += UInt64(sendData.length)
 						dataSended.appendData(sendData)
-						self.streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
+						self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
 						// simulate delay
 						NSThread.sleepForTimeInterval(0.01)
 					}
-					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
 				}
 			} else if case .cancel = progress {
-				// set reference to nil (simutale real session dispose)
-				self.utilities.streamObserver = nil
-				self.streamObserver = nil
 				expectation.fulfill()
 			}
 		}.addDisposableTo(bag)
@@ -88,7 +73,7 @@ class StreamDataTaskTests: XCTestCase {
 			if case .resume(let tsk) = progress {
 				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
 				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
-					self.streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 				}
 			}
 		}.addDisposableTo(bag)
@@ -106,7 +91,7 @@ class StreamDataTaskTests: XCTestCase {
 	
 	func testDidReceiveResponse() {
 		var disposition: NSURLSessionResponseDisposition?
-		let fakeResponse = FakeResponse(contentLenght: 64587)
+		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: nil, expectedContentLength: 64587, textEncodingName: nil) //FakeResponse(contentLenght: 64587)
 		let dispositionExpectation = expectationWithDescription("Should set correct completion disposition in completionHandler")
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
@@ -116,8 +101,9 @@ class StreamDataTaskTests: XCTestCase {
 					disposition = disp
 					dispositionExpectation.fulfill()
 				}
+				
 				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
-					self.streamObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response: fakeResponse, completion: completion))
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response: fakeResponse, completion: completion))
 				}
 			}
 			}.addDisposableTo(bag)
@@ -143,7 +129,7 @@ class StreamDataTaskTests: XCTestCase {
 		                                sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                                cacheProvider: nil)
 
-		XCTAssertTrue(streamTask.dataTask.getOriginalUrlRequest() as? FakeRequest === request)
+		XCTAssertTrue(streamTask.dataTask.originalRequest === request)
 		XCTAssertNil(streamTask.cacheProvider, "Cache provider should not be specified")
 	}
 }

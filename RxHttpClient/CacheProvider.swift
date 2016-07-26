@@ -22,7 +22,7 @@ public final class MemoryCacheProvider {
 	public var contentMimeType: String?
 	public let uid: String
 	
-	internal let queue = dispatch_queue_create("MemoryCacheProvider.SerialQueue", DISPATCH_QUEUE_SERIAL)
+	internal let queue = dispatch_queue_create("com.RxHttpClient.MemoryCacheProvider.SerialQueue", DISPATCH_QUEUE_SERIAL)
 	
 	public init(uid: String, contentMimeType: String? = nil) {
 		self.uid = uid
