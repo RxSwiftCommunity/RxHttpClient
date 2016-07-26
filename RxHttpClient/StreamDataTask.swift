@@ -3,18 +3,23 @@ import RxSwift
 import RxCocoa
 
 public protocol StreamTaskType {
+	/// Identifier of a task
 	var uid: String { get }
+	/// Resumes task
 	func resume()
 	//func suspend()
+	/// Cancels task
 	func cancel()
+	/// Is task resumed
 	var resumed: Bool { get }
 }
 
 public enum StreamTaskEvents {
-	/// Send this event if CacheProvider specified
+	/// This event will be sended after receiving (and cacnhing) new chunk of data if CacheProvider was specified
 	case cacheData(CacheProviderType)
-	/// Send this event only if CacheProvider is nil
+	/// This event will be sended after receiving new chunk of data if CacheProvider was not specified
 	case receiveData(NSData)
+	// This event will be sended after receiving response
 	case receiveResponse(NSHTTPURLResponseType)
 	case error(ErrorType)
 	case success(cache: CacheProviderType?)
