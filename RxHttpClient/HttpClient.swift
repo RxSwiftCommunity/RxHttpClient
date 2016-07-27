@@ -13,38 +13,18 @@ public enum HttpRequestResult {
 
 public protocol HttpClientType {
 	/**
-	Creates NSMutableURLRequest with provided NSURL
-	- parameter url: Url for request
-	- returns: Created mutable url request
-	*/
-	func createUrlRequest(url: NSURL) -> NSMutableURLRequest
-	/**
-	Creates NSMutableURLRequest with provided NSURL and HTTP Headers
-	- parameter url: Url for request
-	- parameter headers: Additional HTTP Headers
-	- returns: Created mutable url request
-	*/
-	func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequest
-	/**
 	Creates an observable for request
 	- parameter request: URL request
-	- returns: Created observable for request
+	- returns: Created observable that emits HTTP request result events
 	*/
 	func loadData(request: NSURLRequest) -> Observable<HttpRequestResult>
 	/**
 	Creates streaming observable for request
 	- parameter request: URL request
 	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created observable for request
+	- returns: Created observable that emits stream events
 	*/
 	func loadStreamData(request: NSURLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents>
-	/**
-	Creates StreamDataTask
-	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created data task
-	*/
-	func createStreamDataTask(request: NSURLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType
 	/**
 	Creates StreamDataTask
 	- parameter taskUid: String, that may be used as unique identifier of the task
@@ -58,15 +38,8 @@ public protocol HttpClientType {
 public final class HttpClient {
 	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 	internal let concurrentScheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	internal let sessionConfiguration: NSURLSessionConfiguration
-	internal var shouldInvalidateSession: Bool
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
-	
-	internal lazy var urlSession: NSURLSessionType = {
-		return NSURLSession(configuration: self.sessionConfiguration,
-		                    delegate: self.sessionObserver,
-		                    delegateQueue: nil)
-	}()
+	internal let urlSession: NSURLSessionType
 	
 	/**
 	Creates an instance of HttpClient
@@ -74,56 +47,26 @@ public final class HttpClient {
 	(this session will be canceled while deiniting of HttpClient)
 	*/
 	public init(sessionConfiguration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()) {
-		self.sessionConfiguration = sessionConfiguration
-		shouldInvalidateSession = true
+		urlSession = NSURLSession(configuration: sessionConfiguration,
+		             delegate: self.sessionObserver,
+		             delegateQueue: nil)
 	}
 	
-	/**
-	Creates an instance of HttpClient
-	- parameter urlSession: NSURLSession that will be used for requests
-	*/
-	public convenience init(urlSession: NSURLSession) {
-		self.init(session: urlSession as NSURLSessionType)
-	}
-	
+	/// Initializer for unit tests only
 	internal init(session urlSession: NSURLSessionType) {
-		shouldInvalidateSession = false
-		self.sessionConfiguration = urlSession.configuration
 		self.urlSession = urlSession
 	}
 	
 	deinit {
-		guard shouldInvalidateSession else { return }
 		urlSession.invalidateAndCancel()
 	}
 }
 
 extension HttpClient : HttpClientType {
 	/**
-	Creates NSMutableURLRequest with provided NSURL and HTTP Headers
-	- parameter url: Url for request
-	- parameter headers: Additional HTTP Headers
-	- returns: Created mutable url request
-	*/
-	public func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequest {
-		let request = NSMutableURLRequest(URL: url)
-		headers?.forEach { request.addValue($1, forHTTPHeaderField: $0) }
-		return request
-	}
-	
-	/**
-	Creates NSMutableURLRequest with provided NSURL
-	- parameter url: Url for request
-	- returns: Created mutable url request
-	*/
-	public func createUrlRequest(url: NSURL) -> NSMutableURLRequest {
-		return createUrlRequest(url, headers: nil)
-	}
-	
-	/**
 	Creates an observable for request
 	- parameter request: URL request
-	- returns: Created observable for request
+	- returns: Created observable that emits HTTP request result events
 	*/
 	public func loadData(request: NSURLRequest)	-> Observable<HttpRequestResult> {
 		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).observeOn(concurrentScheduler)
@@ -138,7 +81,6 @@ extension HttpClient : HttpClientType {
 			guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
 
 			return Observable.just(.successData(cacheProvider.getCurrentData()))
-			
 		}
 	}
 	
@@ -146,7 +88,7 @@ extension HttpClient : HttpClientType {
 	Creates streaming observable for request
 	- parameter request: URL request
 	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created observable for request
+	- returns: Created observable that emits stream events
 	*/
 	public func loadStreamData(request: NSURLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
@@ -177,16 +119,6 @@ extension HttpClient : HttpClientType {
 				observer.onCompleted()
 			}
 		}
-	}
-	
-	/**
-	Creates StreamDataTask
-	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created data task
-	*/
-	public func createStreamDataTask(request: NSURLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
-		return createStreamDataTask(NSUUID().UUIDString, request: request, cacheProvider: cacheProvider)
 	}
 
 	/**

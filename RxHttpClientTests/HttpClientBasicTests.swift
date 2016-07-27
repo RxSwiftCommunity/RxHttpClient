@@ -25,7 +25,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testTerminateRequest() {
 		let fakeSession = FakeSession(fakeTask: FakeDataTask(completion: nil))
 		let client = HttpClient(session: fakeSession)
-		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 		let disposable = client.loadData(request).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility))
 			.doOnNext { e in
 			XCTFail("Should not receive responce")
@@ -44,11 +44,11 @@ class HttpClientBasicTests: XCTestCase {
 		}
 		
 		let client = HttpClient()
-		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let url = NSURL(baseUrl: "https://test.com/json", parameters: nil)!
 		let bag = DisposeBag()
 		
 		let expectation = expectationWithDescription("Should return correct data")
-		client.loadData(request).bindNext { e in
+		client.loadData(url).bindNext { e in
 			if case HttpRequestResult.successData(let data) = e {
 				XCTAssertTrue(data.isEqualToData(sendData), "Received data should be equal to sended")
 				expectation.fulfill()
@@ -64,7 +64,7 @@ class HttpClientBasicTests: XCTestCase {
 		}
 		
 		let client = HttpClient()
-		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 		let bag = DisposeBag()
 		
 		let expectation = expectationWithDescription("Should return correct data")
@@ -88,7 +88,7 @@ class HttpClientBasicTests: XCTestCase {
 		}
 		
 		let client = HttpClient()
-		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 		let bag = DisposeBag()
 		
 		let totalReceivedData = NSMutableData()
@@ -124,7 +124,7 @@ class HttpClientBasicTests: XCTestCase {
 		}
 		
 		let client = HttpClient()
-		let request = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 		let bag = DisposeBag()
 		
 		let expectation = expectationWithDescription("Should return error")
@@ -159,9 +159,9 @@ class HttpClientBasicTests: XCTestCase {
 		let client = HttpClient()
 		let bag = DisposeBag()
 		
-		let request1 = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json1", parameters: nil)!)
-		let request2 = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json2", parameters: nil)!)
-		let request3 = NSMutableURLRequest(URL: NSURL(baseUrl: "https://test.com/json3", parameters: nil)!)
+		let request1 = (URL: NSURL(baseUrl: "https://test.com/json1", parameters: nil)!)
+		let request2 = (URL: NSURL(baseUrl: "https://test.com/json2", parameters: nil)!)
+		let request3 = (URL: NSURL(baseUrl: "https://test.com/json3", parameters: nil)!)
 		
 		let expectation1 = expectationWithDescription("Should return correct data1")
 		let expectation2 = expectationWithDescription("Should return correct data2")
@@ -199,21 +199,11 @@ class HttpClientBasicTests: XCTestCase {
 	func testDeinitOfHttpClientInvalidatesSession() {
 		let fakeSession = FakeSession()
 		var httpClient: HttpClient? = HttpClient(session: fakeSession)
-		// force httpClinet to invalidete session
-		httpClient?.shouldInvalidateSession = true
 		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
 		httpClient = nil
 		XCTAssertEqual(true, fakeSession.isInvalidatedAndCanceled, "Session should be invalidated")
 	}
-	
-	func testDeinitOfHttpClientNotInvalidatesPassedSession() {
-		let fakeSession = FakeSession()
-		var httpClient: HttpClient? = HttpClient(session: fakeSession)
-		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
-		httpClient = nil
-		XCTAssertEqual(false, fakeSession.isInvalidatedAndCanceled, "Session should be invalidated")
-	}
-	
+		
 	func testCreateHttpClientWithCorrectConfiguration() {
 		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
 		config.HTTPCookieAcceptPolicy = .Always
@@ -223,7 +213,7 @@ class HttpClientBasicTests: XCTestCase {
 	
 	func testCreateHttpClientWithCorrectUrlSession() {
 		let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
-		let httpClient = HttpClient(urlSession: session)
+		let httpClient = HttpClient(session: session)
 		XCTAssertEqual(session, httpClient.urlSession as? NSURLSession)
 	}
 	

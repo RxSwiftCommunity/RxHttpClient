@@ -51,7 +51,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		var receiveCounter = 0
 		let dataReceived = NSMutableData()
-		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
+		httpClient.loadStreamData(NSURL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
 			if case .receiveData(let dataChunk) = result {
 				XCTAssertEqual(String(data: dataChunk, encoding: NSUTF8StringEncoding), testData[receiveCounter], "Check correct chunk of data received")
 				dataReceived.appendData(dataChunk)
