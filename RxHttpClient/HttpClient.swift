@@ -13,12 +13,6 @@ public enum HttpRequestResult {
 
 public protocol HttpClientType {
 	/**
-	Creates an observable for request
-	- parameter request: URL request
-	- returns: Created observable that emits HTTP request result events
-	*/
-	func loadData(request: NSURLRequest) -> Observable<HttpRequestResult>
-	/**
 	Creates streaming observable for request
 	- parameter request: URL request
 	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
@@ -36,8 +30,10 @@ public protocol HttpClientType {
 }
 
 public final class HttpClient {
-	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	internal let concurrentScheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	/// Scheduler for observing data task events
+	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Serial")
+	/// Default concurrent scheduler for observing observable sequence created by loadStreamData method
+	internal let concurrentScheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility)
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
 	internal let urlSession: NSURLSessionType
 	
@@ -62,28 +58,7 @@ public final class HttpClient {
 	}
 }
 
-extension HttpClient : HttpClientType {
-	/**
-	Creates an observable for request
-	- parameter request: URL request
-	- returns: Created observable that emits HTTP request result events
-	*/
-	public func loadData(request: NSURLRequest)	-> Observable<HttpRequestResult> {
-		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).observeOn(concurrentScheduler)
-			.flatMapLatest { result -> Observable<HttpRequestResult> in
-
-			if case StreamTaskEvents.error(let error) = result {
-				return Observable.just(.error(error))
-			}
-
-			guard case StreamTaskEvents.success(let cache) = result else { return Observable.empty() }
-				
-			guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
-
-			return Observable.just(.successData(cacheProvider.getCurrentData()))
-		}
-	}
-	
+extension HttpClient : HttpClientType {	
 	/**
 	Creates streaming observable for request
 	- parameter request: URL request
@@ -99,26 +74,15 @@ extension HttpClient : HttpClientType {
 			
 			let task = object.createStreamDataTask(request, cacheProvider: cacheProvider)
 			
-			let disposable = task.taskProgress.observeOn(object.serialScheduler).catchError { error in
-				observer.onNext(StreamTaskEvents.error(error))
-				observer.onCompleted()
-				return Observable.empty()
-			}.bindNext { result in
-				observer.onNext(result)
-
-				if case .success = result {
-					observer.onCompleted()
-				}
-			}
+			let disposable = task.taskProgress.observeOn(object.serialScheduler).subscribe(observer)
 			
 			task.resume()
 			
 			return AnonymousDisposable {
 				task.cancel()
 				disposable.dispose()
-				observer.onCompleted()
 			}
-		}
+		}.observeOn(concurrentScheduler)
 	}
 
 	/**

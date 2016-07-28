@@ -53,7 +53,7 @@ class MimeTypeConverterTests: XCTestCase {
 		XCTAssertNil(MimeTypeConverter.getFileExtensionFromMime("wrong/mime"))
 	}
 	
-	func testNotConvertUtiTiMime() {
+	func testNotConvertUtiToMime() {
 		XCTAssertNil(MimeTypeConverter.getMimeTypeFromUti("wrong.uti"))
 	}
 	

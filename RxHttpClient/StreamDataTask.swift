@@ -20,7 +20,9 @@ public enum StreamTaskEvents {
 	case receiveData(NSData)
 	// This event will be sended after receiving response
 	case receiveResponse(NSHTTPURLResponse)
+	/// This event will be sended in case of an error
 	case error(ErrorType)
+	/// This event will be sended after completion of underlying data task
 	case success(cache: CacheProviderType?)
 }
 
@@ -34,12 +36,12 @@ internal final class StreamDataTask {
 	var resumed = false
 	var cacheProvider: CacheProviderType?
 
-	internal let queue = dispatch_queue_create("com.RxHttpClient.StreamDataTask.SerialQueue", DISPATCH_QUEUE_SERIAL)
-	internal let httpClient: HttpClientType
-	internal var response: NSHTTPURLResponse?
-	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	internal let dataTask: NSURLSessionDataTaskType
-	internal let sessionEvents: Observable<SessionDataEvents>
+	let queue = dispatch_queue_create("com.RxHttpClient.StreamDataTask.Serial", DISPATCH_QUEUE_SERIAL)
+	let httpClient: HttpClientType
+	var response: NSHTTPURLResponse?
+	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	let dataTask: NSURLSessionDataTaskType
+	let sessionEvents: Observable<SessionDataEvents>
 
 	init(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
 	            cacheProvider: CacheProviderType?) {

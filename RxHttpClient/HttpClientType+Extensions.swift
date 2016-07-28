@@ -51,4 +51,24 @@ public extension HttpClientType {
 	func loadStreamData(url: NSURL, cacheProvider: CacheProviderType? = nil) -> Observable<StreamTaskEvents> {
 		return loadStreamData(createUrlRequest(url), cacheProvider: cacheProvider)
 	}
+	
+	/**
+	Creates an observable for request
+	- parameter request: URL request
+	- returns: Created observable that emits HTTP request result events
+	*/
+	func loadData(request: NSURLRequest)	-> Observable<HttpRequestResult> {
+		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
+			.flatMapLatest { result -> Observable<HttpRequestResult> in
+				if case StreamTaskEvents.error(let error) = result {
+					return Observable.just(.error(error))
+				}
+				
+				guard case StreamTaskEvents.success(let cache) = result else { return Observable.empty() }
+				
+				guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
+				
+				return Observable.just(.successData(cacheProvider.getCurrentData()))
+		}
+	}
 }

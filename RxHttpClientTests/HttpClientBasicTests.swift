@@ -49,6 +49,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		let expectation = expectationWithDescription("Should return correct data")
 		client.loadData(url).bindNext { e in
+			print("load data event in test: \(e)")
 			if case HttpRequestResult.successData(let data) = e {
 				XCTAssertTrue(data.isEqualToData(sendData), "Received data should be equal to sended")
 				expectation.fulfill()
@@ -75,6 +76,31 @@ class HttpClientBasicTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(2, handler: nil)
+	}
+	
+	
+	func testNotLoadDataIfHttpClientDisposed() {
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			XCTFail("Should not invoke HTTP request")
+			return OHHTTPStubsResponse(data: NSData(), statusCode: 200, headers: nil)
+		}
+		
+		var client: HttpClientType! = HttpClient()
+		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should complete observable")
+		let task = client.loadData(request).doOnNext { e in
+			XCTFail("Should not receive events")
+			}.doOnCompleted { expectation.fulfill() }
+		
+		// dispose client
+		client = nil
+		
+		//invoke task
+		task.subscribe().addDisposableTo(bag)
+		
+		waitForExpectationsWithTimeout(1, handler: nil)
 	}
 	
 	func testLoadCorrectDataAndRetryAfterError() {
