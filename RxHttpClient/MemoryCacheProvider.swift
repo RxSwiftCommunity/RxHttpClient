@@ -1,27 +1,19 @@
 import Foundation
 
-public protocol CacheProviderType {
-	var uid: String { get }
-	var currentDataLength: Int { get }
-	var expectedDataLength: Int64 { get set }
-	var contentMimeType: String? { get }
-	func appendData(data: NSData)
-	func getCurrentData() -> NSData
-	func getCurrentData(offset: Int, length: Int) -> NSData
-	func saveData() -> NSURL?
-	func saveData(fileExtension: String?) -> NSURL?
-	func saveData(destinationDirectory: NSURL, fileExtension: String?) -> NSURL?
-	func saveData(destinationDirectory: NSURL) -> NSURL?
-	func setContentMimeTypeIfEmpty(mimeType: String)
-	func clearData()
-}
-
 public final class MemoryCacheProvider {
+	/// Expected length of data, that should be cached
 	public var expectedDataLength: Int64 = 0
-	internal let cacheData = NSMutableData()
+	
+	/// MIME type of cached data
 	public var contentMimeType: String?
+	
+	/// UID of cache provider
 	public let uid: String
 	
+	/// Internal container for cached data
+	internal let cacheData = NSMutableData()
+	
+	/// Serial queue for provide thread-safe operations
 	internal let queue = dispatch_queue_create("com.RxHttpClient.MemoryCacheProvider.SerialQueue", DISPATCH_QUEUE_SERIAL)
 	
 	public init(uid: String, contentMimeType: String? = nil) {
@@ -29,14 +21,21 @@ public final class MemoryCacheProvider {
 		self.contentMimeType = contentMimeType
 	}
 	
-	internal func invokeSerial(clousure: () -> ()) {
+	/**
+	Invokes provided closure synchronously in serial queue
+	- parameter closure: Closure that will be invoked
+	*/
+	internal func invokeSerial(closure: () -> ()) {
 		dispatch_sync(queue) {
-			clousure()
+			closure()
 		}
 	}
 }
 
 extension MemoryCacheProvider : CacheProviderType {
+	/**
+	Deletes current cached data
+	*/
 	public func clearData() {
 		invokeSerial {
 			guard self.cacheData.length > 0 else { return }
@@ -44,8 +43,10 @@ extension MemoryCacheProvider : CacheProviderType {
 		}
 	}
 	
-	/// Set content MIME type. 
-	///Only if now contentMimeType property is nil
+	/**
+	Sets MIME type for data if it's not nil
+	- parameter mimeType: New MIME type
+	*/
 	public func setContentMimeTypeIfEmpty(mimeType: String) {
 		invokeSerial {
 			if self.contentMimeType == nil {
@@ -54,6 +55,7 @@ extension MemoryCacheProvider : CacheProviderType {
 		}
 	}
 	
+	/// Length of cached data
 	public var currentDataLength: Int {
 		var len: Int!
 		invokeSerial {
@@ -62,10 +64,18 @@ extension MemoryCacheProvider : CacheProviderType {
 		return len
 	}
 	
+	/**
+	Adds data to cache
+	- parameter data: Data that would be cached
+	*/
 	public func appendData(data: NSData) {
 		invokeSerial { self.cacheData.appendData(data) }
 	}
 	
+	/**
+	Gets a copy of current cached data
+	- returns: Copy of data currently stored in cache
+	*/
 	public func getCurrentData() -> NSData {
 		var currentData: NSData!
 		invokeSerial {
@@ -74,26 +84,26 @@ extension MemoryCacheProvider : CacheProviderType {
 		return currentData
 	}
 	
-	public func getCurrentData(offset: Int, length: Int) -> NSData {
+	/**
+	Gets a copy of current cached data within specified range
+	- parameter range: The range in the cache from which to get the data. The range must not exceed the bounds of the cache.
+	- returns: Copy of data currently stored in cache within range
+	*/
+	public func getCurrentSubdata(range: NSRange) -> NSData {
 		var currentData: NSData!
 		invokeSerial {
-			currentData = self.cacheData.subdataWithRange(NSMakeRange(Int(offset), Int(length)))
+			currentData = self.cacheData.subdataWithRange(range)
 		}
 		return currentData
 	}
 	
-	public func saveData(fileExtension: String?) -> NSURL? {
-		return saveData(NSURL(fileURLWithPath: NSTemporaryDirectory()), fileExtension: fileExtension)
-	}
-	
-	public func saveData() -> NSURL? {
-		return saveData(nil)
-	}
-	
-	public func saveData(destinationDirectory: NSURL) -> NSURL? {
-		return saveData(destinationDirectory, fileExtension: nil)
-	}
-	
+	/**
+	Saves cached data into specified directory
+	- parameter destinationDirectory: NSURL of directory, where data will be saved
+	- parameter fileExtension: Extension for file (f.e. "txt" or "dat").
+	If nil, extension will be inferred by MIME type, if inferring fails, extension will be "dat"
+	- returns: NSURL for saved file or nil, if file not saved
+	*/
 	public func saveData(destinationDirectory: NSURL, fileExtension: String?) -> NSURL? {
 		var resultPath: NSURL?
 		invokeSerial {

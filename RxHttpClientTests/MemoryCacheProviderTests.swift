@@ -222,7 +222,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		provider.appendData(testData)
 		//XCTAssertTrue(testData.isEqualToData(provider.getCurrentData()))
 		let chunkLen = provider.currentDataLength - 2
-		let chunk = provider.getCurrentData(1, length: chunkLen)
+		let chunk = provider.getCurrentSubdata(1, length: chunkLen)
 		XCTAssertTrue(chunk.isEqualToData(testData.subdataWithRange(NSRange(location: 1, length: chunkLen))))
 	}
 	

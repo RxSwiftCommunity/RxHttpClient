@@ -1,34 +1,6 @@
 import Foundation
 import RxSwift
 
-/// Result of HTTP Request
-public enum HttpRequestResult {
-	/// Request successfuly ended without any data provided
-	case success
-	/// Request successfuly ended with data
-	case successData(NSData)
-	/// Request ended with error
-	case error(ErrorType)
-}
-
-public protocol HttpClientType {
-	/**
-	Creates streaming observable for request
-	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created observable that emits stream events
-	*/
-	func loadStreamData(request: NSURLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents>
-	/**
-	Creates StreamDataTask
-	- parameter taskUid: String, that may be used as unique identifier of the task
-	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created data task
-	*/
-	func createStreamDataTask(taskUid: String, request: NSURLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType
-}
-
 public final class HttpClient {
 	/// Scheduler for observing data task events
 	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Serial")
@@ -44,8 +16,8 @@ public final class HttpClient {
 	*/
 	public init(sessionConfiguration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()) {
 		urlSession = NSURLSession(configuration: sessionConfiguration,
-		             delegate: self.sessionObserver,
-		             delegateQueue: nil)
+		                          delegate: self.sessionObserver,
+		                          delegateQueue: nil)
 	}
 	
 	/// Initializer for unit tests only
@@ -58,7 +30,7 @@ public final class HttpClient {
 	}
 }
 
-extension HttpClient : HttpClientType {	
+extension HttpClient : HttpClientType {
 	/**
 	Creates streaming observable for request
 	- parameter request: URL request
@@ -82,9 +54,9 @@ extension HttpClient : HttpClientType {
 				task.cancel()
 				disposable.dispose()
 			}
-		}.observeOn(concurrentScheduler)
+			}.observeOn(concurrentScheduler)
 	}
-
+	
 	/**
 	Creates StreamDataTask
 	- parameter taskUid: String, that may be used as unique identifier of the task

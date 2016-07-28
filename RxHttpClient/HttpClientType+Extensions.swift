@@ -1,6 +1,16 @@
 import Foundation
 import RxSwift
 
+/// Result of HTTP Request
+public enum HttpRequestResult {
+	/// Request successfuly ended without any data provided
+	case success
+	/// Request successfuly ended with data
+	case successData(NSData)
+	/// Request ended with error
+	case error(ErrorType)
+}
+
 public extension HttpClientType {
 	/**
 	Creates NSMutableURLRequest with provided NSURL and HTTP Headers

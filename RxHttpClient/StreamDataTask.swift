@@ -13,6 +13,13 @@ public protocol StreamTaskType {
 	var resumed: Bool { get }
 }
 
+public protocol StreamDataTaskType : StreamTaskType {
+	/// Observable sequence, that emits events associated with underlying data task
+	var taskProgress: Observable<StreamTaskEvents> { get }
+	/// Instance of cache provider, associated with this task
+	var cacheProvider: CacheProviderType? { get }
+}
+
 public enum StreamTaskEvents {
 	/// This event will be sended after receiving (and cacnhing) new chunk of data if CacheProvider was specified
 	case cacheData(CacheProviderType)
@@ -24,11 +31,6 @@ public enum StreamTaskEvents {
 	case error(ErrorType)
 	/// This event will be sended after completion of underlying data task
 	case success(cache: CacheProviderType?)
-}
-
-public protocol StreamDataTaskType : StreamTaskType {
-	var taskProgress: Observable<StreamTaskEvents> { get }
-	var cacheProvider: CacheProviderType? { get }
 }
 
 internal final class StreamDataTask {
