@@ -28,7 +28,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testCacheCorrectData() {
 		let testData = ["First", "Second", "Third", "Fourth"]
 		let dataSended = NSMutableData()
-		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
+		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		
 		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate tession")
 		
@@ -78,7 +78,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testCacheCorrectDataIfDataTaskHasMoreThanOneObserver() {
 		let testData = ["First", "Second", "Third", "Fourth"]
 		let dataSended = NSMutableData()
-		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
+		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
 			if case .resume(let tsk) = progress {
@@ -137,7 +137,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	}
 	
 	func testNotOverrideMimeType() {
-		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
+		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		
 		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate session")
 		

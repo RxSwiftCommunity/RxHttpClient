@@ -91,7 +91,7 @@ class StreamDataTaskTests: XCTestCase {
 	
 	func testDidReceiveResponse() {
 		var disposition: NSURLSessionResponseDisposition?
-		let fakeResponse = NSHTTPURLResponse(URL: request.URL!, MIMEType: nil, expectedContentLength: 64587, textEncodingName: nil) //FakeResponse(contentLenght: 64587)
+		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: nil, expectedContentLength: 64587, textEncodingName: nil) //FakeResponse(contentLenght: 64587)
 		let dispositionExpectation = expectationWithDescription("Should set correct completion disposition in completionHandler")
 		
 		session.task?.taskProgress.bindNext { [unowned self] progress in
@@ -112,6 +112,7 @@ class StreamDataTaskTests: XCTestCase {
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
 			if case .receiveResponse(let response) = result {
 				XCTAssertEqual(response.expectedContentLength, fakeResponse.expectedContentLength)
+				XCTAssertEqual(response.URL, self.request.URL!)
 				expectation.fulfill()
 			}
 		}.addDisposableTo(bag)
