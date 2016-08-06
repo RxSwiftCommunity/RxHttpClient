@@ -12,7 +12,7 @@ class HttpClientBasicTests: XCTestCase {
 		super.setUp()
 		
 		bag = DisposeBag()
-		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		session = FakeSession(fakeTask: FakeDataTask())
 		httpClient = HttpClient(session: session)
 	}
 	
@@ -23,7 +23,7 @@ class HttpClientBasicTests: XCTestCase {
 	}
 	
 	func testTerminateRequest() {
-		let fakeSession = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		let fakeSession = FakeSession(fakeTask: FakeDataTask())
 		let client = HttpClient(session: fakeSession)
 		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 		let disposable = client.loadData(request).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility))
@@ -236,9 +236,9 @@ class HttpClientBasicTests: XCTestCase {
 	func testDeinitOfHttpClientInvalidatesSession() {
 		let fakeSession = FakeSession()
 		var httpClient: HttpClient? = HttpClient(session: fakeSession)
-		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isInvalidatedAndCanceled, "Session should be active")
+		XCTAssertEqual(false, (httpClient?.urlSession as? FakeSession)?.isFinished, "Session should be active")
 		httpClient = nil
-		XCTAssertEqual(true, fakeSession.isInvalidatedAndCanceled, "Session should be invalidated")
+		XCTAssertEqual(true, fakeSession.isFinished, "Session should be invalidated")
 	}
 		
 	func testCreateHttpClientWithCorrectConfiguration() {

@@ -19,20 +19,10 @@ extension NSURLSessionDataTask : NSURLSessionDataTaskType { }
 public typealias DataTaskResult = (NSData?, NSURLResponse?, NSError?) -> Void
 protocol NSURLSessionType {
 	var configuration: NSURLSessionConfiguration { get }
-	func invalidateAndCancel()
-	func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult)	-> NSURLSessionDataTaskType
-	func dataTaskWithRequest(request: NSURLRequest, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType
+	func finishTasksAndInvalidate()
 	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType
 }
 extension NSURLSession : NSURLSessionType {
-	func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
-		return dataTaskWithURL(url, completionHandler: completionHandler) as NSURLSessionDataTask
-	}
-	
-	func dataTaskWithRequest(request: NSURLRequest, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
-		return dataTaskWithRequest(request, completionHandler: completionHandler) as NSURLSessionDataTask
-	}
-	
 	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType {
 		return dataTaskWithRequest(request) as NSURLSessionDataTask
 	}

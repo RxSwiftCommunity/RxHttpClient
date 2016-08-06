@@ -28,7 +28,7 @@ public final class HttpClient {
 	}
 	
 	deinit {
-		urlSession.invalidateAndCancel()
+		urlSession.finishTasksAndInvalidate()
 	}
 }
 

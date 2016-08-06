@@ -14,7 +14,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		// Put setup code here. This method is called before the invocation of each test method in the class.
 		
 		bag = DisposeBag()
-		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		session = FakeSession(fakeTask: FakeDataTask())
 		httpClient = HttpClient(session: session)
 	}
 	
@@ -72,7 +72,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
+		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
 	}
 	
 	func testCacheCorrectDataIfDataTaskHasMoreThanOneObserver() {
@@ -132,7 +132,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		task.resume()
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
+		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
 		XCTAssertFalse(task.resumed, "Task should not be resumed")
 	}
 	
@@ -170,7 +170,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
+		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
 	}
 	
 	func testSaveDataOnDisk() {

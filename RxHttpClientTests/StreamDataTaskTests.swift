@@ -13,7 +13,7 @@ class StreamDataTaskTests: XCTestCase {
 		super.setUp()
 		
 		bag = DisposeBag()
-		session = FakeSession(fakeTask: FakeDataTask(completion: nil))
+		session = FakeSession(fakeTask: FakeDataTask())
 		httpClient = HttpClient(session: session)
 	}
 	
@@ -65,7 +65,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertFalse(self.session.isInvalidatedAndCanceled, "Session should not be invalidated")
+		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
 	}
 	
 	func testReturnNSError() {
