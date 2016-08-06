@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		6E1329B51D47769500BE6270 /* HttpClientBasicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */; };
-		6E1329B61D47834E00BE6270 /* StreamDataTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */; };
 		6E1329B71D478B7600BE6270 /* MemoryCacheProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EEA1D2A57B600E30A5D /* MemoryCacheProviderTests.swift */; };
 		6E1329B81D47903E00BE6270 /* NSURLSessionTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B3CEB1D2D32F900775D9F /* NSURLSessionTypeTests.swift */; };
 		6E1C07C21D48FF92009513FD /* HttpClientType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1C07C11D48FF92009513FD /* HttpClientType+Extensions.swift */; };
@@ -19,6 +18,7 @@
 		6E81B0381D4A850100D099F1 /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E81B0371D4A850100D099F1 /* HttpClient.swift */; };
 		6E81B03A1D4A85CF00D099F1 /* MemoryCacheProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E81B0391D4A85CF00D099F1 /* MemoryCacheProvider.swift */; };
 		6E9360EF1D2AABE100F80F76 /* RxHttpClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */; };
+		6EF8CA431D5664520095A634 /* StreamDataTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */; };
 		6EFB9EBC1D2A4E2600E30A5D /* RxHttpClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EFB9EBB1D2A4E2600E30A5D /* RxHttpClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6EFB9EE61D2A563000E30A5D /* MimeTypeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */; };
 		6EFB9EF41D2A5BBF00E30A5D /* CacheProviderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9ED21D2A53FD00E30A5D /* CacheProviderType.swift */; };
@@ -255,6 +255,7 @@
 				"$(SRCROOT)/Dependencies/iOS/RxSwift.framework",
 				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
 				"$(SRCROOT)/Dependencies/iOS/OHHTTPStubs.framework",
+				"$(SRCROOT)/Dependencies/iOS/RxTests.framework",
 			);
 			outputPaths = (
 			);
@@ -285,12 +286,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6EF8CA431D5664520095A634 /* StreamDataTaskTests.swift in Sources */,
 				6E5B3CEE1D2D3C8400775D9F /* NSURLTests.swift in Sources */,
 				6E1329B51D47769500BE6270 /* HttpClientBasicTests.swift in Sources */,
 				6E1329B71D478B7600BE6270 /* MemoryCacheProviderTests.swift in Sources */,
 				6E1329B81D47903E00BE6270 /* NSURLSessionTypeTests.swift in Sources */,
 				6E5B3CF01D2D43C000775D9F /* MimeTypeConverterTests.swift in Sources */,
-				6E1329B61D47834E00BE6270 /* StreamDataTaskTests.swift in Sources */,
 				6EFB9EFE1D2A5C8E00E30A5D /* Fake.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -13,7 +13,7 @@ class StreamDataTaskTests: XCTestCase {
 		super.setUp()
 		
 		bag = DisposeBag()
-		session = FakeSession(fakeTask: FakeDataTask())
+		session = FakeSession()
 		httpClient = HttpClient(session: session)
 	}
 	
@@ -25,41 +25,49 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testReceiveCorrectData() {
-		let testData = ["First", "Second", "Third", "Fourth"]
-		let dataSended = NSMutableData()
+		let cancelTaskExpectation = expectationWithDescription("Should cancel task")
 		
-		let expectation = expectationWithDescription("Should return correct data and cancel task")
-		
-		session.task?.taskProgress.bindNext { [unowned self] progress in
-			if case .resume(let tsk) = progress {
-				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
-					for i in 0...testData.count - 1 {
-						let sendData = testData[i].dataUsingEncoding(NSUTF8StringEncoding)!
-						//dataSended += UInt64(sendData.length)
-						dataSended.appendData(sendData)
-						self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveData(session: self.session, dataTask: tsk, data: sendData))
-						// simulate delay
-						NSThread.sleepForTimeInterval(0.01)
-					}
-					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: nil))
+		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
+		// when fake task will resumed it will invoke this closure
+		let resumeActions = {
+			let fakeUrlEvents = [
+				SessionDataEvents.didReceiveResponse(session: self.session,
+					dataTask: self.session.task,
+					response: fakeResponse,
+					completion: { _ in }),
+				SessionDataEvents.didReceiveData(session: self.session, dataTask: self.session.task, data: "First".dataUsingEncoding(NSUTF8StringEncoding)!),
+				SessionDataEvents.didReceiveData(session: self.session, dataTask: self.session.task, data: "Second".dataUsingEncoding(NSUTF8StringEncoding)!),
+				SessionDataEvents.didReceiveData(session: self.session, dataTask: self.session.task, data: "Third".dataUsingEncoding(NSUTF8StringEncoding)!),
+				SessionDataEvents.didReceiveData(session: self.session, dataTask: self.session.task, data: "Fourth".dataUsingEncoding(NSUTF8StringEncoding)!),
+				SessionDataEvents.didCompleteWithError(session: self.session, dataTask: self.session.task, error: nil)
+			]
+			
+			dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
+				for event in fakeUrlEvents {
+					// send events to session observer (simulates NSURLSession behavior)
+					self.httpClient.sessionObserver.sessionEventsSubject.onNext(event)
+					// simulate delay
+					NSThread.sleepForTimeInterval(0.005)
 				}
-			} else if case .cancel = progress {
-				expectation.fulfill()
 			}
-		}.addDisposableTo(bag)
+		}
+		
+		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { cancelTaskExpectation.fulfill() })
 		
 		var receiveCounter = 0
 		let dataReceived = NSMutableData()
+		
+		let successExpectaton = expectationWithDescription("Shoud return success event")
+		
 		httpClient.loadStreamData(NSURL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
 			if case .ReceiveData(let dataChunk) = result {
-				XCTAssertEqual(String(data: dataChunk, encoding: NSUTF8StringEncoding), testData[receiveCounter], "Check correct chunk of data received")
 				dataReceived.appendData(dataChunk)
 				receiveCounter += 1
 			} else if case .Success(let cacheProvider) = result {
 				XCTAssertNil(cacheProvider, "Cache provider should be nil")
-				XCTAssertTrue(dataReceived.isEqualToData(dataSended), "Received data should be equal to sended data")
-				XCTAssertEqual(receiveCounter, testData.count, "Should receive correct amount of data chuncks")
+				XCTAssertTrue(dataReceived.isEqualToData("FirstSecondThirdFourth".dataUsingEncoding(NSUTF8StringEncoding)!), "Received data should be equal to sended data")
+				XCTAssertEqual(receiveCounter, 4, "Should receive correct amount of data chuncks")
+				successExpectaton.fulfill()
 			}
 		}.addDisposableTo(bag)
 		
@@ -69,14 +77,12 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testReturnNSError() {
-		session.task?.taskProgress.bindNext { [unowned self] progress in
-			if case .resume(let tsk) = progress {
-				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
-					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: tsk, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
-				}
+		let resumeActions = {
+			dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
+				self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: self.session.task, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 			}
-		}.addDisposableTo(bag)
+		}
+		session.task = FakeDataTask(resumeClosure: resumeActions)
 
 		let expectation = expectationWithDescription("Should return NSError")
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
@@ -90,23 +96,19 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testDidReceiveResponse() {
-		var disposition: NSURLSessionResponseDisposition?
-		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: nil, expectedContentLength: 64587, textEncodingName: nil) //FakeResponse(contentLenght: 64587)
+		let fakeResponse = NSURLResponse(URL: request.URL!, MIMEType: nil, expectedContentLength: 64587, textEncodingName: nil)
 		let dispositionExpectation = expectationWithDescription("Should set correct completion disposition in completionHandler")
 		
-		session.task?.taskProgress.bindNext { [unowned self] progress in
-			if case .resume(let tsk) = progress {
-				XCTAssertEqual(tsk.originalRequest?.URL, self.request.URL, "Check correct task url")
-				let completion: (NSURLSessionResponseDisposition) -> () = { disp in
-					disposition = disp
-					dispositionExpectation.fulfill()
-				}
-				
-				dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
-					self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: tsk, response: fakeResponse, completion: completion))
-				}
+		let resumeActions = {
+			let completion: (NSURLSessionResponseDisposition) -> () = { disposition in
+				XCTAssertEqual(disposition, NSURLSessionResponseDisposition.Allow, "Check correct completion disposition in completionHandler")
+				dispositionExpectation.fulfill()
 			}
-			}.addDisposableTo(bag)
+			dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0)) { [unowned self] in
+				self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: self.session.task, response: fakeResponse, completion: completion))
+			}
+		}
+		session.task = FakeDataTask(resumeClosure: resumeActions)
 		
 		let expectation = expectationWithDescription("Should return correct response")
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
@@ -118,12 +120,12 @@ class StreamDataTaskTests: XCTestCase {
 		}.addDisposableTo(bag)
 		
 		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
-		XCTAssertEqual(disposition, NSURLSessionResponseDisposition.Allow, "Check correct completion disposition in completionHandler")
 	}
 	
 	func testCreateCorrectTask() {
 		let config = NSURLSessionConfiguration.defaultSessionConfiguration()
 		config.HTTPCookieAcceptPolicy = .Always
+		session.task = FakeDataTask(resumeClosure: { _ in})
 		let dataTask = session.dataTaskWithRequest(request)
 		let streamTask = StreamDataTask(taskUid: NSUUID().UUIDString,
 		                                dataTask: dataTask, httpClient: httpClient,

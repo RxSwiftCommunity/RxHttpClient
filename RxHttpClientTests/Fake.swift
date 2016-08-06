@@ -2,44 +2,36 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
-public enum FakeDataTaskMethods {
-	case resume(FakeDataTask)
-	case suspend(FakeDataTask)
-	case cancel(FakeDataTask)
-}
-
 public class FakeDataTask : NSObject, NSURLSessionDataTaskType {
-	let taskProgress = PublishSubject<FakeDataTaskMethods>()
 	var originalRequest: NSURLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0
+	let resumeClosure: () -> ()!
+	let cancelClosure: (() -> ())?
+	
+	init(resumeClosure: () -> (), cancelClosure: (() -> ())? = nil) {
+		self.resumeClosure = resumeClosure
+		self.cancelClosure = cancelClosure
+	}
 	
 	public func resume() {
 		resumeInvokeCount += 1
-		taskProgress.onNext(.resume(self))
-	}
-	
-	public func suspend() {
-		taskProgress.onNext(.suspend(self))
+		resumeClosure()
 	}
 	
 	public func cancel() {
 		if !isCancelled {
-			taskProgress.onNext(.cancel(self))
+			cancelClosure?()
 			isCancelled = true
 		}
 	}
 }
 
 class FakeSession : NSURLSessionType {
-	var task: FakeDataTask?
+	var task: FakeDataTask!
 	var isFinished = false
 	
 	var configuration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()
-	
-	init(fakeTask: FakeDataTask? = nil) {
-		task = fakeTask
-	}
 	
 	/// Send data as stream (this data should be received through session delegate)
 	func sendData(task: NSURLSessionDataTaskType, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
@@ -56,9 +48,7 @@ class FakeSession : NSURLSessionType {
 	}
 	
 	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType {
-		guard let task = self.task else {
-			return FakeDataTask()
-		}
+		if task == nil { fatalError("Data task not specified") }
 		task.originalRequest = request
 		return task
 	}

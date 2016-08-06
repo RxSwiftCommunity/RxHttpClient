@@ -8,7 +8,6 @@ extension NSURLSessionTask : NSURLSessionTaskType { }
 // NSURLSessionDataTaskProtocol
 protocol NSURLSessionDataTaskType : NSURLSessionTaskType {
 	func resume()
-	func suspend()
 	func cancel()
 	var originalRequest: NSURLRequest? { get }
 }
