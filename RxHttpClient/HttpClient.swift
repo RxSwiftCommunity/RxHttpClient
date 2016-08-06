@@ -3,9 +3,11 @@ import RxSwift
 
 public final class HttpClient {
 	/// Scheduler for observing data task events
-	internal let serialScheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Serial")
+	internal let dataTaskScheduler =
+		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
 	/// Default concurrent scheduler for observing observable sequence created by loadStreamData method
-	internal let concurrentScheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility)
+	internal let streamDataObservingScheduler =
+		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
 	internal let urlSession: NSURLSessionType
 	
@@ -46,7 +48,7 @@ extension HttpClient : HttpClientType {
 			
 			let task = object.createStreamDataTask(request, cacheProvider: cacheProvider)
 			
-			let disposable = task.taskProgress.observeOn(object.serialScheduler).subscribe(observer)
+			let disposable = task.taskProgress.observeOn(object.dataTaskScheduler).subscribe(observer)
 			
 			task.resume()
 			
@@ -54,7 +56,7 @@ extension HttpClient : HttpClientType {
 				task.cancel()
 				disposable.dispose()
 			}
-			}.observeOn(concurrentScheduler)
+			}.observeOn(streamDataObservingScheduler)
 	}
 	
 	/**

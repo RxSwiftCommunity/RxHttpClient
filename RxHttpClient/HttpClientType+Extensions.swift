@@ -1,14 +1,8 @@
 import Foundation
 import RxSwift
 
-/// Result of HTTP Request
-public enum HttpRequestResult {
-	/// Request successfuly ended without any data provided
-	case success
-	/// Request successfuly ended with data
-	case successData(NSData)
-	/// Request ended with error
-	case error(ErrorType)
+public enum HttpRequestError : ErrorType {
+	case Unsuccessful(NSURLResponse, NSData?)
 }
 
 public extension HttpClientType {
@@ -48,7 +42,7 @@ public extension HttpClientType {
 	- parameter request: URL
 	- returns: Created observable that emits HTTP request result events
 	*/
-	func loadData(url: NSURL) -> Observable<HttpRequestResult> {
+	func loadData(url: NSURL) -> Observable<NSData> {
 		return loadData(createUrlRequest(url))
 	}
 	
@@ -67,18 +61,30 @@ public extension HttpClientType {
 	- parameter request: URL request
 	- returns: Created observable that emits HTTP request result events
 	*/
-	func loadData(request: NSURLRequest)	-> Observable<HttpRequestResult> {
-		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
-			.flatMapLatest { result -> Observable<HttpRequestResult> in
-				if case StreamTaskEvents.error(let error) = result {
-					return Observable.just(.error(error))
+	func loadData(request: NSURLRequest)	-> Observable<NSData> {
+		// provider for caching data
+		let cacheProvider = MemoryCacheProvider(uid: NSUUID().UUIDString)
+		// variable for response with error
+		var errorResponse: NSHTTPURLResponse? = nil
+		
+		return loadStreamData(request, cacheProvider: cacheProvider)
+			.flatMapLatest { result -> Observable<NSData> in
+				switch result {
+				case .Error(let error): return Observable.error(error)
+					// checking status code of HTTP responce, and caching response if code is not success
+				case .ReceiveResponse(let response as NSHTTPURLResponse) where !(200...299 ~= response.statusCode):
+					// saving response
+					errorResponse = response
+					return Observable.empty()
+				case .Success:
+					guard let errorResponse = errorResponse else {
+						// if we don't have errorResponse, request completed successfuly and we simply return data
+						return Observable.just(cacheProvider.getCurrentData())
+					}
+					
+					return Observable.error(HttpRequestError.Unsuccessful(errorResponse, cacheProvider.getCurrentData()))
+				default: return Observable.empty()
 				}
-				
-				guard case StreamTaskEvents.success(let cache) = result else { return Observable.empty() }
-				
-				guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
-				
-				return Observable.just(.successData(cacheProvider.getCurrentData()))
 		}
 	}
 }

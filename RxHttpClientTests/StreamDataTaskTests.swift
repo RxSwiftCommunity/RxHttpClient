@@ -52,11 +52,11 @@ class StreamDataTaskTests: XCTestCase {
 		var receiveCounter = 0
 		let dataReceived = NSMutableData()
 		httpClient.loadStreamData(NSURL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
-			if case .receiveData(let dataChunk) = result {
+			if case .ReceiveData(let dataChunk) = result {
 				XCTAssertEqual(String(data: dataChunk, encoding: NSUTF8StringEncoding), testData[receiveCounter], "Check correct chunk of data received")
 				dataReceived.appendData(dataChunk)
 				receiveCounter += 1
-			} else if case .success(let cacheProvider) = result {
+			} else if case .Success(let cacheProvider) = result {
 				XCTAssertNil(cacheProvider, "Cache provider should be nil")
 				XCTAssertTrue(dataReceived.isEqualToData(dataSended), "Received data should be equal to sended data")
 				XCTAssertEqual(receiveCounter, testData.count, "Should receive correct amount of data chuncks")
@@ -80,7 +80,7 @@ class StreamDataTaskTests: XCTestCase {
 
 		let expectation = expectationWithDescription("Should return NSError")
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
-			guard case .error(let error) = result else { return }
+			guard case .Error(let error) = result else { return }
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
 			}
@@ -110,7 +110,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let expectation = expectationWithDescription("Should return correct response")
 		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
-			if case .receiveResponse(let response) = result {
+			if case .ReceiveResponse(let response) = result {
 				XCTAssertEqual(response.expectedContentLength, fakeResponse.expectedContentLength)
 				XCTAssertEqual(response.URL, self.request.URL!)
 				expectation.fulfill()

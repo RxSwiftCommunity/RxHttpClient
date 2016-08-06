@@ -1,7 +1,7 @@
 import Foundation
 import RxSwift
 
-public protocol HttpClientType {
+public protocol HttpClientType : class {
 	/**
 	Creates streaming observable for request
 	- parameter request: URL request
