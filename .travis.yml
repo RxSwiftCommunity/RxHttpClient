@@ -9,15 +9,25 @@ env:
   - FRAMEWORK_SCHEME=RxHttpClient
   - SDK=iphonesimulator9.3
   - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6,OS=9.3'
-  #github access token (for Carthage)
-  #-   secure: "xZg8RlgwDqpFAR9DJwrRid3bqYUoQvN5lfBEkuLauHki+N4lhbgs05kyRwP3E3zl7t4J9ydYoouTDn6gnJHM5kCcNnW3fR26E1VOy6/rGXEL7kCAdsk0K+FrRr99ogj03pUfBPWIadoaUdRyvw39TC8R5ZlYWWwH3Wiyk33+y/ddJcgS/CdjtvDabXxASbEcnHKt94QaiyPxk222DRIuxjOE3v3XAtZrqPc8pDoNkPhpPfrugbubMdMwVxyKAH2k7dkLYLXF0b0YPvTLK8kaEedIL5pQ445KMzi8OIAIHb5vYRKk4AhKfja4gTEv9p7hiNiaZQtY7pZHz+vGpabo+wt7oN0ExWJyl+lvdy4xB5W96UvgDo0P4NoznJhM4o/wf1Mid30Cyx28glgevGqmtaMxWDWxBD9cTCQyaWcU2jjiwwgTGzZ3FzpOi2VbEkqBR2YpSuAwjInTD4nPDncda5kXNfva2W7bfYyT+VjsUA6vVnE0Ba7wwVDJRY6+XtA8PqjToSwmE/s9ngGLNKL9HCSWcxVnTs9Dnp6cFd3qGtlEjpuoknSuq4xaCXEMozuuXqpq9tGilsS7QOOmdPyRv8xvtTXapybnl8fpT+IYmGWfhkCGnnAHyqMIpq8Qdg0CPgxpDzMEF13ndeWOiUYw0W/3M3IUiaFZ5toEuGMwTNU="
 
 before_install:
   - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (9.3) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
 
 before_script:
+# inslall punic
+- brew install python
+- brew install python3
+- brew install libyaml
+- pip install --upgrade git+https://github.com/schwa/punic.git
+
 - carthage version
-- carthage update --platform ios
+
+# fetch dependencies using carthage
+- carthage update --no-build
+# update OHHTTPStubs using carthage
+- carthage update OHHTTPStubs --platform iOS
+# using punic to build RxSwift framework
+- punic build RxSwift --platform iOS --configuration Release --no-fetch
 
 script:
 - open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID
