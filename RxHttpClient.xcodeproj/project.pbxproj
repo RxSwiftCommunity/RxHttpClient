@@ -11,10 +11,9 @@
 		6E1329B71D478B7600BE6270 /* MemoryCacheProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EEA1D2A57B600E30A5D /* MemoryCacheProviderTests.swift */; };
 		6E1329B81D47903E00BE6270 /* NSURLSessionTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B3CEB1D2D32F900775D9F /* NSURLSessionTypeTests.swift */; };
 		6E1C07C21D48FF92009513FD /* HttpClientType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1C07C11D48FF92009513FD /* HttpClientType+Extensions.swift */; };
+		6E556B591D57447A00E43388 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E556B581D57447A00E43388 /* RxSwift.framework */; };
 		6E5B3CEE1D2D3C8400775D9F /* NSURLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B3CED1D2D3C8400775D9F /* NSURLTests.swift */; };
 		6E5B3CF01D2D43C000775D9F /* MimeTypeConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5B3CEF1D2D43C000775D9F /* MimeTypeConverterTests.swift */; };
-		6E75E5D71D2AAD55003B8800 /* RxCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */; };
-		6E75E5D81D2AAD55003B8800 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E75E5D61D2AAD55003B8800 /* RxSwift.framework */; };
 		6E81B0381D4A850100D099F1 /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E81B0371D4A850100D099F1 /* HttpClient.swift */; };
 		6E81B03A1D4A85CF00D099F1 /* MemoryCacheProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E81B0391D4A85CF00D099F1 /* MemoryCacheProvider.swift */; };
 		6E9360EF1D2AABE100F80F76 /* RxHttpClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */; };
@@ -41,12 +40,11 @@
 
 /* Begin PBXFileReference section */
 		6E1C07C11D48FF92009513FD /* HttpClientType+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HttpClientType+Extensions.swift"; sourceTree = "<group>"; };
+		6E556B581D57447A00E43388 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = HttpClientBasicTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6E5B3CEB1D2D32F900775D9F /* NSURLSessionTypeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = NSURLSessionTypeTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6E5B3CED1D2D3C8400775D9F /* NSURLTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSURLTests.swift; sourceTree = "<group>"; };
 		6E5B3CEF1D2D43C000775D9F /* MimeTypeConverterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MimeTypeConverterTests.swift; sourceTree = "<group>"; };
-		6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxCocoa.framework; path = Dependencies/iOS/RxCocoa.framework; sourceTree = "<group>"; };
-		6E75E5D61D2AAD55003B8800 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Dependencies/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6E81B0371D4A850100D099F1 /* HttpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		6E81B0391D4A85CF00D099F1 /* MemoryCacheProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryCacheProvider.swift; sourceTree = "<group>"; };
 		6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RxHttpClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,8 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E75E5D71D2AAD55003B8800 /* RxCocoa.framework in Frameworks */,
-				6E75E5D81D2AAD55003B8800 /* RxSwift.framework in Frameworks */,
+				6E556B591D57447A00E43388 /* RxSwift.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,8 +87,7 @@
 		6EFB9EAE1D2A4E2600E30A5D = {
 			isa = PBXGroup;
 			children = (
-				6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */,
-				6E75E5D61D2AAD55003B8800 /* RxSwift.framework */,
+				6E556B581D57447A00E43388 /* RxSwift.framework */,
 				6EFB9EBA1D2A4E2600E30A5D /* RxHttpClient */,
 				6EFB9EC61D2A4E2600E30A5D /* RxHttpClientTests */,
 				6EFB9EB91D2A4E2600E30A5D /* Products */,
@@ -252,10 +248,10 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/Dependencies/iOS/RxSwift.framework",
-				"$(SRCROOT)/Dependencies/iOS/RxCocoa.framework",
-				"$(SRCROOT)/Dependencies/iOS/OHHTTPStubs.framework",
-				"$(SRCROOT)/Dependencies/iOS/RxTests.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/RxSwift.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/RxCocoa.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/OHHTTPStubs.framework",
+				"$(SRCROOT)/Carthage/Build/iOS/RxTests.framework",
 			);
 			outputPaths = (
 			);
@@ -408,7 +404,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Dependencies/iOS",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				INFOPLIST_FILE = RxHttpClient/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -430,7 +426,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Dependencies/iOS",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				INFOPLIST_FILE = RxHttpClient/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
@@ -447,7 +443,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Dependencies/iOS",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				INFOPLIST_FILE = RxHttpClientTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -464,7 +460,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Dependencies/iOS",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
 				INFOPLIST_FILE = RxHttpClientTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
