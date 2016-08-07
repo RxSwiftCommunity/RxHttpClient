@@ -22,12 +22,10 @@ before_script:
 
 - carthage version
 
-# fetch dependencies using carthage
-- carthage update --no-build
 # update OHHTTPStubs using carthage
 - carthage update OHHTTPStubs --platform iOS
 # using punic to build RxSwift framework
-- punic build RxSwift --platform iOS --configuration Release --no-fetch
+- punic build RxSwift --platform iOS --configuration Release
 
 script:
 - open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID
