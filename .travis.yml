@@ -15,6 +15,7 @@ before_install:
 
 before_script:
 # inslall punic
+- brew install python
 - brew install libyaml
 - pip install --upgrade git+https://github.com/schwa/punic.git
 
