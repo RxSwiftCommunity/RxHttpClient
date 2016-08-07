@@ -2,84 +2,36 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
-public class FakeRequest : NSMutableURLRequestType {
-	public var HTTPMethod: String? = "GET"
-	var headers = [String: String]()
-	public var URL: NSURL?
-	public var allHTTPHeaderFields: [String: String]? {
-		return headers
-	}
-	
-	public init(url: NSURL? = nil) {
-		self.URL = url
-	}
-	
-	public func addValue(value: String, forHTTPHeaderField: String) {
-		headers[forHTTPHeaderField] = value
-	}
-	
-	public func setHttpMethod(method: String) {
-		HTTPMethod = method
-	}
-}
-
-public class FakeResponse : NSURLResponseType, NSHTTPURLResponseType {
-	public var expectedContentLength: Int64
-	public var MIMEType: String?
-	
-	public init(contentLenght: Int64) {
-		expectedContentLength = contentLenght
-	}
-}
-
-public enum FakeDataTaskMethods {
-	case resume(FakeDataTask)
-	case suspend(FakeDataTask)
-	case cancel(FakeDataTask)
-}
-
 public class FakeDataTask : NSObject, NSURLSessionDataTaskType {
-	@available(*, unavailable, message="completion unavailiable. Use FakeSession.sendData instead (session observer will used to send data)")
-	var completion: DataTaskResult?
-	let taskProgress = PublishSubject<FakeDataTaskMethods>()
-	var originalRequest: NSURLRequestType?
+	var originalRequest: NSURLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0
+	let resumeClosure: () -> ()!
+	let cancelClosure: (() -> ())?
 	
-	public init(completion: DataTaskResult?) {
-		//self.completion = completion
+	init(resumeClosure: () -> (), cancelClosure: (() -> ())? = nil) {
+		self.resumeClosure = resumeClosure
+		self.cancelClosure = cancelClosure
 	}
 	
 	public func resume() {
 		resumeInvokeCount += 1
-		taskProgress.onNext(.resume(self))
-	}
-	
-	public func suspend() {
-		taskProgress.onNext(.suspend(self))
+		resumeClosure()
 	}
 	
 	public func cancel() {
 		if !isCancelled {
-			taskProgress.onNext(.cancel(self))
+			cancelClosure?()
 			isCancelled = true
 		}
 	}
-	
-	public func getOriginalUrlRequest() -> NSURLRequestType? {
-		return originalRequest
-	}
 }
 
-public class FakeSession : NSURLSessionType {
-	var task: FakeDataTask?
-	var isInvalidatedAndCanceled = false
+class FakeSession : NSURLSessionType {
+	var task: FakeDataTask!
+	var isFinished = false
 	
-	public var configuration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()
-	
-	public init(fakeTask: FakeDataTask? = nil) {
-		task = fakeTask
-	}
+	var configuration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()
 	
 	/// Send data as stream (this data should be received through session delegate)
 	func sendData(task: NSURLSessionDataTaskType, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
@@ -95,82 +47,17 @@ public class FakeSession : NSURLSessionType {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: error))
 	}
 	
-	public func dataTaskWithURL(url: NSURL, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
-		guard let task = self.task else {
-			return FakeDataTask(completion: completionHandler)
-		}
-		//task.completion = completionHandler
-		return task
-	}
-	
-	public func dataTaskWithRequest(request: NSURLRequestType, completionHandler: DataTaskResult) -> NSURLSessionDataTaskType {
-		fatalError("should not invoke dataTaskWithRequest with completion handler")
-		guard let task = self.task else {
-			return FakeDataTask(completion: completionHandler)
-		}
-		//task.completion = completionHandler
+	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType {
+		if task == nil { fatalError("Data task not specified") }
 		task.originalRequest = request
 		return task
 	}
 	
-	public func dataTaskWithRequest(request: NSURLRequestType) -> NSURLSessionDataTaskType {
-		guard let task = self.task else {
-			return FakeDataTask(completion: nil)
-		}
-		task.originalRequest = request
-		return task
-	}
-	
-	public func invalidateAndCancel() {
-		// set flag that session was invalidated and canceled
-		isInvalidatedAndCanceled = true
+	func finishTasksAndInvalidate() {
+		// set flag that session was invalidated
+		isFinished = true
 		
 		// invoke cancelation of task
 		task?.cancel()
-	}
-}
-
-public class FakeHttpUtilities : HttpUtilitiesType {
-	//var fakeObserver: UrlSessionStreamObserverType?
-	var streamObserver: NSURLSessionDataEventsObserverType?
-	var fakeSession: NSURLSessionType?
-	
-	public func createUrlRequest(baseUrl: String, parameters: [String : String]?) -> NSMutableURLRequestType? {
-		return FakeRequest(url: NSURL(baseUrl: baseUrl, parameters: parameters))
-	}
-	
-	public func createUrlRequest(baseUrl: String, parameters: [String : String]?, headers: [String : String]?) -> NSMutableURLRequestType? {
-		let req = createUrlRequest(baseUrl, parameters: parameters)
-		headers?.forEach { req?.addValue($1, forHTTPHeaderField: $0) }
-		return req
-	}
-	
-	public func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestType {
-		let req = FakeRequest(url: url)
-		headers?.forEach { req.addValue($1, forHTTPHeaderField: $0) }
-		return req
-	}
-	
-	public func createUrlSession(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate?, queue: NSOperationQueue?) -> NSURLSessionType {
-		guard let session = fakeSession else {
-			return FakeSession()
-		}
-		return session
-	}
-	
-	func createUrlSessionStreamObserver() -> NSURLSessionDataEventsObserverType {
-		//		guard let observer = fakeObserver else {
-		//			return FakeUrlSessionStreamObserver()
-		//		}
-		//		return observer
-		guard let observer = streamObserver else {
-			return NSURLSessionDataEventsObserver()
-		}
-		return observer
-	}
-	
-	func createStreamDataTask(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType,
-	                          sessionEvents: Observable<SessionDataEvents>, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
-		return StreamDataTask(taskUid: NSUUID().UUIDString, dataTask: dataTask, httpClient: httpClient, sessionEvents: sessionEvents, cacheProvider: cacheProvider)
 	}
 }
