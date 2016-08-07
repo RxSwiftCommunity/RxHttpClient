@@ -17,7 +17,7 @@ before_install:
 
 before_script:
 - carthage version
-- carthage bootstrap --platform ios
+- carthage update --platform ios
 
 script:
 - open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID
