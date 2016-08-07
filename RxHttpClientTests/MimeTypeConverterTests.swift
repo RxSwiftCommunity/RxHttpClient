@@ -44,4 +44,20 @@ class MimeTypeConverterTests: XCTestCase {
 	func testConvertUtiToExtension() {
 		XCTAssertEqual(MimeTypeConverter.getFileExtensionFromUti("public.mp3"), "mp3")
 	}
+	
+	func testNotConvertExtensionToMime() {
+		XCTAssertNil(MimeTypeConverter.getMimeTypeFromFileExtension("wrngExtension"))
+	}
+	
+	func testNotConvertMimeToExtension() {
+		XCTAssertNil(MimeTypeConverter.getFileExtensionFromMime("wrong/mime"))
+	}
+	
+	func testNotConvertUtiToMime() {
+		XCTAssertNil(MimeTypeConverter.getMimeTypeFromUti("wrong.uti"))
+	}
+	
+	func testNotConvertUtiToExtension() {
+		XCTAssertNil(MimeTypeConverter.getFileExtensionFromUti("wrong.uti"))
+	}
 }

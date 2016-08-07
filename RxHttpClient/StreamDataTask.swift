@@ -3,49 +3,57 @@ import RxSwift
 import RxCocoa
 
 public protocol StreamTaskType {
+	/// Identifier of a task.
 	var uid: String { get }
+	/// Resumes task.
 	func resume()
-	//func suspend()
+	/// Cancels task.
 	func cancel()
+	/// Is task resumed.
 	var resumed: Bool { get }
 }
 
-public typealias StreamTaskResult = Result<StreamTaskEvents>
-
-public enum StreamTaskEvents {
-	/// Send this event if CacheProvider specified
-	case CacheData(CacheProviderType)
-	/// Send this event only if CacheProvider is nil
-	case ReceiveData(NSData)
-	case ReceiveResponse(NSHTTPURLResponseType)
-	//case Error(NSError)
-	case Success(cache: CacheProviderType?)
-}
-
-extension StreamTaskEvents {
-	func asResult() -> StreamTaskResult {
-		return Result.success(Box(value: self))
-	}
-}
-
 public protocol StreamDataTaskType : StreamTaskType {
-	var taskProgress: Observable<StreamTaskResult> { get }
+	/// Observable sequence, that emits events associated with underlying data task.
+	var taskProgress: Observable<StreamTaskEvents> { get }
+	/// Instance of cache provider, associated with this task.
 	var cacheProvider: CacheProviderType? { get }
 }
 
-public class StreamDataTask {
-	public let uid: String
-	public internal (set) var resumed = false
-	public internal(set) var cacheProvider: CacheProviderType?
+/**
+Represents the events that will be sended to observers of StreamDataTask
+*/
+public enum StreamTaskEvents {
+	/// This event will be sended after receiving (and cacnhing) new chunk of data. 
+	/// This event will be sended only if CacheProvider was specified.
+	case CacheData(CacheProviderType)
+	/// This event will be sended after receiving new chunk of data.
+	/// This event will be sended only if CacheProvider was not specified.
+	case ReceiveData(NSData)
+	// This event will be sended after receiving response.
+	case ReceiveResponse(NSURLResponse)
+	/**
+	This event will be sended if underlying task was completed with error.
+	This event will be sended if unerlying NSURLSession invoked delegate method URLSession:task:didCompleteWithError: with specified error.
+	*/
+	case Error(ErrorType)
+	/// This event will be sended after completion of underlying data task.
+	case Success(cache: CacheProviderType?)
+}
 
-	internal let queue = dispatch_queue_create("StreamDataTask.SerialQueue", DISPATCH_QUEUE_SERIAL)
-	internal let httpClient: HttpClientType
-	internal var response: NSHTTPURLResponseType?
-	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	internal let dataTask: NSURLSessionDataTaskType
-	internal let sessionEvents: Observable<SessionDataEvents>
+internal final class StreamDataTask {
+	let uid: String
+	var resumed = false
+	var cacheProvider: CacheProviderType?
 
-	public init(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
+	let queue = dispatch_queue_create("com.RxHttpClient.StreamDataTask.Serial", DISPATCH_QUEUE_SERIAL)
+	let httpClient: HttpClientType
+	var response: NSURLResponse?
+	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	let dataTask: NSURLSessionDataTaskType
+	let sessionEvents: Observable<SessionDataEvents>
+
+	init(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
 	            cacheProvider: CacheProviderType?) {
 		self.dataTask = dataTask
 		self.httpClient = httpClient
@@ -54,32 +62,29 @@ public class StreamDataTask {
 		uid = taskUid
 	}
 	
-	public lazy var taskProgress: Observable<StreamTaskResult> = {
+	lazy var taskProgress: Observable<StreamTaskEvents> = {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
 			
-			let disposable = object.sessionEvents.observeOn(object.scheduler).filter { e in
-				if case .didReceiveResponse(_, let task, let response, let completionHandler) = e {
-					guard task.isEqual(object.dataTask as? AnyObject) else { return true }
-					completionHandler(.Allow)
-					return response as? NSHTTPURLResponseType != nil
-				} else { return true }
-				}.bindNext { e in
+			let disposable = object.sessionEvents.observeOn(object.scheduler).bindNext { e in
 					switch e {
-					case .didReceiveResponse(_, let task, let response, _):
+					case .didReceiveResponse(_, let task, let response, let completionHandler):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
-						object.response = response as? NSHTTPURLResponseType
-						object.cacheProvider?.expectedDataLength = object.response!.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(object.response!.getMimeType())
-						observer.onNext(StreamTaskEvents.ReceiveResponse(object.response!).asResult())
+						
+						completionHandler(.Allow)
+						
+						object.response = response
+						object.cacheProvider?.expectedDataLength = response.expectedContentLength
+						object.cacheProvider?.setContentMimeTypeIfEmpty(response.MIMEType ?? "")
+						observer.onNext(StreamTaskEvents.ReceiveResponse(response))
 					case .didReceiveData(_, let task, let data):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
 						
 						if let cacheProvider = object.cacheProvider {
 							cacheProvider.appendData(data)
-							observer.onNext(StreamTaskEvents.CacheData(cacheProvider).asResult())
+							observer.onNext(StreamTaskEvents.CacheData(cacheProvider))
 						} else {
-							observer.onNext(StreamTaskEvents.ReceiveData(data).asResult())
+							observer.onNext(StreamTaskEvents.ReceiveData(data))
 						}
 					case .didCompleteWithError(let session, let task, let error):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
@@ -87,9 +92,9 @@ public class StreamDataTask {
 						object.resumed = false
 						
 						if let error = error {
-							observer.onNext(Result.error(error))
+							observer.onNext(StreamTaskEvents.Error(error))
 						} else {
-							observer.onNext(StreamTaskEvents.Success(cache: object.cacheProvider).asResult())
+							observer.onNext(StreamTaskEvents.Success(cache: object.cacheProvider))
 						}
 
 						observer.onCompleted()
@@ -104,20 +109,13 @@ public class StreamDataTask {
 }
 
 extension StreamDataTask : StreamDataTaskType {
-	public func resume() {
+	func resume() {
 		dispatch_sync(queue) {
 			if !self.resumed { self.resumed = true; self.dataTask.resume() }
 		}
 	}
-	
-	/*
-	public func suspend() {
-		self.resumed = false
-		dataTask.suspend()
-	}
-	*/
-	
-	public func cancel() {
+		
+	func cancel() {
 		resumed = false
 		dataTask.cancel()
 	}

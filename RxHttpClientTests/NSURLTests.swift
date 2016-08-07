@@ -1,4 +1,5 @@
 import XCTest
+import RxHttpClient
 
 class NSURLTests: XCTestCase {
 	
@@ -11,7 +12,7 @@ class NSURLTests: XCTestCase {
 		// Put teardown code here. This method is called after the invocation of each test method in the class.
 		super.tearDown()
 	}
-	
+		
 	func testCreateNSURLWithParameters() {
 		let url = NSURL(baseUrl: "http://test.com", parameters: ["param1": "value1", "param2": "value2"])
 		XCTAssertEqual(url?.absoluteString, "http://test.com?param1=value1&param2=value2")

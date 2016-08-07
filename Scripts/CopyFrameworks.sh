@@ -1,1 +1,0 @@
-cp -R ./Carthage/Build/iOS/*.framework ./Dependencies/iOS

@@ -1,101 +1,54 @@
 import Foundation
 import RxSwift
 
-public enum HttpRequestResult {
-	case success
-	case successData(NSData)
-	case error(ErrorType)
-}
-
-public protocol HttpClientType {
-	func createUrlRequest(url: NSURL) -> NSMutableURLRequestType
-	func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestType
-	func loadData(request: NSURLRequestType) -> Observable<HttpRequestResult>
-	func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskResult>
-	func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType
-}
-
-public class HttpClient {
-	internal let httpUtilities: HttpUtilitiesType
-	internal let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	internal let sessionConfiguration: NSURLSessionConfiguration
-	internal let shouldInvalidateSession: Bool
+public final class HttpClient {
+	/// Scheduler for observing data task events
+	internal let dataTaskScheduler =
+		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
+	/// Default concurrent scheduler for observing observable sequence created by loadStreamData method
+	internal let streamDataObservingScheduler =
+		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .Utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
+	internal let sessionObserver = NSURLSessionDataEventsObserver()
+	internal let urlSession: NSURLSessionType
 	
-	internal lazy var urlSession: NSURLSessionType = {
-		return self.httpUtilities.createUrlSession(self.sessionConfiguration, delegate: self.sessionObserver  as? NSURLSessionDataDelegate, queue: nil)
-	}()
-	
-	internal lazy var sessionObserver: NSURLSessionDataEventsObserverType = {
-		return self.httpUtilities.createUrlSessionStreamObserver()
-	}()
-	
-	internal init(sessionConfiguration: NSURLSessionConfiguration, httpUtilities: HttpUtilitiesType) {
-		self.httpUtilities = httpUtilities
-		self.sessionConfiguration = sessionConfiguration
-		shouldInvalidateSession = true
+	/**
+	Creates an instance of HttpClient
+	- parameter sessionConfiguration: NSURLSessionConfiguration that will be used to create NSURLSession
+	(this session will be canceled while deiniting of HttpClient)
+	*/
+	public init(sessionConfiguration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()) {
+		urlSession = NSURLSession(configuration: sessionConfiguration,
+		                          delegate: self.sessionObserver,
+		                          delegateQueue: nil)
 	}
 	
-	internal init(urlSession: NSURLSessionType, httpUtilities: HttpUtilitiesType) {
-		self.httpUtilities = httpUtilities
-		shouldInvalidateSession = false
-		self.sessionConfiguration = urlSession.configuration
+	/// Initializer for unit tests only
+	internal init(session urlSession: NSURLSessionType) {
 		self.urlSession = urlSession
 	}
 	
-	public convenience init(urlSession: NSURLSessionType) {
-		self.init(urlSession: urlSession, httpUtilities: HttpUtilities())
-	}
-	
-	public convenience init(sessionConfiguration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()) {
-		self.init(sessionConfiguration: sessionConfiguration, httpUtilities: HttpUtilities())
-	}
-	
 	deinit {
-		guard shouldInvalidateSession else { return }
-		urlSession.invalidateAndCancel()
+		urlSession.finishTasksAndInvalidate()
 	}
 }
 
 extension HttpClient : HttpClientType {
-	public func createUrlRequest(url: NSURL, headers: [String: String]?) -> NSMutableURLRequestType {
-		return httpUtilities.createUrlRequest(url, headers: headers)
-	}
-	
-	public func createUrlRequest(url: NSURL) -> NSMutableURLRequestType {
-		return createUrlRequest(url, headers: nil)
-	}
-	
-	public func loadData(request: NSURLRequestType)	-> Observable<HttpRequestResult> {
-		return loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString)).flatMapLatest { result -> Observable<HttpRequestResult> in		
-			switch result {
-			case Result.error(let error): return Observable.just(.error(error))
-			case Result.success(let box):
-				guard case StreamTaskEvents.Success(let cache) = box.value else { return Observable.empty() }
-				
-				guard let cacheProvider = cache where cacheProvider.currentDataLength > 0 else { return Observable.just(.success) }
-
-				return Observable.just(.successData(cacheProvider.getCurrentData()))
-			}
-		}.observeOn(scheduler).shareReplay(0)
-	}
-	
-	public func loadStreamData(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> Observable<StreamTaskResult> {
+	/**
+	Creates streaming observable for request
+	- parameter request: URL request
+	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
+	- returns: Created observable that emits stream events
+	*/
+	public func loadStreamData(request: NSURLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
 			
+			// clears cache provider before start
+			if let cacheProvider = cacheProvider { cacheProvider.clearData() }
+			
 			let task = object.createStreamDataTask(request, cacheProvider: cacheProvider)
 			
-			let disposable = task.taskProgress.catchError { error in
-				observer.onNext(Result.error(error))
-				observer.onCompleted()
-				return Observable.empty()
-			}.bindNext { result in
-				observer.onNext(result)
-				
-				if case Result.success(let box) = result, case .Success = box.value {
-					observer.onCompleted()
-				}
-			}
+			let disposable = task.taskProgress.observeOn(object.dataTaskScheduler).subscribe(observer)
 			
 			task.resume()
 			
@@ -103,15 +56,18 @@ extension HttpClient : HttpClientType {
 				task.cancel()
 				disposable.dispose()
 			}
-		}.observeOn(scheduler).shareReplay(0)
+			}.observeOn(streamDataObservingScheduler)
 	}
 	
-	public func createStreamDataTask(request: NSURLRequestType, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+	/**
+	Creates StreamDataTask
+	- parameter taskUid: String, that may be used as unique identifier of the task
+	- parameter request: URL request
+	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
+	- returns: Created data task
+	*/
+	public func createStreamDataTask(taskUid: String, request: NSURLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
-		return httpUtilities.createStreamDataTask(NSUUID().UUIDString,
-		                                          dataTask: dataTask,
-		                                          httpClient: self,
-		                                          sessionEvents: sessionObserver.sessionEvents,
-		                                          cacheProvider: cacheProvider)
+		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, httpClient: self, sessionEvents: sessionObserver.sessionEvents, cacheProvider: cacheProvider)
 	}
 }
