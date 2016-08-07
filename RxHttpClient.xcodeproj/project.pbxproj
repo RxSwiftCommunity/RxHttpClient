@@ -40,14 +40,11 @@
 
 /* Begin PBXFileReference section */
 		6E1C07C11D48FF92009513FD /* HttpClientType+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HttpClientType+Extensions.swift"; sourceTree = "<group>"; };
-		6E556B561D57446300E43388 /* StreamingMusicPlayer */ = {isa = PBXFileReference; lastKnownFileType = folder; name = StreamingMusicPlayer; path = ../StreamingMusicPlayer; sourceTree = "<group>"; };
 		6E556B581D57447A00E43388 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = HttpClientBasicTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6E5B3CEB1D2D32F900775D9F /* NSURLSessionTypeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = NSURLSessionTypeTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6E5B3CED1D2D3C8400775D9F /* NSURLTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSURLTests.swift; sourceTree = "<group>"; };
 		6E5B3CEF1D2D43C000775D9F /* MimeTypeConverterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MimeTypeConverterTests.swift; sourceTree = "<group>"; };
-		6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxCocoa.framework; path = Dependencies/iOS/RxCocoa.framework; sourceTree = "<group>"; };
-		6E75E5D61D2AAD55003B8800 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Dependencies/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6E81B0371D4A850100D099F1 /* HttpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		6E81B0391D4A85CF00D099F1 /* MemoryCacheProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryCacheProvider.swift; sourceTree = "<group>"; };
 		6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RxHttpClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -91,9 +88,6 @@
 			isa = PBXGroup;
 			children = (
 				6E556B581D57447A00E43388 /* RxSwift.framework */,
-				6E556B561D57446300E43388 /* StreamingMusicPlayer */,
-				6E75E5D51D2AAD55003B8800 /* RxCocoa.framework */,
-				6E75E5D61D2AAD55003B8800 /* RxSwift.framework */,
 				6EFB9EBA1D2A4E2600E30A5D /* RxHttpClient */,
 				6EFB9EC61D2A4E2600E30A5D /* RxHttpClientTests */,
 				6EFB9EB91D2A4E2600E30A5D /* Products */,
