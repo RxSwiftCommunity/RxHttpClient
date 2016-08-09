@@ -64,7 +64,7 @@ class HttpClientBasicTests: XCTestCase {
 		}
 		
 		let client = HttpClient()
-		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let request = NSURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
 		let bag = DisposeBag()
 		
 		let expectation = expectationWithDescription("Should return correct data")
@@ -172,7 +172,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		let expectation = expectationWithDescription("Should return error")
 		client.loadData(request).doOnError { error in
-			guard case let HttpRequestError.Unsuccessful(response as NSHTTPURLResponse, data) = error else {
+			guard case let HttpClientError.InvalidResponse(response, data) = error else {
 				XCTFail("Should return correct error")
 				return
 			}
@@ -270,5 +270,26 @@ class HttpClientBasicTests: XCTestCase {
 		let request = httpClient.createUrlRequest(url, headers: headers)
 		XCTAssertEqual(url, request.URL)
 		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
+	}
+	
+	func testReturnCorrectErrorIfSessionInvalidatedWithError() {
+		let session = FakeSession()
+		let client = HttpClient(session: session)
+		
+		session.task = FakeDataTask(resumeClosure: { _ in
+			client.sessionObserver.sessionEventsSubject.onNext(.didBecomeInvalidWithError(session: session, error: NSError(domain: "Test", code: 123, userInfo: nil)))
+		})
+		
+		let request = (URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should return correct error")
+		client.loadData(request).doOnError { error in
+			if case HttpClientError.SessionInvalidatedWithError(let error) = error where error.code == 123 {
+				expectation.fulfill()
+			}
+		}.subscribe().addDisposableTo(bag)
+		
+		waitForExpectationsWithTimeout(1, handler: nil)
 	}
 }

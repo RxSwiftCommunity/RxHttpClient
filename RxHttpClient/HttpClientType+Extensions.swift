@@ -1,10 +1,6 @@
 import Foundation
 import RxSwift
 
-public enum HttpRequestError : ErrorType {
-	case Unsuccessful(NSURLResponse, NSData?)
-}
-
 public extension HttpClientType {
 	/**
 	Creates NSMutableURLRequest with provided NSURL and HTTP Headers
@@ -82,7 +78,7 @@ public extension HttpClientType {
 						return Observable.just(cacheProvider.getCurrentData())
 					}
 					
-					return Observable.error(HttpRequestError.Unsuccessful(errorResponse, cacheProvider.getCurrentData()))
+					return Observable.error(HttpClientError.InvalidResponse(response: errorResponse, data: cacheProvider.getCurrentData()))
 				default: return Observable.empty()
 				}
 		}

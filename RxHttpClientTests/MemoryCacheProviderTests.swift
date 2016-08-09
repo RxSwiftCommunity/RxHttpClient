@@ -90,7 +90,6 @@ class MemoryCacheProviderTests: XCTestCase {
 		let dataTask = session.dataTaskWithRequest(request)
 		let task = StreamDataTask(taskUid: NSUUID().UUIDString,
 		                          dataTask: dataTask,
-		                          httpClient: httpClient,
 		                          sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                          cacheProvider: MemoryCacheProvider(uid: NSUUID().UUIDString))
 
