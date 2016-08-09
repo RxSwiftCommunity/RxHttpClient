@@ -150,8 +150,8 @@ class HttpClientBasicTests: XCTestCase {
 		let bag = DisposeBag()
 		
 		let expectation = expectationWithDescription("Should return error")
-		client.loadData(request).doOnError { error in
-			let error = error as NSError
+		client.loadData(request).doOnError { result in
+			guard case HttpClientError.ClientSideError(let error) = result else { return }
 			XCTAssertEqual(error.code, 1, "Check error code")
 			XCTAssertEqual(error.domain, "TestDomain", "Check error domain")
 			expectation.fulfill()
