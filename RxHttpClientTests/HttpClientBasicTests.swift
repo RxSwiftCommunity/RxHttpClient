@@ -7,6 +7,7 @@ class HttpClientBasicTests: XCTestCase {
 	var bag: DisposeBag!
 	var session: FakeSession!
 	var httpClient: HttpClient!
+	let waitTimeout: Double = 5
 	
 	override func setUp() {
 		super.setUp()
@@ -35,7 +36,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		XCTAssertEqual(false, fakeSession.task?.isCancelled)
 		disposable.dispose()
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		XCTAssertEqual(true, fakeSession.task!.isCancelled)
 	}
 	
@@ -55,7 +56,7 @@ class HttpClientBasicTests: XCTestCase {
 			expectation.fulfill()
 		}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(2, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	func testLoadCorrectEmptyData() {
@@ -73,7 +74,7 @@ class HttpClientBasicTests: XCTestCase {
 			expectation.fulfill()
 		}.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(2, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	
@@ -98,7 +99,7 @@ class HttpClientBasicTests: XCTestCase {
 		//invoke task
 		task.subscribe().addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	func testLoadCorrectDataAndRetryAfterError() {
@@ -133,7 +134,7 @@ class HttpClientBasicTests: XCTestCase {
 			}.doOnCompleted { expectation.fulfill() }.subscribe().addDisposableTo(bag)
 		
 		
-		waitForExpectationsWithTimeout(2, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 		
 		XCTAssertEqual(5, stubIncrement)
 		XCTAssertEqual(5, errorCounter)
@@ -157,7 +158,7 @@ class HttpClientBasicTests: XCTestCase {
 			expectation.fulfill()
 			}.bindNext { _ in XCTFail("Should not emit data") }.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	func testReceiveErrorResponse() {
@@ -181,7 +182,7 @@ class HttpClientBasicTests: XCTestCase {
 			expectation.fulfill()
 			}.bindNext { _ in XCTFail("Should not emit data") }.addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	func testReturnCorrectDataForMultipleRequests() {
@@ -232,7 +233,7 @@ class HttpClientBasicTests: XCTestCase {
 		task2.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
 		task3.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 	
 	func testDeinitOfHttpClientInvalidatesSession() {
@@ -290,6 +291,6 @@ class HttpClientBasicTests: XCTestCase {
 			}
 		}.subscribe().addDisposableTo(bag)
 		
-		waitForExpectationsWithTimeout(1, handler: nil)
+		waitForExpectationsWithTimeout(waitTimeout, handler: nil)
 	}
 }
