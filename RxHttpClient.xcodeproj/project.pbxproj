@@ -26,6 +26,7 @@
 		6EFB9EF81D2A5BC300E30A5D /* NSURLSessionDataEventsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9ED71D2A53FD00E30A5D /* NSURLSessionDataEventsObserver.swift */; };
 		6EFB9EF91D2A5BC300E30A5D /* StreamDataTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9ED81D2A53FD00E30A5D /* StreamDataTask.swift */; };
 		6EFB9EFE1D2A5C8E00E30A5D /* Fake.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EF01D2A587100E30A5D /* Fake.swift */; };
+		6EFE01CE1D5A5E1E007CE72A /* HttpClientError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFE01CD1D5A5E1E007CE72A /* HttpClientError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 		6EFB9EEA1D2A57B600E30A5D /* MemoryCacheProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = MemoryCacheProviderTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = StreamDataTaskTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6EFB9EF01D2A587100E30A5D /* Fake.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Fake.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		6EFE01CD1D5A5E1E007CE72A /* HttpClientError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClientError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 		6EFB9EBA1D2A4E2600E30A5D /* RxHttpClient */ = {
 			isa = PBXGroup;
 			children = (
+				6EFE01CD1D5A5E1E007CE72A /* HttpClientError.swift */,
 				6EFB9ED31D2A53FD00E30A5D /* HttpClientType.swift */,
 				6E1C07C11D48FF92009513FD /* HttpClientType+Extensions.swift */,
 				6E81B0371D4A850100D099F1 /* HttpClient.swift */,
@@ -269,6 +272,7 @@
 				6EFB9EF91D2A5BC300E30A5D /* StreamDataTask.swift in Sources */,
 				6EFB9EE61D2A563000E30A5D /* MimeTypeConverter.swift in Sources */,
 				6E81B0381D4A850100D099F1 /* HttpClient.swift in Sources */,
+				6EFE01CE1D5A5E1E007CE72A /* HttpClientError.swift in Sources */,
 				6EFB9EF41D2A5BBF00E30A5D /* CacheProviderType.swift in Sources */,
 				6EFB9EF51D2A5BC300E30A5D /* HttpClientType.swift in Sources */,
 				6E81B03A1D4A85CF00D099F1 /* MemoryCacheProvider.swift in Sources */,

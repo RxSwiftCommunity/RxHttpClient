@@ -68,6 +68,6 @@ extension HttpClient : HttpClientType {
 	*/
 	public func createStreamDataTask(taskUid: String, request: NSURLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
-		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, httpClient: self, sessionEvents: sessionObserver.sessionEvents, cacheProvider: cacheProvider)
+		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, sessionEvents: sessionObserver.sessionEvents, cacheProvider: cacheProvider)
 	}
 }

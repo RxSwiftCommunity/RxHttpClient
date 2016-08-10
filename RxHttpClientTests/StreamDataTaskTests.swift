@@ -1,5 +1,6 @@
 import XCTest
 import RxSwift
+import OHHTTPStubs
 @testable import RxHttpClient
 
 class StreamDataTaskTests: XCTestCase {
@@ -128,11 +129,98 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: { _ in})
 		let dataTask = session.dataTaskWithRequest(request)
 		let streamTask = StreamDataTask(taskUid: NSUUID().UUIDString,
-		                                dataTask: dataTask, httpClient: httpClient,
+		                                dataTask: dataTask, 
 		                                sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                                cacheProvider: nil)
 
 		XCTAssertTrue(streamTask.dataTask.originalRequest === request)
 		XCTAssertNil(streamTask.cacheProvider, "Cache provider should not be specified")
+	}
+	
+	func testCheckDeinitOfHttpClientNotCancellingRunningTasks() {
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: NSData(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
+		}
+		
+		var client: HttpClient! = HttpClient()
+		let request = NSURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should complete stream task")
+		
+		// creating stream task
+		let task = client.createStreamDataTask(request, cacheProvider: nil)
+		task.taskProgress.bindNext { result in
+			if case StreamTaskEvents.Success = result {
+				expectation.fulfill()
+			}
+		}.addDisposableTo(bag)
+		
+		// resuming task
+		task.resume()
+		
+		// setting cient to nil
+		// client will invoke finishTasksAndInvalidate method on NSURLSession, so task should be completed
+		client = nil
+		waitForExpectationsWithTimeout(2, handler: nil)
+	}
+	
+	func testCheckCancellingRunningTasksIfForcellyCancelSession() {
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: NSData(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
+		}
+		
+		let client = HttpClient()
+		let request = NSURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should return cancelation error")
+		
+		// creating stream task
+		let task = client.createStreamDataTask(request, cacheProvider: nil)
+		task.taskProgress.bindNext { result in
+			if case StreamTaskEvents.Error(let error as NSError) = result where error.code == -999 {
+				expectation.fulfill()
+			}
+			}.addDisposableTo(bag)
+		
+		// resuming task
+		task.resume()
+		
+		// invoke invalidateAndCancel on session, this should immediatelly cancel task
+		(client.urlSession as! NSURLSession).invalidateAndCancel()
+		waitForExpectationsWithTimeout(2, handler: nil)
+	}
+	
+	func testCheckTaskNotStartedIfHttpClientWasDeinited() {
+		stub({ $0.URL?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: NSData(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
+		}
+		
+		var client: HttpClient! = HttpClient()
+		let request = NSURLRequest(URL: NSURL(baseUrl: "https://test.com/json", parameters: nil)!)
+		let bag = DisposeBag()
+		
+		let expectation = expectationWithDescription("Should complete stream task")
+		
+		// creating stream task
+		let task = client.createStreamDataTask(request, cacheProvider: nil)
+		task.taskProgress.bindNext { result in
+			// checking if session was explicitly invalidated (while deinit of HttpClient)
+			if case StreamTaskEvents.Error(let error) = result, case HttpClientError.SessionExplicitlyInvalidated = error {
+				expectation.fulfill()
+			}
+			}.addDisposableTo(bag)
+		
+		// setting cient to nil before resume a task
+		client = nil
+		
+		// resuming task
+		// in this case task should not be started
+		task.resume()
+		
+		waitForExpectationsWithTimeout(2, handler: nil)
+		
+		XCTAssertFalse(task.resumed)
 	}
 }

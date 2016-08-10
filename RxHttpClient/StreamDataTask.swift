@@ -47,16 +47,14 @@ internal final class StreamDataTask {
 	var cacheProvider: CacheProviderType?
 
 	let queue = dispatch_queue_create("com.RxHttpClient.StreamDataTask.Serial", DISPATCH_QUEUE_SERIAL)
-	let httpClient: HttpClientType
 	var response: NSURLResponse?
 	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
 	let dataTask: NSURLSessionDataTaskType
 	let sessionEvents: Observable<SessionDataEvents>
 
-	init(taskUid: String, dataTask: NSURLSessionDataTaskType, httpClient: HttpClientType, sessionEvents: Observable<SessionDataEvents>,
+	init(taskUid: String, dataTask: NSURLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
 	            cacheProvider: CacheProviderType?) {
 		self.dataTask = dataTask
-		self.httpClient = httpClient
 		self.sessionEvents = sessionEvents
 		self.cacheProvider = cacheProvider
 		uid = taskUid
@@ -98,6 +96,16 @@ internal final class StreamDataTask {
 						}
 
 						observer.onCompleted()
+					case .didBecomeInvalidWithError(_, let error):
+						object.resumed = false
+						// dealing with session invalidation
+						guard let error = error else {
+							// if error is nil, session was invalidated explicitly
+							observer.onNext(StreamTaskEvents.Error(HttpClientError.SessionExplicitlyInvalidated))
+							return
+						}
+						// otherwise sending error that caused invalidation
+						observer.onNext(StreamTaskEvents.Error(HttpClientError.SessionInvalidatedWithError(error: error)))
 					}
 			}
 			
@@ -111,7 +119,7 @@ internal final class StreamDataTask {
 extension StreamDataTask : StreamDataTaskType {
 	func resume() {
 		dispatch_sync(queue) {
-			if !self.resumed { self.resumed = true; self.dataTask.resume() }
+			if !self.resumed { self.resumed = true; self.dataTask.resume(); }
 		}
 	}
 		

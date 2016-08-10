@@ -1,10 +1,6 @@
 import Foundation
 import RxSwift
 
-public enum HttpRequestError : ErrorType {
-	case Unsuccessful(NSURLResponse, NSData?)
-}
-
 public extension HttpClientType {
 	/**
 	Creates NSMutableURLRequest with provided NSURL and HTTP Headers
@@ -70,9 +66,16 @@ public extension HttpClientType {
 		return loadStreamData(request, cacheProvider: cacheProvider)
 			.flatMapLatest { result -> Observable<NSData> in
 				switch result {
-				case .Error(let error): return Observable.error(error)
-					// checking status code of HTTP responce, and caching response if code is not success
+				case .Error(let error):
+					// checking error type
+					guard error is HttpClientError else {
+						// if it's not HttpClientError wrap it on ClientSideError
+						return Observable.error(HttpClientError.ClientSideError(error: error as NSError))
+					}
+					// otherwise forward error
+					return Observable.error(error)
 				case .ReceiveResponse(let response as NSHTTPURLResponse) where !(200...299 ~= response.statusCode):
+					// checking status code of HTTP responce, and caching response if code is not success (not 2xx)
 					// saving response
 					errorResponse = response
 					return Observable.empty()
@@ -82,7 +85,7 @@ public extension HttpClientType {
 						return Observable.just(cacheProvider.getCurrentData())
 					}
 					
-					return Observable.error(HttpRequestError.Unsuccessful(errorResponse, cacheProvider.getCurrentData()))
+					return Observable.error(HttpClientError.InvalidResponse(response: errorResponse, data: cacheProvider.getCurrentData()))
 				default: return Observable.empty()
 				}
 		}
