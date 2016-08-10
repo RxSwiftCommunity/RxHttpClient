@@ -24,7 +24,7 @@ carthage update RxHttpClient
 Commands above are necessary if Carthage trying to build RxHttpClient before RxSwift.
 
 ##Usage
-###StreamData
+####StreamData
 For create request and streaming data:
 ```
 let client = HttpClient()
@@ -41,7 +41,7 @@ client.loadStreamData(url).bindNext { event in
 }.addDisposableTo(bag)
 ```
 
-If dealing with every chunk of data is not necessary it's possible to pass an instance of cache provider and in success event crab all data from that provider (for now there is only MemoryCacheProvider object):
+If dealing with every chunk of data is not necessary it's possible to pass an instance of cache provider and in success event grab all data from that provider (for now there is only MemoryCacheProvider object):
 ```
 let client = HttpClient()
 let bag = DisposeBag()
@@ -56,7 +56,7 @@ client.loadStreamData(url, cacheProvider: MemoryCacheProvider()).bindNext { even
 }.addDisposableTo(bag)
 ```
 
-###Convenience methods
+####Convenience methods
 It's also possible to simply invoke request and receive data using loadData method (in this case errors are forwarded with RxSwift error mechanism):
 ```
 let client = HttpClient()
@@ -84,7 +84,7 @@ let request = client.createUrlRequest(url, headers: ["Header": "Value"])
 client.loadData(request).bindNext { data in /* */ }.addDisposableTo(bag)
 ```
 
-###StreamDataTask
+####StreamDataTask
 StreamDataTask is a more "low level" object that wraps NSURLSessionDataTask. In most situations is't more convenient to use loadStreamData method (it actually simply forwards events from StreamDataTask), but if necessary StreamDataTask may be used in this way:
 ```
 let client = HttpClient()
