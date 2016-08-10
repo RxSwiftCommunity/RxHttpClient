@@ -5,7 +5,7 @@ public final class MemoryCacheProvider {
 	public var expectedDataLength: Int64 = 0
 	
 	/// MIME type of cached data
-	public var contentMimeType: String?
+	public internal(set) var contentMimeType: String?
 	
 	/// UID of cache provider
 	public let uid: String
@@ -16,9 +16,13 @@ public final class MemoryCacheProvider {
 	/// Serial queue for provide thread-safe operations
 	internal let queue = dispatch_queue_create("com.RxHttpClient.MemoryCacheProvider.SerialQueue", DISPATCH_QUEUE_SERIAL)
 	
-	public init(uid: String, contentMimeType: String? = nil) {
+	public init(uid: String = NSUUID().UUIDString, contentMimeType: String? = nil) {
 		self.uid = uid
 		self.contentMimeType = contentMimeType
+	}
+	
+	public convenience init(contentMimeType: String) {
+		self.init(uid: NSUUID().UUIDString, contentMimeType: contentMimeType)
 	}
 	
 	/**

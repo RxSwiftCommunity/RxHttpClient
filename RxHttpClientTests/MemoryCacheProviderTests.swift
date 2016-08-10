@@ -53,6 +53,17 @@ class MemoryCacheProviderTests: XCTestCase {
 		session = nil
 	}
 	
+	func testInitWithCorrectMimeType() {
+		let provider = MemoryCacheProvider(contentMimeType: "audio/mpeg")
+		XCTAssertEqual("audio/mpeg", provider.contentMimeType)
+	}
+	
+	func testInitWithUidAndEmptyMimeType() {
+		let provider = MemoryCacheProvider()
+		XCTAssertNil(provider.contentMimeType)
+		XCTAssertNotEqual("", provider.uid)
+	}
+	
 	func testCacheCorrectData() {
 		let taskCancelExpectation = expectationWithDescription("Should cancel task and not invalidate tession")
 		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { taskCancelExpectation.fulfill() })

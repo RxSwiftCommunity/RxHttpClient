@@ -179,7 +179,6 @@ class StreamDataTaskTests: XCTestCase {
 		// creating stream task
 		let task = client.createStreamDataTask(request, cacheProvider: nil)
 		task.taskProgress.bindNext { result in
-			print("event: \(result)")
 			if case StreamTaskEvents.Error(let error as NSError) = result where error.code == -999 {
 				expectation.fulfill()
 			}
