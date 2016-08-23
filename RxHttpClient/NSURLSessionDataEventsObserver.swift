@@ -2,11 +2,11 @@ import Foundation
 import RxSwift
 
 enum SessionDataEvents {
-	case didReceiveResponse(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, response: NSURLResponse,
-		completion: (NSURLSessionResponseDisposition) -> Void)
-	case didReceiveData(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, data: NSData)
-	case didCompleteWithError(session: NSURLSessionType, dataTask: NSURLSessionTaskType, error: NSError?)
-	case didBecomeInvalidWithError(session: NSURLSessionType, error: NSError?)
+	case didReceiveResponse(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, response: URLResponse,
+		completion: (URLSession.ResponseDisposition) -> Void)
+	case didReceiveData(session: NSURLSessionType, dataTask: NSURLSessionDataTaskType, data: Data)
+	case didCompleteWithError(session: NSURLSessionType, dataTask: NSURLSessionTaskType, error: Error?)
+	case didBecomeInvalidWithError(session: NSURLSessionType, error: Error?)
 }
 
 protocol NSURLSessionDataEventsObserverType {
@@ -23,23 +23,23 @@ final class NSURLSessionDataEventsObserver : NSObject {
 	internal let sessionEventsSubject = PublishSubject<SessionDataEvents>()
 }
 
-extension NSURLSessionDataEventsObserver : NSURLSessionDataDelegate {
-	func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveResponse response: NSURLResponse,
-	                completionHandler: (NSURLSessionResponseDisposition) -> Void) {
+extension NSURLSessionDataEventsObserver : URLSessionDataDelegate {
+	func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
+	                completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
 		sessionEventsSubject.onNext(.didReceiveResponse(session: session, dataTask: dataTask, response: response, completion: completionHandler))
 	}
 	
-	func URLSession(session: NSURLSession, dataTask: NSURLSessionDataTask, didReceiveData data: NSData) {
+	func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
 		sessionEventsSubject.onNext(.didReceiveData(session: session, dataTask: dataTask, data: data))
 	}
 }
-extension NSURLSessionDataEventsObserver : NSURLSessionDelegate {
-	func URLSession(session: NSURLSession, didBecomeInvalidWithError error: NSError?) {
+extension NSURLSessionDataEventsObserver : URLSessionDelegate {
+	func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
 		sessionEventsSubject.onNext(.didBecomeInvalidWithError(session: session, error: error))
 	}
 }
-extension NSURLSessionDataEventsObserver : NSURLSessionTaskDelegate {
-	func URLSession(session: NSURLSession, task: NSURLSessionTask, didCompleteWithError error: NSError?) {
+extension NSURLSessionDataEventsObserver : URLSessionTaskDelegate {	
+	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
 		sessionEventsSubject.onNext(.didCompleteWithError(session: session, dataTask: task, error: error))
 	}
 }

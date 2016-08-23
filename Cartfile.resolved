@@ -1,2 +1,2 @@
 github "AliSoftware/OHHTTPStubs" "5.1.0"
-github "ReactiveX/RxSwift" "2.6.0"
+github "ReactiveX/RxSwift" "3.0.0.alpha.1"

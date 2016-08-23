@@ -26,19 +26,19 @@ Represents the events that will be sended to observers of StreamDataTask
 public enum StreamTaskEvents {
 	/// This event will be sended after receiving (and cacnhing) new chunk of data. 
 	/// This event will be sended only if CacheProvider was specified.
-	case CacheData(CacheProviderType)
+	case cacheData(CacheProviderType)
 	/// This event will be sended after receiving new chunk of data.
 	/// This event will be sended only if CacheProvider was not specified.
-	case ReceiveData(NSData)
+	case receiveData(Data)
 	// This event will be sended after receiving response.
-	case ReceiveResponse(NSURLResponse)
+	case receiveResponse(URLResponse)
 	/**
 	This event will be sended if underlying task was completed with error.
 	This event will be sended if unerlying NSURLSession invoked delegate method URLSession:task:didCompleteWithError: with specified error.
 	*/
-	case Error(ErrorType)
+	case error(Error)
 	/// This event will be sended after completion of underlying data task.
-	case Success(cache: CacheProviderType?)
+	case success(cache: CacheProviderType?)
 }
 
 internal final class StreamDataTask {
@@ -46,9 +46,9 @@ internal final class StreamDataTask {
 	var resumed = false
 	var cacheProvider: CacheProviderType?
 
-	let queue = dispatch_queue_create("com.RxHttpClient.StreamDataTask.Serial", DISPATCH_QUEUE_SERIAL)
-	var response: NSURLResponse?
-	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
+	let queue = DispatchQueue(label: "com.RxHttpClient.StreamDataTask.Serial", attributes: [])
+	var response: URLResponse?
+	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility)
 	let dataTask: NSURLSessionDataTaskType
 	let sessionEvents: Observable<SessionDataEvents>
 
@@ -69,20 +69,20 @@ internal final class StreamDataTask {
 					case .didReceiveResponse(_, let task, let response, let completionHandler):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
 						
-						completionHandler(.Allow)
+						completionHandler(.allow)
 						
 						object.response = response
 						object.cacheProvider?.expectedDataLength = response.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(response.MIMEType ?? "")
-						observer.onNext(StreamTaskEvents.ReceiveResponse(response))
+						object.cacheProvider?.setContentMimeTypeIfEmpty(response.mimeType ?? "")
+						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
 						
 						if let cacheProvider = object.cacheProvider {
 							cacheProvider.appendData(data)
-							observer.onNext(StreamTaskEvents.CacheData(cacheProvider))
+							observer.onNext(StreamTaskEvents.cacheData(cacheProvider))
 						} else {
-							observer.onNext(StreamTaskEvents.ReceiveData(data))
+							observer.onNext(StreamTaskEvents.receiveData(data))
 						}
 					case .didCompleteWithError(let session, let task, let error):
 						guard task.isEqual(object.dataTask as? AnyObject) else { return }
@@ -90,9 +90,9 @@ internal final class StreamDataTask {
 						object.resumed = false
 						
 						if let error = error {
-							observer.onNext(StreamTaskEvents.Error(error))
+							observer.onNext(StreamTaskEvents.error(error))
 						} else {
-							observer.onNext(StreamTaskEvents.Success(cache: object.cacheProvider))
+							observer.onNext(StreamTaskEvents.success(cache: object.cacheProvider))
 						}
 
 						observer.onCompleted()
@@ -101,11 +101,11 @@ internal final class StreamDataTask {
 						// dealing with session invalidation
 						guard let error = error else {
 							// if error is nil, session was invalidated explicitly
-							observer.onNext(StreamTaskEvents.Error(HttpClientError.SessionExplicitlyInvalidated))
+							observer.onNext(StreamTaskEvents.error(HttpClientError.sessionExplicitlyInvalidated))
 							return
 						}
 						// otherwise sending error that caused invalidation
-						observer.onNext(StreamTaskEvents.Error(HttpClientError.SessionInvalidatedWithError(error: error)))
+						observer.onNext(StreamTaskEvents.error(HttpClientError.sessionInvalidatedWithError(error: error)))
 					}
 			}
 			
@@ -118,7 +118,7 @@ internal final class StreamDataTask {
 
 extension StreamDataTask : StreamDataTaskType {
 	func resume() {
-		dispatch_sync(queue) {
+		queue.sync {
 			if !self.resumed { self.resumed = true; self.dataTask.resume(); }
 		}
 	}
