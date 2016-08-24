@@ -11,7 +11,7 @@ env:
   - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6,OS=9.3'
 
 before_install:
-  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (9.3) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
+  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.0) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
 
 before_script:
 # inslall punic
