@@ -7,7 +7,7 @@ env:
   #- WORKSPACE=
   - PROJECT=RxHttpClient.xcodeproj
   - FRAMEWORK_SCHEME=RxHttpClient
-  - SDK=iphonesimulator9.3
+  - SDK=iphonesimulator10.0
   - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6,OS=9.3'
 
 before_install:
@@ -27,9 +27,9 @@ before_script:
 # using punic to build RxSwift framework
 #- punic build RxSwift --platform iOS --configuration Release
 #build RxSwift
-- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "iphonesimulator10.0" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
-- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxCocoa-iOS" -workspace "Rx.xcworkspace" -sdk "iphonesimulator10.0" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
-- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxTests-iOS" -workspace "Rx.xcworkspace" -sdk "iphonesimulator10.0" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxCocoa-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxTests-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
 
 #copy RxSwift frameworks to Carthage/Build folder
 - cp -R -f ./Build/Release-iphonesimulator/ ./Carthage/Build
