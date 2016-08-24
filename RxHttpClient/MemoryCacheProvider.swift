@@ -51,7 +51,7 @@ extension MemoryCacheProvider : CacheProviderType {
 	Sets MIME type for data if it's not nil
 	- parameter mimeType: New MIME type
 	*/
-	public func setContentMimeTypeIfEmpty(_ mimeType: String) {
+	public func setContentMimeTypeIfEmpty(mimeType: String) {
 		invokeSerial {
 			if self.contentMimeType == nil {
 				self.contentMimeType = mimeType
@@ -72,7 +72,7 @@ extension MemoryCacheProvider : CacheProviderType {
 	Adds data to cache
 	- parameter data: Data that would be cached
 	*/
-	public func appendData(_ data: Data) {
+	public func append(data: Data) {
 		invokeSerial { self.cacheData.append(data) }
 	}
 	
@@ -80,7 +80,7 @@ extension MemoryCacheProvider : CacheProviderType {
 	Gets a copy of current cached data
 	- returns: Copy of data currently stored in cache
 	*/
-	public func getCurrentData() -> Data {
+	public func getData() -> Data {
 		var currentData: Data!
 		invokeSerial {
 			currentData = NSData(data: self.cacheData as Data) as Data
@@ -93,7 +93,7 @@ extension MemoryCacheProvider : CacheProviderType {
 	- parameter range: The range in the cache from which to get the data. The range must not exceed the bounds of the cache.
 	- returns: Copy of data currently stored in cache within range
 	*/
-	public func getCurrentSubdata(_ range: NSRange) -> Data {
+	public func getSubdata(range: NSRange) -> Data {
 		var currentData: Data!
 		invokeSerial {
 			currentData = self.cacheData.subdata(with: range)
@@ -108,7 +108,7 @@ extension MemoryCacheProvider : CacheProviderType {
 	If nil, extension will be inferred by MIME type, if inferring fails, extension will be "dat"
 	- returns: NSURL for saved file or nil, if file not saved
 	*/
-	public func saveData(_ destinationDirectory: URL, fileExtension: String?) -> URL? {
+	public func saveData(destinationDirectory: URL, fileExtension: String?) -> URL? {
 		var resultPath: URL?
 		invokeSerial {
 			let fileName = "\(UUID().uuidString).\(fileExtension ?? MimeTypeConverter.getFileExtensionFromMime(self.contentMimeType ?? "") ?? "dat")"

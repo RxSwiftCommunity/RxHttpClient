@@ -72,7 +72,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
-		httpClient.loadStreamData(request: request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString)).bindNext { result in
+		httpClient.request(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString)).bindNext { result in
 			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
 			} else if case .success(let cacheProvider) = result {
@@ -80,7 +80,7 @@ class MemoryCacheProviderTests: XCTestCase {
 				XCTAssertEqual(self.fakeResponse.expectedContentLength, cacheProvider?.expectedDataLength, "Should have expectedDataLength same as length in response")
 				XCTAssertEqual(self.fakeResponse.mimeType, cacheProvider?.contentMimeType, "Should have mime type same as mime type of request")
 				XCTAssertEqual(4, receiveChunkCounter, "Should cache correct data chunk amount")
-				XCTAssertEqual(true, cacheProvider!.getCurrentData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
+				XCTAssertEqual(true, cacheProvider!.getData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
 				successExpectation.fulfill()
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
@@ -112,7 +112,7 @@ class MemoryCacheProviderTests: XCTestCase {
 				XCTAssertEqual(self.fakeResponse.expectedContentLength, cacheProvider?.expectedDataLength, "Should have expectedDataLength same as length in response")
 				XCTAssertEqual(self.fakeResponse.mimeType, cacheProvider?.contentMimeType, "Should have mime type same as mime type of request")
 				XCTAssertEqual(4, receiveChunkCounter, "Should cache correct data chunk amount")
-				XCTAssertEqual(true, cacheProvider!.getCurrentData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
+				XCTAssertEqual(true, cacheProvider!.getData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
 				successExpectation.fulfill()
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
@@ -137,7 +137,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
 		// create memory cache provider with explicitly specified mime type
-		httpClient.loadStreamData(request: request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).bindNext { result in
+		httpClient.request(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).bindNext { result in
 			if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(cacheProvider?.contentMimeType, "application/octet-stream", "Mime type should be preserved")
@@ -154,8 +154,8 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testSaveDataOnDisk() {
 		let provider = MemoryCacheProvider(uid: UUID().uuidString)
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
-		provider.appendData(testData)
-		XCTAssertTrue(testData == provider.getCurrentData(), "Cached data should be equal to data sended in cache")
+		provider.append(data: testData)
+		XCTAssertTrue(testData == provider.getData(), "Cached data should be equal to data sended in cache")
 		let savedDataUrl = provider.saveData()
 		XCTAssertNotNil(savedDataUrl, "Should save data end return url")
 		XCTAssertEqual(savedDataUrl?.pathExtension, "dat", "Should set default file extension (dat)")
@@ -170,8 +170,8 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testSaveDataOnDiskWithCustomExtension() {
 		let provider = MemoryCacheProvider(uid: UUID().uuidString)
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
-		provider.appendData(testData)
-		let savedDataUrl = provider.saveData("mp3")
+		provider.append(data: testData)
+		let savedDataUrl = provider.saveData(fileExtension: "mp3")
 		XCTAssertEqual(savedDataUrl?.pathExtension, "mp3", "Should set specified file extension")
 		if let savedDataUrl = savedDataUrl {
 			try! FileManager.default.removeItem(at: savedDataUrl)
@@ -181,7 +181,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testClearData() {
 		let provider = MemoryCacheProvider(uid: UUID().uuidString)
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
-		provider.appendData(testData)
+		provider.append(data: testData)
 		XCTAssertTrue(provider.currentDataLength > 0, "Should have cached data")
 		provider.clearData()
 		XCTAssertEqual(0, provider.currentDataLength, "Should have clean cache data")
@@ -190,17 +190,17 @@ class MemoryCacheProviderTests: XCTestCase {
 	func testReturnCurrentData() {
 		let provider = MemoryCacheProvider(uid: UUID().uuidString)
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
-		provider.appendData(testData)
-		XCTAssertTrue(testData == provider.getCurrentData())
+		provider.append(data: testData)
+		XCTAssertTrue(testData == provider.getData())
 	}
 	
 	func testReturnCurrentDataOffset() {
 		let provider = MemoryCacheProvider(uid: UUID().uuidString)
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
-		provider.appendData(testData)
+		provider.append(data: testData)
 		//XCTAssertTrue(testData.isEqualToData(provider.getCurrentData()))
 		let chunkLen = provider.currentDataLength - 2
-		let chunk = provider.getCurrentSubdata(1, length: chunkLen)
+		let chunk = provider.getSubdata(location: 1, length: chunkLen)
 		XCTAssertTrue(chunk == testData.subdata(in: Range(uncheckedBounds: (lower: 1, upper: chunkLen + 1))))
 	}
 	
@@ -209,8 +209,8 @@ class MemoryCacheProviderTests: XCTestCase {
 		try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: false, attributes: nil)
 		let provider = MemoryCacheProvider(uid: "test")
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
-		provider.appendData(testData)
-		let savedDataUrl = provider.saveData(dir)
+		provider.append(data: testData)
+		let savedDataUrl = provider.saveData(destinationDirectory: dir)
 		XCTAssertNotNil(savedDataUrl, "Should save data end return url")
 		XCTAssertEqual(savedDataUrl?.pathExtension, "dat", "Should set default file extension (dat)")
 		if let savedDataUrl = savedDataUrl, let data = try? Data(contentsOf: savedDataUrl) {

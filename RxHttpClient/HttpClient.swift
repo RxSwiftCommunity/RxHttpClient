@@ -39,7 +39,7 @@ extension HttpClient : HttpClientType {
 	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created observable that emits stream events
 	*/
-	public func loadStreamData(request: URLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
+	public func request(_ request: URLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			

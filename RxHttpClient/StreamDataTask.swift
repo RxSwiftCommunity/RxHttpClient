@@ -77,13 +77,13 @@ internal final class StreamDataTask {
 						
 						object.response = response
 						object.cacheProvider?.expectedDataLength = response.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(response.mimeType ?? "")
+						object.cacheProvider?.setContentMimeTypeIfEmpty(mimeType: response.mimeType ?? "")
 						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
 						guard task.isEqual(object.dataTask) else { return }
 						
 						if let cacheProvider = object.cacheProvider {
-							cacheProvider.appendData(data)
+							cacheProvider.append(data: data)
 							observer.onNext(StreamTaskEvents.cacheData(cacheProvider))
 						} else {
 							observer.onNext(StreamTaskEvents.receiveData(data))

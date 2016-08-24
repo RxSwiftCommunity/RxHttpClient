@@ -13,18 +13,18 @@ public protocol CacheProviderType {
 	Adds data to cache
 	- parameter data: Data that would be cached
 	*/
-	func appendData(_ data: Data)
+	func append(data: Data)
 	/**
 	Gets a copy of current cached data
 	- returns: Copy of data currently stored in cache
 	*/
-	func getCurrentData() -> Data
+	func getData() -> Data
 	/**
 	Gets a copy of current cached data within specified range
 	- parameter range: The range in the cache from which to get the data. The range must not exceed the bounds of the cache.
 	- returns: Copy of data currently stored in cache within range
 	*/
-	func getCurrentSubdata(_ range: NSRange) -> Data
+	func getSubdata(range: NSRange) -> Data
 	/**
 	Saves cached data into specified directory
 	- parameter destinationDirectory: NSURL of directory, where data will be saved
@@ -32,12 +32,12 @@ public protocol CacheProviderType {
 	If nil, extension will be inferred by MIME type, if inferring fails, extension will be "dat"
 	- returns: NSURL for saved file or nil, if file not saved
 	*/
-	func saveData(_ destinationDirectory: URL, fileExtension: String?) -> URL?
+	func saveData(destinationDirectory: URL, fileExtension: String?) -> URL?
 	/**
 	Sets MIME type for data if it's not nil
 	- parameter mimeType: New MIME type
 	*/
-	func setContentMimeTypeIfEmpty(_ mimeType: String)
+	func setContentMimeTypeIfEmpty(mimeType: String)
 	/**
 	Deletes current cached data
 	*/
@@ -45,19 +45,19 @@ public protocol CacheProviderType {
 }
 
 public extension CacheProviderType {
-	public func saveData(_ fileExtension: String?) -> URL? {
-		return saveData(URL(fileURLWithPath: NSTemporaryDirectory()), fileExtension: fileExtension)
+	public func saveData(fileExtension: String?) -> URL? {
+		return saveData(destinationDirectory: URL(fileURLWithPath: NSTemporaryDirectory()), fileExtension: fileExtension)
 	}
 	
 	public func saveData() -> URL? {
-		return saveData(nil)
+		return saveData(fileExtension: nil)
 	}
 	
-	public func saveData(_ destinationDirectory: URL) -> URL? {
-		return saveData(destinationDirectory, fileExtension: nil)
+	public func saveData(destinationDirectory: URL) -> URL? {
+		return saveData(destinationDirectory: destinationDirectory, fileExtension: nil)
 	}
 	
-	func getCurrentSubdata(_ location: Int, length: Int) -> Data {
-		return getCurrentSubdata(NSMakeRange(location, length))
+	func getSubdata(location: Int, length: Int) -> Data {
+		return getSubdata(range: NSMakeRange(location, length))
 	}
 }

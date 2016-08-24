@@ -60,7 +60,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let successExpectaton = expectation(description: "Shoud return success event")
 		
-		httpClient.loadStreamData(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
+		httpClient.request(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
 			if case .receiveData(let dataChunk) = result {
 				dataReceived.append(dataChunk)
 				receiveCounter += 1
@@ -86,7 +86,7 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 
 		let expectation = self.expectation(description: "Should return NSError")
-		httpClient.loadStreamData(request: request, cacheProvider: nil).bindNext { result in
+		httpClient.request(request, cacheProvider: nil).bindNext { result in
 			guard case .error(let error) = result else { return }
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
@@ -112,7 +112,7 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 		
 		let expectation = self.expectation(description: "Should return correct response")
-		httpClient.loadStreamData(request: request, cacheProvider: nil).bindNext { result in
+		httpClient.request(request).bindNext { result in
 			if case .receiveResponse(let response) = result {
 				XCTAssertEqual(response.expectedContentLength, fakeResponse.expectedContentLength)
 				XCTAssertEqual(response.url, self.request.url!)

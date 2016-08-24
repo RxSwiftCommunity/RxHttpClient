@@ -29,7 +29,7 @@ class HttpClientBasicTests: XCTestCase {
 		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
-		let disposable = client.loadData(url: url).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility))
+		let disposable = client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility))
 			.do(onNext: { e in
 			XCTFail("Should not receive responce")
 		}).subscribe()
@@ -51,7 +51,7 @@ class HttpClientBasicTests: XCTestCase {
 		let bag = DisposeBag()
 		
 		let expectation = self.expectation(description: "Should return correct data")
-		client.loadData(url: url).bindNext { data in
+		client.requestData(url: url).bindNext { data in
 			XCTAssertEqual(true, data == sendData, "Received data should be equal to sended")
 			expectation.fulfill()
 		}.addDisposableTo(bag)
@@ -69,7 +69,7 @@ class HttpClientBasicTests: XCTestCase {
 		let bag = DisposeBag()
 		
 		let expectation = self.expectation(description: "Should return correct data")
-		client.loadData(request: request).bindNext { data in
+		client.requestData(request).bindNext { data in
 			XCTAssertEqual(true, data == Data(), "Sended data should be empty")
 			expectation.fulfill()
 		}.addDisposableTo(bag)
@@ -90,7 +90,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		let expectation = self.expectation(description: "Should complete observable")
 		
-		let task = client.loadData(url: url).do(onNext: { _ in XCTFail("Should not receive events") }, onCompleted: { expectation.fulfill() })
+		let task = client.requestData(url: url).do(onNext: { _ in XCTFail("Should not receive events") }, onCompleted: { expectation.fulfill() })
 		
 		// dispose client
 		client = nil
@@ -119,7 +119,7 @@ class HttpClientBasicTests: XCTestCase {
 		var errorCounter = 0
 		let expectation = self.expectation(description: "Should return correct data")
 		
-		client.loadData(url: url).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility))
+		client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility))
 			.do(onNext: { data in totalReceivedData.append(data) })
 			.flatMapLatest { _ -> Observable<Void> in
 				errorCounter += 1
@@ -151,7 +151,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		let expectation = self.expectation(description: "Should return error")
 		
-		client.loadData(url: url).subscribe(onNext: { _ in XCTFail("Should not emit data") }, onError: { result in
+		client.requestData(url: url).subscribe(onNext: { _ in XCTFail("Should not emit data") }, onError: { result in
 			guard case HttpClientError.clientSideError(let error) = result else { return }
 			XCTAssertEqual(error.code, 1, "Check error code")
 			XCTAssertEqual(error.domain, "TestDomain", "Check error domain")
@@ -173,7 +173,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		let expectation = self.expectation(description: "Should return error")
 		
-		client.loadData(url: url).subscribe(onNext: { _ in XCTFail("Should not emit data") }, onError: { error in
+		client.requestData(url: url).subscribe(onNext: { _ in XCTFail("Should not emit data") }, onError: { error in
 			guard case let HttpClientError.invalidResponse(response, data) = error else {
 				XCTFail("Should return correct error")
 				return
@@ -214,17 +214,17 @@ class HttpClientBasicTests: XCTestCase {
 		let expectation2 = expectation(description: "Should return correct data2")
 		let expectation3 = expectation(description: "Should return correct data3")
 		
-		let task1 = client.loadData(url: url1).do(onNext: { data in
+		let task1 = client.requestData(url: url1).do(onNext: { data in
 			XCTAssertEqual(true, data == data1, "Received data should be equal to sended")
 			expectation1.fulfill()
 		})
 		
-		let task2 = client.loadData(url: url2).do(onNext: { data in
+		let task2 = client.requestData(url: url2).do(onNext: { data in
 			XCTAssertEqual(true, data == data2, "Received data should be equal to sended")
 			expectation2.fulfill()
 		})
 		
-		let task3 = client.loadData(url: url3).do(onNext: { data in
+		let task3 = client.requestData(url: url3).do(onNext: { data in
 			XCTAssertEqual(true, data == data3, "Received data should be equal to sended")
 			expectation3.fulfill()
 		})
@@ -286,7 +286,7 @@ class HttpClientBasicTests: XCTestCase {
 		let bag = DisposeBag()
 		
 		let expectation = self.expectation(description: "Should return correct error")
-		client.loadData(url: url).do(onError: { error in
+		client.requestData(url: url).do(onError: { error in
 			if case HttpClientError.sessionInvalidatedWithError(let error as NSError) = error , error.code == 123 {
 				expectation.fulfill()
 			}
