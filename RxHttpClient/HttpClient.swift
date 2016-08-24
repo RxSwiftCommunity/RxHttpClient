@@ -9,7 +9,7 @@ public final class HttpClient {
 	internal let streamDataObservingScheduler =
 		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
-	internal let urlSession: NSURLSessionType
+	internal let urlSession: URLSessionType
 	
 	/**
 	Creates an instance of HttpClient
@@ -23,7 +23,7 @@ public final class HttpClient {
 	}
 	
 	/// Initializer for unit tests only
-	internal init(session urlSession: NSURLSessionType) {
+	internal init(session urlSession: URLSessionType) {
 		self.urlSession = urlSession
 	}
 	

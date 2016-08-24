@@ -126,7 +126,8 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
-		XCTAssertFalse(task.resumed, "Task should not be resumed")
+		//XCTAssertFalse(task.resumed, "Task should not be resumed")
+		XCTAssertEqual(StreamTaskState.completed, task.state, "Task should be completed")
 	}
 	
 	func testNotOverrideMimeType() {

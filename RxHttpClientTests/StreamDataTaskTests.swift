@@ -205,6 +205,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		// creating stream task
 		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
+
 		task.taskProgress.bindNext { result in
 			// checking if session was explicitly invalidated (while deinit of HttpClient)
 			if case StreamTaskEvents.error(let error) = result, case HttpClientError.sessionExplicitlyInvalidated = error {
@@ -220,7 +221,6 @@ class StreamDataTaskTests: XCTestCase {
 		task.resume()
 		
 		waitForExpectations(timeout: 2, handler: nil)
-		
-		XCTAssertFalse(task.resumed)
+		XCTAssertEqual(StreamTaskState.suspended, task.state)
 	}
 }

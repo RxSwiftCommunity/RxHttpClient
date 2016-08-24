@@ -2,7 +2,7 @@ import XCTest
 @testable import RxHttpClient
 
 class NSURLSessionProtocolTests: XCTestCase {
-	var session: NSURLSessionType = URLSession(configuration: URLSessionConfiguration.default,
+	var session: URLSessionType = URLSession(configuration: URLSessionConfiguration.default,
 	                                             delegate: nil,
 	                                             delegateQueue: nil)
 	var url: URL = URL(baseUrl: "https://test.com", parameters: ["param": "value"])!

@@ -2,12 +2,14 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
-open class FakeDataTask : NSObject, NSURLSessionDataTaskType {
+open class FakeDataTask : NSObject, URLSessionDataTaskType {
 	var originalRequest: URLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0
 	let resumeClosure: () -> ()!
 	let cancelClosure: (() -> ())?
+	
+	var state: URLSessionTask.State = URLSessionTask.State.suspended
 	
 	init(resumeClosure: @escaping () -> (), cancelClosure: (() -> ())? = nil) {
 		self.resumeClosure = resumeClosure
@@ -16,25 +18,29 @@ open class FakeDataTask : NSObject, NSURLSessionDataTaskType {
 	
 	open func resume() {
 		resumeInvokeCount += 1
+		state = .running
 		resumeClosure()
 	}
 	
 	open func cancel() {
 		if !isCancelled {
 			cancelClosure?()
+			state = .suspended
 			isCancelled = true
 		}
 	}
 }
 
-class FakeSession : NSURLSessionType {
+class FakeSession : URLSessionType {
 	var task: FakeDataTask!
 	var isFinished = false
+	
+	var state: URLSessionTask.State { return task.state }
 	
 	var configuration: URLSessionConfiguration = URLSessionConfiguration.default
 	
 	/// Send data as stream (this data should be received through session delegate)
-	func sendData(_ task: NSURLSessionDataTaskType, data: Data?, streamObserver: NSURLSessionDataEventsObserver) {
+	func sendData(_ task: URLSessionDataTaskType, data: Data?, streamObserver: NSURLSessionDataEventsObserver) {
 		if let data = data {
 			streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self, dataTask: task, data: data))
 		}
@@ -43,11 +49,11 @@ class FakeSession : NSURLSessionType {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: nil))
 	}
 	
-	func sendError(_ task: NSURLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
+	func sendError(_ task: URLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: error))
 	}
 	
-	func dataTaskWithRequest(_ request: URLRequest) -> NSURLSessionDataTaskType {
+	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
 		if task == nil { fatalError("Data task not specified") }
 		task.originalRequest = request
 		return task

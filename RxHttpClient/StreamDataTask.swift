@@ -2,6 +2,12 @@ import Foundation
 import RxSwift
 import RxCocoa
 
+public enum StreamTaskState : Int {
+	case running
+	case suspended
+	case completed
+}
+
 public protocol StreamTaskType {
 	/// Identifier of a task.
 	var uid: String { get }
@@ -9,8 +15,7 @@ public protocol StreamTaskType {
 	func resume()
 	/// Cancels task.
 	func cancel()
-	/// Is task resumed.
-	var resumed: Bool { get }
+	var state: StreamTaskState  { get }
 }
 
 public protocol StreamDataTaskType : StreamTaskType {
@@ -43,16 +48,17 @@ public enum StreamTaskEvents {
 
 internal final class StreamDataTask {
 	let uid: String
-	var resumed = false
+	//var resumed = false
+	var state: StreamTaskState = .suspended
 	var cacheProvider: CacheProviderType?
 
 	let queue = DispatchQueue(label: "com.RxHttpClient.StreamDataTask.Serial", attributes: [])
 	var response: URLResponse?
 	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility)
-	let dataTask: NSURLSessionDataTaskType
+	let dataTask: URLSessionDataTaskType
 	let sessionEvents: Observable<SessionDataEvents>
 
-	init(taskUid: String, dataTask: NSURLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
+	init(taskUid: String, dataTask: URLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
 	            cacheProvider: CacheProviderType?) {
 		self.dataTask = dataTask
 		self.sessionEvents = sessionEvents
@@ -87,17 +93,17 @@ internal final class StreamDataTask {
 					case .didCompleteWithError(let session, let task, let error):
 						guard task.isEqual(object.dataTask) else { return }
 						
-						object.resumed = false
-						
 						if let error = error {
+							object.state = .suspended
 							observer.onNext(StreamTaskEvents.error(error))
 						} else {
+							object.state = .completed
 							observer.onNext(StreamTaskEvents.success(cache: object.cacheProvider))
 						}
 
 						observer.onCompleted()
 					case .didBecomeInvalidWithError(_, let error):
-						object.resumed = false
+						object.state = .suspended						
 						// dealing with session invalidation
 						guard let error = error else {
 							// if error is nil, session was invalidated explicitly
@@ -118,13 +124,12 @@ internal final class StreamDataTask {
 
 extension StreamDataTask : StreamDataTaskType {
 	func resume() {
-		queue.sync {
-			if !self.resumed { self.resumed = true; self.dataTask.resume(); }
-		}
+		state = .running
+		dataTask.resume()
 	}
 		
 	func cancel() {
-		resumed = false
+		state = .suspended
 		dataTask.cancel()
 	}
 }

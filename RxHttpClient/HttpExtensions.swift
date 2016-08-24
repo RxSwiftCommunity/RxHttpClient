@@ -1,28 +1,28 @@
 import Foundation
 
-protocol NSURLSessionTaskType {
+protocol URLSessionTaskType {
 	func isEqual(_ object: Any?) -> Bool
+	var state: URLSessionTask.State { get }
 }
-extension URLSessionTask : NSURLSessionTaskType { }
+extension URLSessionTask : URLSessionTaskType { }
 
-// NSURLSessionDataTaskProtocol
-protocol NSURLSessionDataTaskType : NSURLSessionTaskType {
+// URLSessionDataTaskType
+protocol URLSessionDataTaskType : URLSessionTaskType {
 	func resume()
 	func cancel()
 	var originalRequest: URLRequest? { get }
 }
-extension URLSessionDataTask : NSURLSessionDataTaskType { }
+extension URLSessionDataTask : URLSessionDataTaskType { }
 
-
-// NSURLSessionProtocol
+// URLSessionType
 public typealias DataTaskResult = (Data?, URLResponse?, NSError?) -> Void
-protocol NSURLSessionType {
+protocol URLSessionType {
 	var configuration: URLSessionConfiguration { get }
 	func finishTasksAndInvalidate()
-	func dataTaskWithRequest(_ request: URLRequest) -> NSURLSessionDataTaskType
+	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType
 }
-extension URLSession : NSURLSessionType {
-	func dataTaskWithRequest(_ request: URLRequest) -> NSURLSessionDataTaskType {
+extension URLSession : URLSessionType {
+	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
 		return dataTask(with: request) as URLSessionDataTask
 	}
 }
@@ -31,17 +31,6 @@ extension URLSession : NSURLSessionType {
 // NSURL
 public extension URL {
 	init?(baseUrl: String, parameters: [String: String]? = nil) {
-		/*
-		if let parameters = parameters, let components = URLComponents(string: baseUrl) {
-			components.queryItems = [URLQueryItem]()
-			parameters.forEach { key, value in
-				components.queryItems?.append(URLQueryItem(name: key, value: value))
-			}
-			(self).init(string: components.url!.absoluteString)
-		} else {
-			(self).init(string: baseUrl)
-		}
-*/
 		var components = URLComponents(string: baseUrl)
 		components?.queryItems = parameters?.map { key, value in
 			URLQueryItem(name: key, value: value)
