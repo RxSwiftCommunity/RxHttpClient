@@ -20,6 +20,7 @@ before_script:
 #- pip install --upgrade git+https://github.com/schwa/punic.git
 
 - carthage version
+- carthage checkout
 
 # update OHHTTPStubs using carthage
 - carthage update OHHTTPStubs --platform iOS
