@@ -48,11 +48,9 @@ public enum StreamTaskEvents {
 
 internal final class StreamDataTask {
 	let uid: String
-	//var resumed = false
 	var state: StreamTaskState = .suspended
 	var cacheProvider: CacheProviderType?
 
-	let queue = DispatchQueue(label: "com.RxHttpClient.StreamDataTask.Serial", attributes: [])
 	var response: URLResponse?
 	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility)
 	let dataTask: URLSessionDataTaskType
