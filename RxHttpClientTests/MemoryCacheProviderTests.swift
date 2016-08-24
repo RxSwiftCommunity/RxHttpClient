@@ -4,7 +4,7 @@ import RxSwift
 
 class MemoryCacheProviderTests: XCTestCase {
 	var bag: DisposeBag!
-	var request: URLRequest = NSMutableURLRequest(url: URL(baseUrl: "https://test.com/json", parameters: nil)!)
+	var request: URLRequest = URLRequest(url: URL(baseUrl: "https://test.com/json", parameters: nil)!)
 	var session: FakeSession!
 	var httpClient: HttpClient!
 	let waitTimeout: Double = 2
@@ -72,7 +72,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
-		httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString)).bindNext { result in
+		httpClient.loadStreamData(request: request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString)).bindNext { result in
 			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
 			} else if case .success(let cacheProvider) = result {
@@ -80,7 +80,7 @@ class MemoryCacheProviderTests: XCTestCase {
 				XCTAssertEqual(self.fakeResponse.expectedContentLength, cacheProvider?.expectedDataLength, "Should have expectedDataLength same as length in response")
 				XCTAssertEqual(self.fakeResponse.mimeType, cacheProvider?.contentMimeType, "Should have mime type same as mime type of request")
 				XCTAssertEqual(4, receiveChunkCounter, "Should cache correct data chunk amount")
-				XCTAssertEqual(true, cacheProvider?.getCurrentData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
+				XCTAssertEqual(true, cacheProvider!.getCurrentData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
 				successExpectation.fulfill()
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
@@ -112,7 +112,7 @@ class MemoryCacheProviderTests: XCTestCase {
 				XCTAssertEqual(self.fakeResponse.expectedContentLength, cacheProvider?.expectedDataLength, "Should have expectedDataLength same as length in response")
 				XCTAssertEqual(self.fakeResponse.mimeType, cacheProvider?.contentMimeType, "Should have mime type same as mime type of request")
 				XCTAssertEqual(4, receiveChunkCounter, "Should cache correct data chunk amount")
-				XCTAssertEqual(true, cacheProvider?.getCurrentData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
+				XCTAssertEqual(true, cacheProvider!.getCurrentData() == "FirstSecondThirdFourth".data(using: String.Encoding.utf8)!, "Sended data end cached data should be equal")
 				successExpectation.fulfill()
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
@@ -136,7 +136,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
 		// create memory cache provider with explicitly specified mime type
-		httpClient.loadStreamData(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).bindNext { result in
+		httpClient.loadStreamData(request: request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).bindNext { result in
 			if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(cacheProvider?.contentMimeType, "application/octet-stream", "Mime type should be preserved")
@@ -200,7 +200,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		//XCTAssertTrue(testData.isEqualToData(provider.getCurrentData()))
 		let chunkLen = provider.currentDataLength - 2
 		let chunk = provider.getCurrentSubdata(1, length: chunkLen)
-		XCTAssertTrue(chunk == testData.subdata(with: NSRange(location: 1, length: chunkLen)))
+		XCTAssertTrue(chunk == testData.subdata(in: Range(uncheckedBounds: (lower: 1, upper: chunkLen + 1))))
 	}
 	
 	func testSaveDataToSpecificDir() {

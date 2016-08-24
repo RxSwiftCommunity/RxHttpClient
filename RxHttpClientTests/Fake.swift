@@ -9,7 +9,7 @@ open class FakeDataTask : NSObject, NSURLSessionDataTaskType {
 	let resumeClosure: () -> ()!
 	let cancelClosure: (() -> ())?
 	
-	init(resumeClosure: () -> (), cancelClosure: (() -> ())? = nil) {
+	init(resumeClosure: @escaping () -> (), cancelClosure: (() -> ())? = nil) {
 		self.resumeClosure = resumeClosure
 		self.cancelClosure = cancelClosure
 	}

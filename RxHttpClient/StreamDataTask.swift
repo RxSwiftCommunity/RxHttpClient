@@ -62,12 +62,12 @@ internal final class StreamDataTask {
 	
 	lazy var taskProgress: Observable<StreamTaskEvents> = {
 		return Observable.create { [weak self] observer in
-			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
+			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
 			let disposable = object.sessionEvents.observeOn(object.scheduler).bindNext { e in
 					switch e {
 					case .didReceiveResponse(_, let task, let response, let completionHandler):
-						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						guard task.isEqual(object.dataTask) else { return }
 						
 						completionHandler(.allow)
 						
@@ -76,7 +76,7 @@ internal final class StreamDataTask {
 						object.cacheProvider?.setContentMimeTypeIfEmpty(response.mimeType ?? "")
 						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
-						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						guard task.isEqual(object.dataTask) else { return }
 						
 						if let cacheProvider = object.cacheProvider {
 							cacheProvider.appendData(data)
@@ -85,7 +85,7 @@ internal final class StreamDataTask {
 							observer.onNext(StreamTaskEvents.receiveData(data))
 						}
 					case .didCompleteWithError(let session, let task, let error):
-						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						guard task.isEqual(object.dataTask) else { return }
 						
 						object.resumed = false
 						
@@ -109,7 +109,7 @@ internal final class StreamDataTask {
 					}
 			}
 			
-			return AnonymousDisposable {
+			return Disposables.create {
 				disposable.dispose()
 			}
 		}.shareReplay(0)

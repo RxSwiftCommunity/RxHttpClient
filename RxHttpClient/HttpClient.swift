@@ -41,7 +41,7 @@ extension HttpClient : HttpClientType {
 	*/
 	public func loadStreamData(request: URLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
-			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
+			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
 			// clears cache provider before start
 			if let cacheProvider = cacheProvider { cacheProvider.clearData() }
@@ -52,7 +52,7 @@ extension HttpClient : HttpClientType {
 			
 			task.resume()
 			
-			return AnonymousDisposable {
+			return Disposables.create {
 				task.cancel()
 				disposable.dispose()
 			}

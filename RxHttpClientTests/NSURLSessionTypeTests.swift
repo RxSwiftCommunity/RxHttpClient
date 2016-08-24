@@ -16,8 +16,8 @@ class NSURLSessionProtocolTests: XCTestCase {
 	}
 	
 	func testCreateDataTaskWithRequest() {
-		let request = NSMutableURLRequest(url: url)
-		let dataTask = session.dataTaskWithRequest(NSMutableURLRequest(url: url))
+		let request = URLRequest(url: url)
+		let dataTask = session.dataTaskWithRequest(URLRequest(url: url))
 		XCTAssertEqual(request.url, dataTask.originalRequest?.url)
 		XCTAssertEqual(request.allHTTPHeaderFields?["header"], dataTask.originalRequest?.allHTTPHeaderFields?["header"])
 	}

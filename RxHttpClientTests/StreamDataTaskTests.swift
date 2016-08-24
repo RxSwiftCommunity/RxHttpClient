@@ -5,7 +5,7 @@ import OHHTTPStubs
 
 class StreamDataTaskTests: XCTestCase {
 	var bag: DisposeBag!
-	var request: URLRequest = NSMutableURLRequest(url: URL(baseUrl: "https://test.com/json", parameters: nil)!)
+	var request: URLRequest = URLRequest(url: URL(baseUrl: "https://test.com/json", parameters: nil)!)
 	var session: FakeSession!
 	var httpClient: HttpClient!
 	let waitTimeout: Double = 2
@@ -60,7 +60,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let successExpectaton = expectation(description: "Shoud return success event")
 		
-		httpClient.loadStreamData(URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
+		httpClient.loadStreamData(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
 			if case .receiveData(let dataChunk) = result {
 				dataReceived.append(dataChunk)
 				receiveCounter += 1
@@ -86,7 +86,7 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 
 		let expectation = self.expectation(description: "Should return NSError")
-		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
+		httpClient.loadStreamData(request: request, cacheProvider: nil).bindNext { result in
 			guard case .error(let error) = result else { return }
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
@@ -112,7 +112,7 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 		
 		let expectation = self.expectation(description: "Should return correct response")
-		httpClient.loadStreamData(request, cacheProvider: nil).bindNext { result in
+		httpClient.loadStreamData(request: request, cacheProvider: nil).bindNext { result in
 			if case .receiveResponse(let response) = result {
 				XCTAssertEqual(response.expectedContentLength, fakeResponse.expectedContentLength)
 				XCTAssertEqual(response.url, self.request.url!)
@@ -133,12 +133,12 @@ class StreamDataTaskTests: XCTestCase {
 		                                sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                                cacheProvider: nil)
 
-		XCTAssertTrue(streamTask.dataTask.originalRequest === request)
+		XCTAssertTrue(streamTask.dataTask.originalRequest == request)
 		XCTAssertNil(streamTask.cacheProvider, "Cache provider should not be specified")
 	}
 	
 	func testCheckDeinitOfHttpClientNotCancellingRunningTasks() {
-		stub({ $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
 		}
 		
@@ -149,7 +149,7 @@ class StreamDataTaskTests: XCTestCase {
 		let expectation = self.expectation(description: "Should complete stream task")
 		
 		// creating stream task
-		let task = client.createStreamDataTask(request, cacheProvider: nil)
+		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
 		task.taskProgress.bindNext { result in
 			if case StreamTaskEvents.success = result {
 				expectation.fulfill()
@@ -166,7 +166,7 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testCheckCancellingRunningTasksIfForcellyCancelSession() {
-		stub({ $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
 		}
 		
@@ -177,7 +177,7 @@ class StreamDataTaskTests: XCTestCase {
 		let expectation = self.expectation(description: "Should return cancelation error")
 		
 		// creating stream task
-		let task = client.createStreamDataTask(request, cacheProvider: nil)
+		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
 		task.taskProgress.bindNext { result in
 			if case StreamTaskEvents.error(let error as NSError) = result , error.code == -999 {
 				expectation.fulfill()
@@ -193,7 +193,7 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testCheckTaskNotStartedIfHttpClientWasDeinited() {
-		stub({ $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
 		}
 		
@@ -204,7 +204,7 @@ class StreamDataTaskTests: XCTestCase {
 		let expectation = self.expectation(description: "Should complete stream task")
 		
 		// creating stream task
-		let task = client.createStreamDataTask(request, cacheProvider: nil)
+		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
 		task.taskProgress.bindNext { result in
 			// checking if session was explicitly invalidated (while deinit of HttpClient)
 			if case StreamTaskEvents.error(let error) = result, case HttpClientError.sessionExplicitlyInvalidated = error {
