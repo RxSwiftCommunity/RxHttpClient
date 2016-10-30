@@ -4,10 +4,10 @@ import RxSwift
 public final class HttpClient {
 	/// Scheduler for observing data task events
 	internal let dataTaskScheduler =
-		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
+		SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
 	/// Default concurrent scheduler for observing observable sequence created by loadStreamData method
 	internal let streamDataObservingScheduler =
-		SerialDispatchQueueScheduler(globalConcurrentQueueQOS: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
+		SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
 	internal let urlSession: URLSessionType
 	

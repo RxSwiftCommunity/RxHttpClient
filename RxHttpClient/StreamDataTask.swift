@@ -52,7 +52,7 @@ internal final class StreamDataTask {
 	var cacheProvider: CacheProviderType?
 
 	var response: URLResponse?
-	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility)
+	let scheduler = SerialDispatchQueueScheduler(qos: .utility)
 	let dataTask: URLSessionDataTaskType
 	let sessionEvents: Observable<SessionDataEvents>
 

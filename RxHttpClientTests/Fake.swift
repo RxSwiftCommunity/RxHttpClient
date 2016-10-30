@@ -2,7 +2,7 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
-open class FakeDataTask : NSObject, URLSessionDataTaskType {
+class FakeDataTask : NSObject, URLSessionDataTaskType {
 	var originalRequest: URLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0

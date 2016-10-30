@@ -29,7 +29,7 @@ class HttpClientBasicTests: XCTestCase {
 		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
-		let disposable = client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility))
+		let disposable = client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(qos: .utility))
 			.do(onNext: { e in
 			XCTFail("Should not receive responce")
 		}).subscribe()
@@ -119,7 +119,7 @@ class HttpClientBasicTests: XCTestCase {
 		var errorCounter = 0
 		let expectation = self.expectation(description: "Should return correct data")
 		
-		client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility))
+		client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(qos: .utility))
 			.do(onNext: { data in totalReceivedData.append(data) })
 			.flatMapLatest { _ -> Observable<Void> in
 				errorCounter += 1
@@ -229,7 +229,7 @@ class HttpClientBasicTests: XCTestCase {
 			expectation3.fulfill()
 		})
 		
-		let concurrent = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.utility)
+		let concurrent = ConcurrentDispatchQueueScheduler(qos: .utility)
 		task1.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
 		task2.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
 		task3.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
