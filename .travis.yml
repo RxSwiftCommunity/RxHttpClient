@@ -28,8 +28,8 @@ before_script:
 #- punic build RxSwift --platform iOS --configuration Release
 #build RxSwift
 - (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
-- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxCocoa-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
-- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxTests-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+#- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxCocoa-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+#- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxTests-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
 
 #copy RxSwift frameworks to Carthage/Build folder
 - cp -R -f ./Build/Release-iphonesimulator/ ./Carthage/Build/iOS

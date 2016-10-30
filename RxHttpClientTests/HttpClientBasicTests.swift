@@ -51,10 +51,10 @@ class HttpClientBasicTests: XCTestCase {
 		let bag = DisposeBag()
 		
 		let expectation = self.expectation(description: "Should return correct data")
-		client.requestData(url: url).bindNext { data in
+		client.requestData(url: url).subscribe(onNext: { data in
 			XCTAssertEqual(true, data == sendData, "Received data should be equal to sended")
 			expectation.fulfill()
-		}.addDisposableTo(bag)
+		}).addDisposableTo(bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -69,10 +69,10 @@ class HttpClientBasicTests: XCTestCase {
 		let bag = DisposeBag()
 		
 		let expectation = self.expectation(description: "Should return correct data")
-		client.requestData(request).bindNext { data in
+		client.requestData(request).subscribe(onNext: { data in
 			XCTAssertEqual(true, data == Data(), "Sended data should be empty")
 			expectation.fulfill()
-		}.addDisposableTo(bag)
+		}).addDisposableTo(bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}

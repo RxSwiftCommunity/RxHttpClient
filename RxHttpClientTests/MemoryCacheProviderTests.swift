@@ -72,7 +72,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
-		httpClient.request(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString)).bindNext { result in
+		httpClient.request(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString)).subscribe(onNext: { result in
 			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
 			} else if case .success(let cacheProvider) = result {
@@ -85,7 +85,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-			}.addDisposableTo(bag)
+			}).addDisposableTo(bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
@@ -104,7 +104,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		                          sessionEvents: httpClient.sessionObserver.sessionEvents,
 		                          cacheProvider: MemoryCacheProvider(uid: UUID().uuidString))
 
-		task.taskProgress.bindNext { result in
+		task.taskProgress.subscribe(onNext: { result in
 			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
 			} else if case .success(let cacheProvider) = result {
@@ -117,10 +117,10 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-			}.addDisposableTo(bag)
+			}).addDisposableTo(bag)
 		
 		// bind to task events one more time
-		task.taskProgress.bindNext { _ in }.addDisposableTo(bag)
+		task.taskProgress.subscribe(onNext: { _ in }).addDisposableTo(bag)
 		
 		task.resume()
 		
@@ -137,7 +137,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
 		// create memory cache provider with explicitly specified mime type
-		httpClient.request(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).bindNext { result in
+		httpClient.request(request, cacheProvider: MemoryCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).subscribe(onNext: { result in
 			if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(cacheProvider?.contentMimeType, "application/octet-stream", "Mime type should be preserved")
@@ -145,7 +145,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-			}.addDisposableTo(bag)
+			}).addDisposableTo(bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")

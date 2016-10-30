@@ -44,7 +44,7 @@ extension HttpClient : HttpClientType {
 			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
 			// clears cache provider before start
-			if let cacheProvider = cacheProvider { cacheProvider.clearData() }
+			cacheProvider?.clearData()
 			
 			let task = object.createStreamDataTask(request: request, cacheProvider: cacheProvider)
 			

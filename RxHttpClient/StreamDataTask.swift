@@ -1,6 +1,5 @@
 import Foundation
 import RxSwift
-import RxCocoa
 
 public enum StreamTaskState : Int {
 	case running
@@ -68,7 +67,7 @@ internal final class StreamDataTask {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
-			let disposable = object.sessionEvents.observeOn(object.scheduler).bindNext { e in
+			let disposable = object.sessionEvents.observeOn(object.scheduler).subscribe(onNext: { e in
 					switch e {
 					case .didReceiveResponse(_, let task, let response, let completionHandler):
 						guard task.isEqual(object.dataTask) else { return }
@@ -111,7 +110,7 @@ internal final class StreamDataTask {
 						// otherwise sending error that caused invalidation
 						observer.onNext(StreamTaskEvents.error(HttpClientError.sessionInvalidatedWithError(error: error)))
 					}
-			}
+			})
 			
 			return Disposables.create {
 				disposable.dispose()

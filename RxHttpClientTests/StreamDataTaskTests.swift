@@ -60,7 +60,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let successExpectaton = expectation(description: "Shoud return success event")
 		
-		httpClient.request(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).bindNext { result in
+		httpClient.request(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).subscribe(onNext: { result in
 			if case .receiveData(let dataChunk) = result {
 				dataReceived.append(dataChunk)
 				receiveCounter += 1
@@ -70,7 +70,7 @@ class StreamDataTaskTests: XCTestCase {
 				XCTAssertEqual(receiveCounter, 4, "Should receive correct amount of data chuncks")
 				successExpectaton.fulfill()
 			}
-		}.addDisposableTo(bag)
+		}).addDisposableTo(bag)
 		
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
@@ -86,12 +86,12 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 
 		let expectation = self.expectation(description: "Should return NSError")
-		httpClient.request(request, cacheProvider: nil).bindNext { result in
+		httpClient.request(request, cacheProvider: nil).subscribe(onNext: { result in
 			guard case .error(let error) = result else { return }
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
 			}
-		}.addDisposableTo(bag)
+		}).addDisposableTo(bag)
 
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -112,13 +112,13 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 		
 		let expectation = self.expectation(description: "Should return correct response")
-		httpClient.request(request).bindNext { result in
+		httpClient.request(request).subscribe(onNext: { result in
 			if case .receiveResponse(let response) = result {
 				XCTAssertEqual(response.expectedContentLength, fakeResponse.expectedContentLength)
 				XCTAssertEqual(response.url, self.request.url!)
 				expectation.fulfill()
 			}
-		}.addDisposableTo(bag)
+		}).addDisposableTo(bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -150,11 +150,11 @@ class StreamDataTaskTests: XCTestCase {
 		
 		// creating stream task
 		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
-		task.taskProgress.bindNext { result in
+		task.taskProgress.subscribe(onNext: { result in
 			if case StreamTaskEvents.success = result {
 				expectation.fulfill()
 			}
-		}.addDisposableTo(bag)
+		}).addDisposableTo(bag)
 		
 		// resuming task
 		task.resume()
@@ -178,11 +178,11 @@ class StreamDataTaskTests: XCTestCase {
 		
 		// creating stream task
 		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
-		task.taskProgress.bindNext { result in
+		task.taskProgress.subscribe(onNext: { result in
 			if case StreamTaskEvents.error(let error as NSError) = result , error.code == -999 {
 				expectation.fulfill()
 			}
-			}.addDisposableTo(bag)
+			}).addDisposableTo(bag)
 		
 		// resuming task
 		task.resume()
@@ -206,12 +206,12 @@ class StreamDataTaskTests: XCTestCase {
 		// creating stream task
 		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
 
-		task.taskProgress.bindNext { result in
+		task.taskProgress.subscribe(onNext: { result in
 			// checking if session was explicitly invalidated (while deinit of HttpClient)
 			if case StreamTaskEvents.error(let error) = result, case HttpClientError.sessionExplicitlyInvalidated = error {
 				expectation.fulfill()
 			}
-			}.addDisposableTo(bag)
+			}).addDisposableTo(bag)
 		
 		// setting cient to nil before resume a task
 		client = nil
