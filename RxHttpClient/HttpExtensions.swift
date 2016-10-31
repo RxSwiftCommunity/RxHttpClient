@@ -41,3 +41,11 @@ public extension URL {
 		self.init(string: absoluteString)
 	}
 }
+
+//URLRequest
+public extension URLRequest {
+	init(url: URL, headers: [String: String]?) {
+		self = URLRequest(url: url)
+		headers?.forEach { addValue($1, forHTTPHeaderField: $0) }
+	}
+}

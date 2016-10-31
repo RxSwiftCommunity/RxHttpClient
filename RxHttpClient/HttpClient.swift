@@ -33,12 +33,6 @@ public final class HttpClient {
 }
 
 extension HttpClient : HttpClientType {
-	/**
-	Creates streaming observable for request
-	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created observable that emits stream events
-	*/
 	public func request(_ request: URLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return Disposables.create() }
@@ -59,13 +53,6 @@ extension HttpClient : HttpClientType {
 			}.observeOn(streamDataObservingScheduler)
 	}
 	
-	/**
-	Creates StreamDataTask
-	- parameter taskUid: String, that may be used as unique identifier of the task
-	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
-	- returns: Created data task
-	*/
 	public func createStreamDataTask(taskUid: String, request: URLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
 		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, sessionEvents: sessionObserver.sessionEvents, cacheProvider: cacheProvider)

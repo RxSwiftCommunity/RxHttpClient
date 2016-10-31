@@ -1,28 +1,7 @@
 import Foundation
 import RxSwift
 
-public extension HttpClientType {
-	/**
-	Creates NSMutableURLRequest with provided NSURL and HTTP Headers
-	- parameter url: Url for request
-	- parameter headers: Additional HTTP Headers
-	- returns: Created mutable url request
-	*/
-	func createUrlRequest(url: URL, headers: [String: String]?) -> URLRequest {
-		var request = URLRequest(url: url)
-		headers?.forEach { request.addValue($1, forHTTPHeaderField: $0) }
-		return request
-	}
-	
-	/**
-	Creates NSMutableURLRequest with provided NSURL
-	- parameter url: Url for request
-	- returns: Created mutable url request
-	*/
-	func createUrlRequest(url: URL) -> URLRequest {
-		return createUrlRequest(url: url, headers: nil)
-	}
-	
+public extension HttpClientType {	
 	/**
 	Creates StreamDataTask
 	- parameter request: URL request
@@ -40,7 +19,7 @@ public extension HttpClientType {
 	- returns: Created observable that emits stream events
 	*/
 	func request(url: URL, cacheProvider: CacheProviderType? = nil) -> Observable<StreamTaskEvents> {
-		return request(createUrlRequest(url: url), cacheProvider: cacheProvider)
+		return request(URLRequest(url: url), cacheProvider: cacheProvider)
 	}
 	
 	/**
@@ -52,13 +31,33 @@ public extension HttpClientType {
 		return request(urlRequest, cacheProvider: nil)
 	}
 	
+	func requestJson(url: URL) -> Observable<Dictionary<String, Any>> {
+		return requestJson(URLRequest(url: url))
+	}
+	
+	func requestJson(_ urlRequest: URLRequest) -> Observable<Dictionary<String, Any>> {
+		return requestData(urlRequest).flatMapLatest { data -> Observable<Dictionary<String, Any>> in
+			guard data.count > 0 else { return Observable.empty() }
+			
+			do {
+				guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, Any> else {
+					return Observable.empty()
+				}
+				
+				return Observable.just(json)
+			} catch(let error) {
+				return Observable.error(error)
+			}
+		}
+	}
+	
 	/**
 	Creates an observable for URL
 	- parameter request: URL
 	- returns: Created observable that emits Data of HTTP request
 	*/
 	func requestData(url: URL) -> Observable<Data> {
-		return requestData(createUrlRequest(url: url))
+		return requestData(URLRequest(url: url))
 	}
 	
 	/**

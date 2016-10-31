@@ -20,5 +20,6 @@ public enum HttpClientError : Error {
 	/**
 	This error represents client-side error (such as being unable to resolve the hostname or connect to the host).
 	*/
-	case clientSideError(error: NSError)
+	case clientSideError(error: Error)
+	case jsonDeserializationError(error: Error)
 }

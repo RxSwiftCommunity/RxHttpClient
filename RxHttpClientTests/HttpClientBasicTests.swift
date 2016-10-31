@@ -153,8 +153,8 @@ class HttpClientBasicTests: XCTestCase {
 		
 		client.requestData(url: url).subscribe(onNext: { _ in XCTFail("Should not emit data") }, onError: { result in
 			guard case HttpClientError.clientSideError(let error) = result else { return }
-			XCTAssertEqual(error.code, 1, "Check error code")
-			XCTAssertEqual(error.domain, "TestDomain", "Check error domain")
+			XCTAssertEqual((error as NSError).code, 1, "Check error code")
+			XCTAssertEqual((error as NSError).domain, "TestDomain", "Check error domain")
 			expectation.fulfill()
 		}).addDisposableTo(bag)
 		
@@ -256,22 +256,6 @@ class HttpClientBasicTests: XCTestCase {
 		let session = URLSession(configuration: URLSessionConfiguration.default)
 		let httpClient = HttpClient(session: session)
 		XCTAssertEqual(session, httpClient.urlSession as? URLSession)
-	}
-	
-	func testCreateRequest() {
-		let httpClient = HttpClient()
-		let url = URL(string: "https://test.com")!
-		let request = httpClient.createUrlRequest(url: url)
-		XCTAssertEqual(url, request.url)
-	}
-	
-	func testCreateRequestWithHeaders() {
-		let httpClient = HttpClient()
-		let url = URL(string: "https://test.com")!
-		let headers = ["header1": "value1", "header2": "value2"]
-		let request = httpClient.createUrlRequest(url: url, headers: headers)
-		XCTAssertEqual(url, request.url)
-		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
 	}
 	
 	func testReturnCorrectErrorIfSessionInvalidatedWithError() {
