@@ -31,8 +31,8 @@ class HttpClientBasicTests: XCTestCase {
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
 		let disposable = client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(qos: .utility))
 			.do(onNext: { e in
-			XCTFail("Should not receive responce")
-		}).subscribe()
+				XCTFail("Should not receive responce")
+			}).subscribe()
 		
 		XCTAssertEqual(false, fakeSession.task?.isCancelled)
 		disposable.dispose()
@@ -244,7 +244,7 @@ class HttpClientBasicTests: XCTestCase {
 		httpClient = nil
 		XCTAssertEqual(true, fakeSession.isFinished, "Session should be invalidated")
 	}
-		
+	
 	func testCreateHttpClientWithCorrectConfiguration() {
 		let config = URLSessionConfiguration.default
 		config.httpCookieAcceptPolicy = .always
@@ -278,53 +278,99 @@ class HttpClientBasicTests: XCTestCase {
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
-    
-    func testLoadCorrectJson() {
-        let sendJson: [String: Any] = ["Test": 123, "StrVal": "Some", "Dict": ["Inner": "Str"]]
-        let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
-        let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
-            return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
-        }
-        
-        let client = HttpClient()
-        let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
-        let bag = DisposeBag()
-        
-        let expectation = self.expectation(description: "Should return correct json")
-        client.requestJson(url: url).subscribe(onNext: { json in
-            XCTAssertEqual(json["Test"] as? Int, 123)
-            XCTAssertEqual(json["StrVal"] as? String, "Some")
-            XCTAssertEqual((json["Dict"] as? [String: Any])?["Inner"] as? String, "Str")
-        
-            expectation.fulfill()
-        }).addDisposableTo(bag)
-        
-        waitForExpectations(timeout: waitTimeout, handler: nil)
-    }
-    
-    func testLoadIncorrectJson() {
-        let sendJsonData = "incorrect".data(using: .utf8)!
-        let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
-            return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
-        }
-        
-        let client = HttpClient()
-        let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
-        let bag = DisposeBag()
-        
-        let expectation = self.expectation(description: "Should return correct error")
-        client.requestJson(url: url)
-            .subscribe(
-                onNext: { json in XCTFail() },
-                onError: { error in
-                    guard case HttpClientError.jsonDeserializationError(let jsonError) = error else {
-                        return
-                    }
-                    XCTAssertEqual((jsonError as NSError).code, 3840)
-                    XCTAssertEqual((jsonError as NSError).domain, "NSCocoaErrorDomain")
-                    expectation.fulfill()
-        }).addDisposableTo(bag)
-        
-        waitForExpectations(timeout: waitTimeout, handler: nil)
-    }
+	
+	func testLoadCorrectJson_1() {
+		let sendJson: [String: Any] = ["Test": 123, "StrVal": "Some", "Dict": ["Inner": "Str"]]
+		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
+		let bag = DisposeBag()
+		
+		let expectation = self.expectation(description: "Should return correct json")
+		client.requestJson(url: url).subscribe(onNext: { json in
+			guard let json = json as? [String: Any] else { return }
+			XCTAssertEqual(json["Test"] as? Int, 123)
+			XCTAssertEqual(json["StrVal"] as? String, "Some")
+			XCTAssertEqual((json["Dict"] as? [String: Any])?["Inner"] as? String, "Str")
+			
+			expectation.fulfill()
+		}).addDisposableTo(bag)
+		
+		waitForExpectations(timeout: waitTimeout, handler: nil)
+	}
+	
+	func testLoadCorrectJson_2() {
+		let sendJson: [Any] = ["testStr", 123, ["Dict": "DictVal"]]
+		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
+		let bag = DisposeBag()
+		
+		let expectation = self.expectation(description: "Should return correct json")
+		client.requestJson(url: url).subscribe(onNext: { json in
+			guard let json = json as? [Any] else { return }
+			
+			XCTAssertEqual(json[0] as? String, "testStr")
+			XCTAssertEqual(json[1] as? Int, 123)
+			XCTAssertEqual((json[2] as? [String: Any])?["Dict"] as? String, "DictVal")
+			
+			expectation.fulfill()
+		}).addDisposableTo(bag)
+		
+		waitForExpectations(timeout: waitTimeout, handler: nil)
+	}
+	
+	func testLoadIncorrectJson() {
+		let sendJsonData = "incorrect".data(using: .utf8)!
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
+		let bag = DisposeBag()
+		
+		let expectation = self.expectation(description: "Should return correct error")
+		client.requestJson(url: url)
+			.subscribe(
+				onNext: { json in XCTFail() },
+				onError: { error in
+					guard case HttpClientError.jsonDeserializationError(let jsonError) = error else {
+						return
+					}
+					XCTAssertEqual((jsonError as NSError).code, 3840)
+					XCTAssertEqual((jsonError as NSError).domain, "NSCocoaErrorDomain")
+					expectation.fulfill()
+			}).addDisposableTo(bag)
+		
+		waitForExpectations(timeout: waitTimeout, handler: nil)
+	}
+	
+	func testLoadEmptyDataJson() {
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
+		}
+		
+		let client = HttpClient()
+		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
+		let bag = DisposeBag()
+		
+		let expectation = self.expectation(description: "Should not return json")
+		client.requestJson(url: url)
+			.subscribe(
+				onNext: { json in
+			XCTFail("Should not return data")
+		},
+				onCompleted: { expectation.fulfill() }).addDisposableTo(bag)
+		
+		waitForExpectations(timeout: waitTimeout, handler: nil)
+	}
 }

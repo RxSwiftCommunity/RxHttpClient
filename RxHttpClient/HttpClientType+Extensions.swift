@@ -31,20 +31,16 @@ public extension HttpClientType {
 		return request(urlRequest, cacheProvider: nil)
 	}
 	
-	func requestJson(url: URL) -> Observable<Dictionary<String, Any>> {
+	func requestJson(url: URL) -> Observable<Any> {
 		return requestJson(URLRequest(url: url))
 	}
 	
-	func requestJson(_ urlRequest: URLRequest) -> Observable<Dictionary<String, Any>> {
-		return requestData(urlRequest).flatMapLatest { data -> Observable<Dictionary<String, Any>> in
+	func requestJson(_ urlRequest: URLRequest) -> Observable<Any> {
+		return requestData(urlRequest).flatMapLatest { data -> Observable<Any> in
 			guard data.count > 0 else { return Observable.empty() }
 			
 			do {
-				guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, Any> else {
-					return Observable.empty()
-				}
-				
-				return Observable.just(json)
+				return Observable.just(try JSONSerialization.jsonObject(with: data, options: []))
 			} catch(let error) {
 				return Observable.error(HttpClientError.jsonDeserializationError(error: error))
 			}
