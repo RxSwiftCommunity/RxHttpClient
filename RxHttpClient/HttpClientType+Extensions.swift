@@ -46,7 +46,7 @@ public extension HttpClientType {
 				
 				return Observable.just(json)
 			} catch(let error) {
-				return Observable.error(error)
+				return Observable.error(HttpClientError.jsonDeserializationError(error: error))
 			}
 		}
 	}

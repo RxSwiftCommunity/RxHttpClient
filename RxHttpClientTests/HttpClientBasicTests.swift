@@ -278,4 +278,53 @@ class HttpClientBasicTests: XCTestCase {
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
+    
+    func testLoadCorrectJson() {
+        let sendJson: [String: Any] = ["Test": 123, "StrVal": "Some", "Dict": ["Inner": "Str"]]
+        let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
+        let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+            return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
+        }
+        
+        let client = HttpClient()
+        let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
+        let bag = DisposeBag()
+        
+        let expectation = self.expectation(description: "Should return correct json")
+        client.requestJson(url: url).subscribe(onNext: { json in
+            XCTAssertEqual(json["Test"] as? Int, 123)
+            XCTAssertEqual(json["StrVal"] as? String, "Some")
+            XCTAssertEqual((json["Dict"] as? [String: Any])?["Inner"] as? String, "Str")
+        
+            expectation.fulfill()
+        }).addDisposableTo(bag)
+        
+        waitForExpectations(timeout: waitTimeout, handler: nil)
+    }
+    
+    func testLoadIncorrectJson() {
+        let sendJsonData = "incorrect".data(using: .utf8)!
+        let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+            return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
+        }
+        
+        let client = HttpClient()
+        let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
+        let bag = DisposeBag()
+        
+        let expectation = self.expectation(description: "Should return correct error")
+        client.requestJson(url: url)
+            .subscribe(
+                onNext: { json in XCTFail() },
+                onError: { error in
+                    guard case HttpClientError.jsonDeserializationError(let jsonError) = error else {
+                        return
+                    }
+                    XCTAssertEqual((jsonError as NSError).code, 3840)
+                    XCTAssertEqual((jsonError as NSError).domain, "NSCocoaErrorDomain")
+                    expectation.fulfill()
+        }).addDisposableTo(bag)
+        
+        waitForExpectations(timeout: waitTimeout, handler: nil)
+    }
 }
