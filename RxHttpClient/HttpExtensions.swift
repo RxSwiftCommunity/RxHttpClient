@@ -1,44 +1,51 @@
 import Foundation
 
-protocol NSURLSessionTaskType {
-	func isEqual(object: AnyObject?) -> Bool
+protocol URLSessionTaskType {
+	func isEqual(_ object: Any?) -> Bool
+	var state: URLSessionTask.State { get }
 }
-extension NSURLSessionTask : NSURLSessionTaskType { }
+extension URLSessionTask : URLSessionTaskType { }
 
-// NSURLSessionDataTaskProtocol
-protocol NSURLSessionDataTaskType : NSURLSessionTaskType {
+// URLSessionDataTaskType
+protocol URLSessionDataTaskType : URLSessionTaskType {
 	func resume()
 	func cancel()
-	var originalRequest: NSURLRequest? { get }
+	var originalRequest: URLRequest? { get }
 }
-extension NSURLSessionDataTask : NSURLSessionDataTaskType { }
+extension URLSessionDataTask : URLSessionDataTaskType { }
 
-
-// NSURLSessionProtocol
-public typealias DataTaskResult = (NSData?, NSURLResponse?, NSError?) -> Void
-protocol NSURLSessionType {
-	var configuration: NSURLSessionConfiguration { get }
+// URLSessionType
+public typealias DataTaskResult = (Data?, URLResponse?, NSError?) -> Void
+protocol URLSessionType {
+	var configuration: URLSessionConfiguration { get }
 	func finishTasksAndInvalidate()
-	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType
+	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType
 }
-extension NSURLSession : NSURLSessionType {
-	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType {
-		return dataTaskWithRequest(request) as NSURLSessionDataTask
+extension URLSession : URLSessionType {
+	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
+		return dataTask(with: request) as URLSessionDataTask
 	}
 }
 
 
 // NSURL
-public extension NSURL {
-	convenience init?(baseUrl: String, parameters: [String: String]? = nil) {
-		if let parameters = parameters, components = NSURLComponents(string: baseUrl) {
-			components.queryItems = [NSURLQueryItem]()
-			parameters.forEach { key, value in
-				components.queryItems?.append(NSURLQueryItem(name: key, value: value))
-			}
-			self.init(string: components.URL!.absoluteString)
-		} else {
-			self.init(string: baseUrl)
+public extension URL {
+	init?(baseUrl: String, parameters: [String: String]? = nil) {
+		var components = URLComponents(string: baseUrl)
+		components?.queryItems = parameters?.map { key, value in
+			URLQueryItem(name: key, value: value)
 		}
+		
+		guard let absoluteString = components?.url?.absoluteString else { return nil }
+		
+		self.init(string: absoluteString)
+	}
+}
+
+//URLRequest
+public extension URLRequest {
+	init(url: URL, headers: [String: String]?) {
+		self = URLRequest(url: url)
+		headers?.forEach { addValue($1, forHTTPHeaderField: $0) }
 	}
 }

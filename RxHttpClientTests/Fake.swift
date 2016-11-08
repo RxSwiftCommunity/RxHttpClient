@@ -2,52 +2,58 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
-public class FakeDataTask : NSObject, NSURLSessionDataTaskType {
-	var originalRequest: NSURLRequest?
+class FakeDataTask : NSObject, URLSessionDataTaskType {
+	var originalRequest: URLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0
 	let resumeClosure: () -> ()!
 	let cancelClosure: (() -> ())?
 	
-	init(resumeClosure: () -> (), cancelClosure: (() -> ())? = nil) {
+	var state: URLSessionTask.State = URLSessionTask.State.suspended
+	
+	init(resumeClosure: @escaping () -> (), cancelClosure: (() -> ())? = nil) {
 		self.resumeClosure = resumeClosure
 		self.cancelClosure = cancelClosure
 	}
 	
-	public func resume() {
+	open func resume() {
 		resumeInvokeCount += 1
+		state = .running
 		resumeClosure()
 	}
 	
-	public func cancel() {
+	open func cancel() {
 		if !isCancelled {
 			cancelClosure?()
+			state = .suspended
 			isCancelled = true
 		}
 	}
 }
 
-class FakeSession : NSURLSessionType {
+class FakeSession : URLSessionType {
 	var task: FakeDataTask!
 	var isFinished = false
 	
-	var configuration: NSURLSessionConfiguration = NSURLSessionConfiguration.defaultSessionConfiguration()
+	var state: URLSessionTask.State { return task.state }
+	
+	var configuration: URLSessionConfiguration = URLSessionConfiguration.default
 	
 	/// Send data as stream (this data should be received through session delegate)
-	func sendData(task: NSURLSessionDataTaskType, data: NSData?, streamObserver: NSURLSessionDataEventsObserver) {
+	func sendData(_ task: URLSessionDataTaskType, data: Data?, streamObserver: NSURLSessionDataEventsObserver) {
 		if let data = data {
 			streamObserver.sessionEventsSubject.onNext(.didReceiveData(session: self, dataTask: task, data: data))
 		}
 		// simulate delay
-		NSThread.sleepForTimeInterval(0.01)
+		Thread.sleep(forTimeInterval: 0.01)
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: nil))
 	}
 	
-	func sendError(task: NSURLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
+	func sendError(_ task: URLSessionDataTaskType, error: NSError, streamObserver: NSURLSessionDataEventsObserver) {
 		streamObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self, dataTask: task, error: error))
 	}
 	
-	func dataTaskWithRequest(request: NSURLRequest) -> NSURLSessionDataTaskType {
+	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
 		if task == nil { fatalError("Data task not specified") }
 		task.originalRequest = request
 		return task

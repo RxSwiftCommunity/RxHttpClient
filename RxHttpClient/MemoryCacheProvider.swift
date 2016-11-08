@@ -14,23 +14,23 @@ public final class MemoryCacheProvider {
 	internal let cacheData = NSMutableData()
 	
 	/// Serial queue for provide thread-safe operations
-	internal let queue = dispatch_queue_create("com.RxHttpClient.MemoryCacheProvider.SerialQueue", DISPATCH_QUEUE_SERIAL)
+	internal let queue = DispatchQueue(label: "com.RxHttpClient.MemoryCacheProvider.SerialQueue", attributes: [])
 	
-	public init(uid: String = NSUUID().UUIDString, contentMimeType: String? = nil) {
+	public init(uid: String = UUID().uuidString, contentMimeType: String? = nil) {
 		self.uid = uid
 		self.contentMimeType = contentMimeType
 	}
 	
 	public convenience init(contentMimeType: String) {
-		self.init(uid: NSUUID().UUIDString, contentMimeType: contentMimeType)
+		self.init(uid: UUID().uuidString, contentMimeType: contentMimeType)
 	}
 	
 	/**
 	Invokes provided closure synchronously in serial queue
 	- parameter closure: Closure that will be invoked
 	*/
-	internal func invokeSerial(closure: () -> ()) {
-		dispatch_sync(queue) {
+	internal func invokeSerial(_ closure: () -> ()) {
+		queue.sync {
 			closure()
 		}
 	}
@@ -43,7 +43,7 @@ extension MemoryCacheProvider : CacheProviderType {
 	public func clearData() {
 		invokeSerial {
 			guard self.cacheData.length > 0 else { return }
-			self.cacheData.setData(NSData())
+			self.cacheData.setData(Data())
 		}
 	}
 	
@@ -72,18 +72,18 @@ extension MemoryCacheProvider : CacheProviderType {
 	Adds data to cache
 	- parameter data: Data that would be cached
 	*/
-	public func appendData(data: NSData) {
-		invokeSerial { self.cacheData.appendData(data) }
+	public func append(data: Data) {
+		invokeSerial { self.cacheData.append(data) }
 	}
 	
 	/**
 	Gets a copy of current cached data
 	- returns: Copy of data currently stored in cache
 	*/
-	public func getCurrentData() -> NSData {
-		var currentData: NSData!
+	public func getData() -> Data {
+		var currentData: Data!
 		invokeSerial {
-			currentData = NSData(data: self.cacheData)
+			currentData = NSData(data: self.cacheData as Data) as Data
 		}
 		return currentData
 	}
@@ -93,10 +93,10 @@ extension MemoryCacheProvider : CacheProviderType {
 	- parameter range: The range in the cache from which to get the data. The range must not exceed the bounds of the cache.
 	- returns: Copy of data currently stored in cache within range
 	*/
-	public func getCurrentSubdata(range: NSRange) -> NSData {
-		var currentData: NSData!
+	public func getSubdata(range: NSRange) -> Data {
+		var currentData: Data!
 		invokeSerial {
-			currentData = self.cacheData.subdataWithRange(range)
+			currentData = self.cacheData.subdata(with: range)
 		}
 		return currentData
 	}
@@ -108,14 +108,14 @@ extension MemoryCacheProvider : CacheProviderType {
 	If nil, extension will be inferred by MIME type, if inferring fails, extension will be "dat"
 	- returns: NSURL for saved file or nil, if file not saved
 	*/
-	public func saveData(destinationDirectory: NSURL, fileExtension: String?) -> NSURL? {
-		var resultPath: NSURL?
+	public func saveData(destinationDirectory: URL, fileExtension: String?) -> URL? {
+		var resultPath: URL?
 		invokeSerial {
-			let fileName = "\(NSUUID().UUIDString).\(fileExtension ?? MimeTypeConverter.getFileExtensionFromMime(self.contentMimeType ?? "") ?? "dat")"
+			let fileName = "\(UUID().uuidString).\(fileExtension ?? MimeTypeConverter.getFileExtensionFromMime(self.contentMimeType ?? "") ?? "dat")"
 			
-			let path = destinationDirectory.URLByAppendingPathComponent(fileName)
+			let path = destinationDirectory.appendingPathComponent(fileName)
 			
-			if self.cacheData.writeToURL(path, atomically: true) { resultPath = path }
+			if self.cacheData.write(to: path, atomically: true) { resultPath = path }
 		}
 		return resultPath
 	}

@@ -17,8 +17,8 @@
 		6E81B0381D4A850100D099F1 /* HttpClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E81B0371D4A850100D099F1 /* HttpClient.swift */; };
 		6E81B03A1D4A85CF00D099F1 /* MemoryCacheProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E81B0391D4A85CF00D099F1 /* MemoryCacheProvider.swift */; };
 		6E9360EF1D2AABE100F80F76 /* RxHttpClient.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */; };
+		6ED185511DC7AE1C0071BD4D /* URLRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED185501DC7AE1C0071BD4D /* URLRequestTests.swift */; };
 		6EF8CA431D5664520095A634 /* StreamDataTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */; };
-		6EFB9EBC1D2A4E2600E30A5D /* RxHttpClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EFB9EBB1D2A4E2600E30A5D /* RxHttpClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		6EFB9EE61D2A563000E30A5D /* MimeTypeConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */; };
 		6EFB9EF41D2A5BBF00E30A5D /* CacheProviderType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9ED21D2A53FD00E30A5D /* CacheProviderType.swift */; };
 		6EFB9EF51D2A5BC300E30A5D /* HttpClientType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFB9ED31D2A53FD00E30A5D /* HttpClientType.swift */; };
@@ -48,8 +48,8 @@
 		6E5B3CEF1D2D43C000775D9F /* MimeTypeConverterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MimeTypeConverterTests.swift; sourceTree = "<group>"; };
 		6E81B0371D4A850100D099F1 /* HttpClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClient.swift; sourceTree = "<group>"; };
 		6E81B0391D4A85CF00D099F1 /* MemoryCacheProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MemoryCacheProvider.swift; sourceTree = "<group>"; };
+		6ED185501DC7AE1C0071BD4D /* URLRequestTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLRequestTests.swift; sourceTree = "<group>"; };
 		6EFB9EB81D2A4E2600E30A5D /* RxHttpClient.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RxHttpClient.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		6EFB9EBB1D2A4E2600E30A5D /* RxHttpClient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RxHttpClient.h; sourceTree = "<group>"; };
 		6EFB9EBD1D2A4E2600E30A5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6EFB9EC21D2A4E2600E30A5D /* RxHttpClientTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RxHttpClientTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6EFB9EC91D2A4E2600E30A5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -59,7 +59,6 @@
 		6EFB9ED71D2A53FD00E30A5D /* NSURLSessionDataEventsObserver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSURLSessionDataEventsObserver.swift; sourceTree = "<group>"; };
 		6EFB9ED81D2A53FD00E30A5D /* StreamDataTask.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StreamDataTask.swift; sourceTree = "<group>"; };
 		6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MimeTypeConverter.swift; sourceTree = "<group>"; };
-		6EFB9EE91D2A57B600E30A5D /* RxHttpClientTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RxHttpClientTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		6EFB9EEA1D2A57B600E30A5D /* MemoryCacheProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = MemoryCacheProviderTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = StreamDataTaskTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		6EFB9EF01D2A587100E30A5D /* Fake.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Fake.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -119,7 +118,6 @@
 				6EFB9ED71D2A53FD00E30A5D /* NSURLSessionDataEventsObserver.swift */,
 				6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */,
 				6EFB9EBD1D2A4E2600E30A5D /* Info.plist */,
-				6EFB9EBB1D2A4E2600E30A5D /* RxHttpClient.h */,
 			);
 			path = RxHttpClient;
 			sourceTree = "<group>";
@@ -128,7 +126,6 @@
 			isa = PBXGroup;
 			children = (
 				6EFB9EC91D2A4E2600E30A5D /* Info.plist */,
-				6EFB9EE91D2A57B600E30A5D /* RxHttpClientTests-Bridging-Header.h */,
 				6EFB9EF01D2A587100E30A5D /* Fake.swift */,
 				6EFB9EEA1D2A57B600E30A5D /* MemoryCacheProviderTests.swift */,
 				6EFB9EEB1D2A57B600E30A5D /* StreamDataTaskTests.swift */,
@@ -136,6 +133,7 @@
 				6E5B3CEB1D2D32F900775D9F /* NSURLSessionTypeTests.swift */,
 				6E5B3CED1D2D3C8400775D9F /* NSURLTests.swift */,
 				6E5B3CEF1D2D43C000775D9F /* MimeTypeConverterTests.swift */,
+				6ED185501DC7AE1C0071BD4D /* URLRequestTests.swift */,
 			);
 			path = RxHttpClientTests;
 			sourceTree = "<group>";
@@ -147,7 +145,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6EFB9EBC1D2A4E2600E30A5D /* RxHttpClient.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,14 +195,16 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Anton Efimenko";
 				TargetAttributes = {
 					6EFB9EB71D2A4E2600E30A5D = {
 						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0800;
 					};
 					6EFB9EC11D2A4E2600E30A5D = {
 						CreatedOnToolsVersion = 7.3;
+						LastSwiftMigration = 0800;
 					};
 				};
 			};
@@ -252,9 +251,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/Carthage/Build/iOS/RxSwift.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/RxCocoa.framework",
 				"$(SRCROOT)/Carthage/Build/iOS/OHHTTPStubs.framework",
-				"$(SRCROOT)/Carthage/Build/iOS/RxTests.framework",
 			);
 			outputPaths = (
 			);
@@ -293,6 +290,7 @@
 				6E1329B81D47903E00BE6270 /* NSURLSessionTypeTests.swift in Sources */,
 				6E5B3CF01D2D43C000775D9F /* MimeTypeConverterTests.swift in Sources */,
 				6EFB9EFE1D2A5C8E00E30A5D /* Fake.swift in Sources */,
+				6ED185511DC7AE1C0071BD4D /* URLRequestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,8 +319,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -370,8 +370,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -391,6 +393,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -402,6 +405,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -417,6 +421,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -424,6 +429,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -438,6 +444,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.AntonEfimenko.RxHttpClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -453,8 +460,9 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.AntonEfimenko.RxHttpClientTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "RxHttpClientTests/RxHttpClientTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -470,7 +478,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.AntonEfimenko.RxHttpClientTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "RxHttpClientTests/RxHttpClientTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
