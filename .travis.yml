@@ -14,24 +14,15 @@ before_install:
   - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.0) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
 
 before_script:
-# inslall punic
-#- brew install python
-#- brew install libyaml
-#- pip install --upgrade git+https://github.com/schwa/punic.git
-
 - carthage version
 - carthage checkout
 
-# update OHHTTPStubs using carthage
-- carthage update OHHTTPStubs --platform iOS
-# using punic to build RxSwift framework
-#- punic build RxSwift --platform iOS --configuration Release
+#build OHHTTPStubs
+- (cd ./Carthage/Checkouts/OHHTTPStubs/OHHTTPStubs && set -o pipefail && xcodebuild -scheme "OHHTTPStubs iOS Framework" -workspace "OHHTTPStubs.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../../Build  | xcpretty -c)
 #build RxSwift
 - (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
-#- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxCocoa-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
-#- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxTests-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
 
-#copy RxSwift frameworks to Carthage/Build folder
+#copy frameworks to Carthage/Build folder
 - cp -R -f ./Build/Release-iphonesimulator/ ./Carthage/Build/iOS
 
 script:
