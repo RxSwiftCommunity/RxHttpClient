@@ -17,6 +17,8 @@ before_script:
 - carthage version
 - carthage checkout
 
+- mkdir -p ./Carthage/Build/iOS
+
 #build OHHTTPStubs
 - (cd ./Carthage/Checkouts/OHHTTPStubs/OHHTTPStubs && set -o pipefail && xcodebuild -scheme "OHHTTPStubs iOS Framework" -workspace "OHHTTPStubs.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../../Build  | xcpretty -c)
 #build RxSwift
