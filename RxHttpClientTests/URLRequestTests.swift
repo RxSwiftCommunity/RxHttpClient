@@ -35,5 +35,4 @@ class URLRequestTests: XCTestCase {
 		XCTAssertEqual(url, request.url)
 		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
 	}
-	
 }

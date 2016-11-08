@@ -21,5 +21,9 @@ public enum HttpClientError : Error {
 	This error represents client-side error (such as being unable to resolve the hostname or connect to the host).
 	*/
 	case clientSideError(error: Error)
+	/**
+	This error represents failure of JSON deserialization
+	- parameter error: The error occurred while deserialization (throwed by JSONSerialization object)
+	*/
 	case jsonDeserializationError(error: Error)
 }

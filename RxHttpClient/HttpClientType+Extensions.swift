@@ -31,10 +31,20 @@ public extension HttpClientType {
 		return request(urlRequest, cacheProvider: nil)
 	}
 	
+	/**
+	Creates streaming observable for URL
+	- parameter request: URL
+	- returns: Created observable that emits deserialized JSON object of HTTP request
+	*/
 	func requestJson(url: URL) -> Observable<Any> {
 		return requestJson(URLRequest(url: url))
 	}
 	
+	/**
+	Creates streaming observable for request
+	- parameter request: URL request
+	- returns: Created observable that emits deserialized JSON object of HTTP request
+	*/
 	func requestJson(_ urlRequest: URLRequest) -> Observable<Any> {
 		return requestData(urlRequest).flatMapLatest { data -> Observable<Any> in
 			guard data.count > 0 else { return Observable.empty() }
