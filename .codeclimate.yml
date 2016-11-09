@@ -1,0 +1,9 @@
+---
+engines:
+  fixme:
+    enabled: true
+  tailor:
+    enabled: true
+ratings:
+  paths: []
+exclude_paths: []
