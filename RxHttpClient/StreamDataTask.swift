@@ -1,6 +1,11 @@
 import Foundation
 import RxSwift
-import RxCocoa
+
+public enum StreamTaskState : Int {
+	case running
+	case suspended
+	case completed
+}
 
 public protocol StreamTaskType {
 	/// Identifier of a task.
@@ -9,8 +14,7 @@ public protocol StreamTaskType {
 	func resume()
 	/// Cancels task.
 	func cancel()
-	/// Is task resumed.
-	var resumed: Bool { get }
+	var state: StreamTaskState  { get }
 }
 
 public protocol StreamDataTaskType : StreamTaskType {
@@ -26,33 +30,32 @@ Represents the events that will be sended to observers of StreamDataTask
 public enum StreamTaskEvents {
 	/// This event will be sended after receiving (and cacnhing) new chunk of data. 
 	/// This event will be sended only if CacheProvider was specified.
-	case CacheData(CacheProviderType)
+	case cacheData(CacheProviderType)
 	/// This event will be sended after receiving new chunk of data.
 	/// This event will be sended only if CacheProvider was not specified.
-	case ReceiveData(NSData)
+	case receiveData(Data)
 	// This event will be sended after receiving response.
-	case ReceiveResponse(NSURLResponse)
+	case receiveResponse(URLResponse)
 	/**
 	This event will be sended if underlying task was completed with error.
 	This event will be sended if unerlying NSURLSession invoked delegate method URLSession:task:didCompleteWithError: with specified error.
 	*/
-	case Error(ErrorType)
+	case error(Error)
 	/// This event will be sended after completion of underlying data task.
-	case Success(cache: CacheProviderType?)
+	case success(cache: CacheProviderType?)
 }
 
 internal final class StreamDataTask {
 	let uid: String
-	var resumed = false
+	var state: StreamTaskState = .suspended
 	var cacheProvider: CacheProviderType?
 
-	let queue = dispatch_queue_create("com.RxHttpClient.StreamDataTask.Serial", DISPATCH_QUEUE_SERIAL)
-	var response: NSURLResponse?
-	let scheduler = SerialDispatchQueueScheduler(globalConcurrentQueueQOS: DispatchQueueSchedulerQOS.Utility)
-	let dataTask: NSURLSessionDataTaskType
+	var response: URLResponse?
+	let scheduler = SerialDispatchQueueScheduler(qos: .utility)
+	let dataTask: URLSessionDataTaskType
 	let sessionEvents: Observable<SessionDataEvents>
 
-	init(taskUid: String, dataTask: NSURLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
+	init(taskUid: String, dataTask: URLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
 	            cacheProvider: CacheProviderType?) {
 		self.dataTask = dataTask
 		self.sessionEvents = sessionEvents
@@ -62,54 +65,54 @@ internal final class StreamDataTask {
 	
 	lazy var taskProgress: Observable<StreamTaskEvents> = {
 		return Observable.create { [weak self] observer in
-			guard let object = self else { observer.onCompleted(); return NopDisposable.instance }
+			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
-			let disposable = object.sessionEvents.observeOn(object.scheduler).bindNext { e in
+			let disposable = object.sessionEvents.observeOn(object.scheduler).subscribe(onNext: { e in
 					switch e {
 					case .didReceiveResponse(_, let task, let response, let completionHandler):
-						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						guard task.isEqual(object.dataTask) else { return }
 						
-						completionHandler(.Allow)
+						completionHandler(.allow)
 						
 						object.response = response
 						object.cacheProvider?.expectedDataLength = response.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(response.MIMEType ?? "")
-						observer.onNext(StreamTaskEvents.ReceiveResponse(response))
+						object.cacheProvider?.setContentMimeTypeIfEmpty(mimeType: response.mimeType ?? "")
+						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
-						guard task.isEqual(object.dataTask as? AnyObject) else { return }
+						guard task.isEqual(object.dataTask) else { return }
 						
 						if let cacheProvider = object.cacheProvider {
-							cacheProvider.appendData(data)
-							observer.onNext(StreamTaskEvents.CacheData(cacheProvider))
+							cacheProvider.append(data: data)
+							observer.onNext(StreamTaskEvents.cacheData(cacheProvider))
 						} else {
-							observer.onNext(StreamTaskEvents.ReceiveData(data))
+							observer.onNext(StreamTaskEvents.receiveData(data))
 						}
 					case .didCompleteWithError(let session, let task, let error):
-						guard task.isEqual(object.dataTask as? AnyObject) else { return }
-						
-						object.resumed = false
+						guard task.isEqual(object.dataTask) else { return }
 						
 						if let error = error {
-							observer.onNext(StreamTaskEvents.Error(error))
+							object.state = .suspended
+							observer.onNext(StreamTaskEvents.error(error))
 						} else {
-							observer.onNext(StreamTaskEvents.Success(cache: object.cacheProvider))
+							object.state = .completed
+							observer.onNext(StreamTaskEvents.success(cache: object.cacheProvider))
 						}
 
 						observer.onCompleted()
 					case .didBecomeInvalidWithError(_, let error):
-						object.resumed = false
+						object.state = .suspended						
 						// dealing with session invalidation
 						guard let error = error else {
 							// if error is nil, session was invalidated explicitly
-							observer.onNext(StreamTaskEvents.Error(HttpClientError.SessionExplicitlyInvalidated))
+							observer.onNext(StreamTaskEvents.error(HttpClientError.sessionExplicitlyInvalidated))
 							return
 						}
 						// otherwise sending error that caused invalidation
-						observer.onNext(StreamTaskEvents.Error(HttpClientError.SessionInvalidatedWithError(error: error)))
+						observer.onNext(StreamTaskEvents.error(HttpClientError.sessionInvalidatedWithError(error: error)))
 					}
-			}
+			})
 			
-			return AnonymousDisposable {
+			return Disposables.create {
 				disposable.dispose()
 			}
 		}.shareReplay(0)
@@ -118,13 +121,12 @@ internal final class StreamDataTask {
 
 extension StreamDataTask : StreamDataTaskType {
 	func resume() {
-		dispatch_sync(queue) {
-			if !self.resumed { self.resumed = true; self.dataTask.resume(); }
-		}
+		state = .running
+		dataTask.resume()
 	}
 		
 	func cancel() {
-		resumed = false
+		state = .suspended
 		dataTask.cancel()
 	}
 }

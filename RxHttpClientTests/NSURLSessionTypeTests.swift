@@ -2,10 +2,10 @@ import XCTest
 @testable import RxHttpClient
 
 class NSURLSessionProtocolTests: XCTestCase {
-	var session: NSURLSessionType = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+	var session: URLSessionType = URLSession(configuration: URLSessionConfiguration.default,
 	                                             delegate: nil,
 	                                             delegateQueue: nil)
-	var url: NSURL = NSURL(baseUrl: "https://test.com", parameters: ["param": "value"])!
+	var url: URL = URL(baseUrl: "https://test.com", parameters: ["param": "value"])!
 	
 	override func setUp() {
 		super.setUp()
@@ -16,9 +16,9 @@ class NSURLSessionProtocolTests: XCTestCase {
 	}
 	
 	func testCreateDataTaskWithRequest() {
-		let request = NSMutableURLRequest(URL: url)
-		let dataTask = session.dataTaskWithRequest(NSMutableURLRequest(URL: url))
-		XCTAssertEqual(request.URL, dataTask.originalRequest?.URL)
+		let request = URLRequest(url: url)
+		let dataTask = session.dataTaskWithRequest(URLRequest(url: url))
+		XCTAssertEqual(request.url, dataTask.originalRequest?.url)
 		XCTAssertEqual(request.allHTTPHeaderFields?["header"], dataTask.originalRequest?.allHTTPHeaderFields?["header"])
 	}
 }

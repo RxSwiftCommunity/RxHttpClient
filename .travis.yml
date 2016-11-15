@@ -1,5 +1,5 @@
 language: objective-c
-osx_image: xcode7.3
+osx_image: xcode8
 xcode_project: RxHttpClient.xcodeproj
 
 env:
@@ -7,24 +7,25 @@ env:
   #- WORKSPACE=
   - PROJECT=RxHttpClient.xcodeproj
   - FRAMEWORK_SCHEME=RxHttpClient
-  - SDK=iphonesimulator9.3
-  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6,OS=9.3'
+  - SDK=iphonesimulator10.0
+  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6s,OS=10.0'
 
 before_install:
-  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (9.3) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
+  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.0) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
 
 before_script:
-# inslall punic
-- brew install python
-- brew install libyaml
-- pip install --upgrade git+https://github.com/schwa/punic.git
-
 - carthage version
+- carthage checkout
 
-# update OHHTTPStubs using carthage
-- carthage update OHHTTPStubs --platform iOS
-# using punic to build RxSwift framework
-- punic build RxSwift --platform iOS --configuration Release
+- mkdir -p ./Carthage/Build/iOS
+
+#build OHHTTPStubs
+- (cd ./Carthage/Checkouts/OHHTTPStubs/OHHTTPStubs && set -o pipefail && xcodebuild -scheme "OHHTTPStubs iOS Framework" -workspace "OHHTTPStubs.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../../Build  | xcpretty -c)
+#build RxSwift
+- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+
+#copy frameworks to Carthage/Build folder
+- cp -R -f ./Build/Release-iphonesimulator/ ./Carthage/Build/iOS
 
 script:
 - open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID

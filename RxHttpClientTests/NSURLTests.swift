@@ -14,22 +14,22 @@ class NSURLTests: XCTestCase {
 	}
 		
 	func testCreateNSURLWithParameters() {
-		let url = NSURL(baseUrl: "http://test.com", parameters: ["param1": "value1", "param2": "value2"])
+		let url = URL(baseUrl: "http://test.com", parameters: ["param1": "value1", "param2": "value2"])
 		XCTAssertEqual(url?.absoluteString, "http://test.com?param1=value1&param2=value2")
 	}
 	
 	func testCreateNSURLWithEscapedParameters() {
-		let url = NSURL(baseUrl: "http://test.com", parameters: ["param1": "\"#%<>\\^`{|}"])
+		let url = URL(baseUrl: "http://test.com", parameters: ["param1": "\"#%<>\\^`{|}"])
 		XCTAssertEqual(url?.absoluteString, "http://test.com?param1=%22%23%25%3C%3E%5C%5E%60%7B%7C%7D")
 	}
 	
 	func testCreateNSURLWithoutParameters() {
-		let url = NSURL(baseUrl: "http://test.com", parameters: nil)
+		let url = URL(baseUrl: "http://test.com", parameters: nil)
 		XCTAssertEqual(url?.absoluteString, "http://test.com")
 	}
 	
 	func testNotCreateNSURL() {
-		let url = NSURL(baseUrl: "some string", parameters: ["param1": "value1", "param2": "value2"])
+		let url = URL(baseUrl: "some string", parameters: ["param1": "value1", "param2": "value2"])
 		XCTAssertNil(url)
 	}
 }
