@@ -8,8 +8,8 @@ RxHttpClient
 RxHttpClient is a "reactive wrapper" around NSURLSession. Under the hood it implements session delegates (like NSURLSessionDelegate or NSURLSessionTaskDelegate) and translates session events into Observables using [RxSwift](https://github.com/ReactiveX/RxSwift). Main purpose of this framework is to make "streaming" data as simple as possible and provide convenient features for caching data.
 
 ##Requirements
-- Xcode 8.0
-- Swift 3.0
+- Xcode 8.1
+- Swift 3.0.1
 
 ##Installation
 Now only [Carthage](https://github.com/Carthage/Carthage) supported:
