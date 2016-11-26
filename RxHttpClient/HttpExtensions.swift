@@ -40,6 +40,10 @@ public extension URL {
 		
 		self.init(string: absoluteString)
 	}
+	
+	func sha1() -> String? {
+		return absoluteString.data(using: .utf8)?.sha1()
+	}
 }
 
 //URLRequest

@@ -8,7 +8,7 @@ public extension HttpClientType {
 	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created data task
 	*/
-	func createStreamDataTask(request: URLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+	func createStreamDataTask(request: URLRequest, cacheProvider: DataCacheProviderType?) -> StreamDataTaskType {
 		return createStreamDataTask(taskUid: UUID().uuidString, request: request, cacheProvider: cacheProvider)
 	}
 	
@@ -18,7 +18,7 @@ public extension HttpClientType {
 	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created observable that emits stream events
 	*/
-	func request(url: URL, cacheProvider: CacheProviderType? = nil) -> Observable<StreamTaskEvents> {
+	func request(url: URL, cacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
 		return request(URLRequest(url: url), cacheProvider: cacheProvider)
 	}
 	
@@ -73,7 +73,7 @@ public extension HttpClientType {
 	*/
 	func requestData(_ urlRequest: URLRequest)	-> Observable<Data> {
 		// provider for caching data
-		let cacheProvider = MemoryCacheProvider(uid: UUID().uuidString)
+		let cacheProvider = MemoryDataCacheProvider(uid: UUID().uuidString)
 		// variable for response with error
 		var errorResponse: HTTPURLResponse? = nil
 

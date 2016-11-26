@@ -33,7 +33,7 @@ public final class HttpClient {
 }
 
 extension HttpClient : HttpClientType {
-	public func request(_ request: URLRequest, cacheProvider: CacheProviderType?) -> Observable<StreamTaskEvents> {
+	public func request(_ request: URLRequest, cacheProvider: DataCacheProviderType?) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
@@ -53,7 +53,7 @@ extension HttpClient : HttpClientType {
 			}.observeOn(streamDataObservingScheduler)
 	}
 	
-	public func createStreamDataTask(taskUid: String, request: URLRequest, cacheProvider: CacheProviderType?) -> StreamDataTaskType {
+	public func createStreamDataTask(taskUid: String, request: URLRequest, cacheProvider: DataCacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
 		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, sessionEvents: sessionObserver.sessionEvents, cacheProvider: cacheProvider)
 	}
