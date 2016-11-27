@@ -11,7 +11,7 @@ public final class HttpClient {
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
 	internal let urlSession: URLSessionType
 	
-	internal let urlRequestCacheProvider: UrlRequestCacheProviderType?
+	public let urlRequestCacheProvider: UrlRequestCacheProviderType?
 	
 	/**
 	Creates an instance of HttpClient

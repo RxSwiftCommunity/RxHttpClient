@@ -17,4 +17,6 @@ public protocol HttpClientType : class {
 	- returns: Created data task
 	*/
 	func createStreamDataTask(taskUid: String, request: URLRequest, dataCacheProvider: DataCacheProviderType?) -> StreamDataTaskType
+	
+	var urlRequestCacheProvider: UrlRequestCacheProviderType? { get }
 }

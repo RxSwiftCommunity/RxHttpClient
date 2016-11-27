@@ -1,6 +1,22 @@
 import Foundation
 import RxSwift
 
+public struct CacheMode {
+	let cacheResponse: Bool
+	let returnCachedResponse: Bool
+	let invokeRequest: Bool
+	
+	init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true) {
+		self.cacheResponse = cacheResponse
+		self.returnCachedResponse = returnCachedResponse
+		self.invokeRequest = invokeRequest
+	}
+	
+	static let cacheOnly = { return CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false) }()
+	static let withoutCache = { return CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true) }()
+	static let notCacheResponse = { return CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true) }()
+}
+
 public extension HttpClientType {	
 	/**
 	Creates StreamDataTask
@@ -36,8 +52,8 @@ public extension HttpClientType {
 	- parameter request: URL
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
-	func requestJson(url: URL) -> Observable<Any> {
-		return requestJson(URLRequest(url: url))
+	func requestJson(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
+		return requestJson(URLRequest(url: url), requestCacheMode: requestCacheMode)
 	}
 	
 	/**
@@ -45,8 +61,8 @@ public extension HttpClientType {
 	- parameter request: URL request
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
-	func requestJson(_ urlRequest: URLRequest) -> Observable<Any> {
-		return requestData(urlRequest).flatMapLatest { data -> Observable<Any> in
+	func requestJson(_ urlRequest: URLRequest, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
+		return requestData(urlRequest, requestCacheMode: requestCacheMode).flatMapLatest { data -> Observable<Any> in
 			guard data.count > 0 else { return Observable.empty() }
 			
 			do {
@@ -62,8 +78,8 @@ public extension HttpClientType {
 	- parameter request: URL
 	- returns: Created observable that emits Data of HTTP request
 	*/
-	func requestData(url: URL) -> Observable<Data> {
-		return requestData(URLRequest(url: url))
+	func requestData(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
+		return requestData(URLRequest(url: url), requestCacheMode: requestCacheMode)
 	}
 	
 	/**
@@ -71,14 +87,25 @@ public extension HttpClientType {
 	- parameter request: URL request
 	- returns: Created observable that emits Data of HTTP request
 	*/
-	func requestData(_ urlRequest: URLRequest)	-> Observable<Data> {
+	func requestData(_ urlRequest: URLRequest, requestCacheMode: CacheMode = CacheMode())	-> Observable<Data> {
 		// provider for caching data
 		let dataCacheProvider = MemoryDataCacheProvider(uid: UUID().uuidString)
 		// variable for response with error
 		var errorResponse: HTTPURLResponse? = nil
+		
+		let cachedRequest: Observable<Data> = {
+			if requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
+					return Observable.just(cached)
+			}
+			return Observable.empty()
+		}()
+		
+		guard requestCacheMode.invokeRequest else {
+			return cachedRequest
+		}
 
-		return request(urlRequest, dataCacheProvider: dataCacheProvider)
-			.flatMapLatest { result -> Observable<Data> in
+		return cachedRequest.concat(request(urlRequest, dataCacheProvider: dataCacheProvider)
+			.flatMapLatest { [weak self] result -> Observable<Data> in
 				switch result {
 				case .error(let error):
 					// checking error type
@@ -95,13 +122,19 @@ public extension HttpClientType {
 					return Observable.empty()
 				case .success:
 					guard let errorResponse = errorResponse else {
+						let requestData = dataCacheProvider.getData()
+						
+						if requestCacheMode.cacheResponse, let url = urlRequest.url  {
+							self?.urlRequestCacheProvider?.save(resourceUrl: url, data: requestData)
+						}
+						
 						// if we don't have errorResponse, request completed successfuly and we simply return data
-						return Observable.just(dataCacheProvider.getData())
+						return Observable.just(requestData)
 					}
 					
 					return Observable.error(HttpClientError.invalidResponse(response: errorResponse, data: dataCacheProvider.getData()))
 				default: return Observable.empty()
 				}
-		}
+		})
 	}
 }
