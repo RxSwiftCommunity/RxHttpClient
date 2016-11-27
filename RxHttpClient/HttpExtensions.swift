@@ -41,8 +41,8 @@ public extension URL {
 		self.init(string: absoluteString)
 	}
 	
-	internal func sha1() -> String? {
-		return absoluteString.lowercased().data(using: .utf8)?.sha1()
+	internal func sha1() -> String {
+		return absoluteString.lowercased().data(using: .utf8)!.sha1()
 	}
 }
 

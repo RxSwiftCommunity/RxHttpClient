@@ -1,11 +1,12 @@
 import Foundation
 
-public protocol HttpRequestCacheProviderType {
+public protocol UrlRequestCacheProviderType {
 	func load(resourceUrl url: URL) -> Data?
 	func save(resourceUrl url: URL, data: Data)
+	func clear()
 }
 
-public final class HttpRequestFileSystemCacheProvider {
+public final class UrlRequestFileSystemCacheProvider {
 	public let cacheDirectory: URL
 	
 	public init(cacheDirectory: URL) {
@@ -13,18 +14,18 @@ public final class HttpRequestFileSystemCacheProvider {
 	}
 }
 
-extension HttpRequestFileSystemCacheProvider : HttpRequestCacheProviderType {
+extension UrlRequestFileSystemCacheProvider : UrlRequestCacheProviderType {
 	public func load(resourceUrl url: URL) -> Data? {
-		guard let sha1 = url.sha1() else { return nil }
-		guard FileManager.default.fileExists(atPath: cacheDirectory.appendingPathComponent(sha1).path, isDirectory: false) else {
-			return nil
-		}
-		
-		return try? Data(contentsOf: cacheDirectory.appendingPathComponent(sha1))
+		return try? Data(contentsOf: cacheDirectory.appendingPathComponent(url.sha1()))
 	}
 	
 	public func save(resourceUrl url: URL, data: Data) {
-		guard let sha1 = url.sha1() else { return }
-		_ = try? data.write(to: cacheDirectory.appendingPathComponent(sha1), options: .atomic)
+		_ = try? data.write(to: cacheDirectory.appendingPathComponent(url.sha1()), options: .atomic)
+	}
+	
+	public func clear() {
+		_ = try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil, options: .skipsHiddenFiles).forEach {
+			_ = try? FileManager.default.removeItem(at: $0)
+		}
 	}
 }
