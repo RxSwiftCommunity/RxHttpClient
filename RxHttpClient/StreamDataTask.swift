@@ -21,7 +21,7 @@ public protocol StreamDataTaskType : StreamTaskType {
 	/// Observable sequence, that emits events associated with underlying data task.
 	var taskProgress: Observable<StreamTaskEvents> { get }
 	/// Instance of cache provider, associated with this task.
-	var cacheProvider: DataCacheProviderType? { get }
+	var dataCacheProvider: DataCacheProviderType? { get }
 }
 
 /**
@@ -48,7 +48,7 @@ public enum StreamTaskEvents {
 internal final class StreamDataTask {
 	let uid: String
 	var state: StreamTaskState = .suspended
-	var cacheProvider: DataCacheProviderType?
+	var dataCacheProvider: DataCacheProviderType?
 
 	var response: URLResponse?
 	let scheduler = SerialDispatchQueueScheduler(qos: .utility)
@@ -56,10 +56,10 @@ internal final class StreamDataTask {
 	let sessionEvents: Observable<SessionDataEvents>
 
 	init(taskUid: String, dataTask: URLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
-	            cacheProvider: DataCacheProviderType?) {
+	            dataCacheProvider: DataCacheProviderType?) {
 		self.dataTask = dataTask
 		self.sessionEvents = sessionEvents
-		self.cacheProvider = cacheProvider
+		self.dataCacheProvider = dataCacheProvider
 		uid = taskUid
 	}
 	
@@ -75,13 +75,13 @@ internal final class StreamDataTask {
 						completionHandler(.allow)
 						
 						object.response = response
-						object.cacheProvider?.expectedDataLength = response.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(mimeType: response.mimeType ?? "")
+						object.dataCacheProvider?.expectedDataLength = response.expectedContentLength
+						object.dataCacheProvider?.setContentMimeTypeIfEmpty(mimeType: response.mimeType ?? "")
 						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
 						guard task.isEqual(object.dataTask) else { return }
 						
-						if let cacheProvider = object.cacheProvider {
+						if let cacheProvider = object.dataCacheProvider {
 							cacheProvider.append(data: data)
 							observer.onNext(StreamTaskEvents.cacheData(cacheProvider))
 						} else {
@@ -95,7 +95,7 @@ internal final class StreamDataTask {
 							observer.onNext(StreamTaskEvents.error(error))
 						} else {
 							object.state = .completed
-							observer.onNext(StreamTaskEvents.success(cache: object.cacheProvider))
+							observer.onNext(StreamTaskEvents.success(cache: object.dataCacheProvider))
 						}
 
 						observer.onCompleted()

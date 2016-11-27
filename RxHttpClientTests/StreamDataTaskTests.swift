@@ -60,7 +60,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let successExpectaton = expectation(description: "Shoud return success event")
 		
-		httpClient.request(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, cacheProvider: nil).subscribe(onNext: { result in
+		httpClient.request(url: URL(baseUrl: "https://test.com/json", parameters: nil)!, dataCacheProvider: nil).subscribe(onNext: { result in
 			if case .receiveData(let dataChunk) = result {
 				dataReceived.append(dataChunk)
 				receiveCounter += 1
@@ -86,7 +86,7 @@ class StreamDataTaskTests: XCTestCase {
 		session.task = FakeDataTask(resumeClosure: resumeActions)
 
 		let expectation = self.expectation(description: "Should return NSError")
-		httpClient.request(request, cacheProvider: nil).subscribe(onNext: { result in
+		httpClient.request(request, dataCacheProvider: nil).subscribe(onNext: { result in
 			guard case .error(let error) = result else { return }
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
@@ -131,10 +131,10 @@ class StreamDataTaskTests: XCTestCase {
 		let streamTask = StreamDataTask(taskUid: UUID().uuidString,
 		                                dataTask: dataTask, 
 		                                sessionEvents: httpClient.sessionObserver.sessionEvents,
-		                                cacheProvider: nil)
+		                                dataCacheProvider: nil)
 
 		XCTAssertTrue(streamTask.dataTask.originalRequest == request)
-		XCTAssertNil(streamTask.cacheProvider, "Cache provider should not be specified")
+		XCTAssertNil(streamTask.dataCacheProvider, "Cache provider should not be specified")
 	}
 	
 	func testCheckDeinitOfHttpClientNotCancellingRunningTasks() {
@@ -149,7 +149,7 @@ class StreamDataTaskTests: XCTestCase {
 		let expectation = self.expectation(description: "Should complete stream task")
 		
 		// creating stream task
-		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
+		let task = client.createStreamDataTask(request: request, dataCacheProvider: nil)
 		task.taskProgress.subscribe(onNext: { result in
 			if case StreamTaskEvents.success = result {
 				expectation.fulfill()
@@ -177,7 +177,7 @@ class StreamDataTaskTests: XCTestCase {
 		let expectation = self.expectation(description: "Should return cancelation error")
 		
 		// creating stream task
-		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
+		let task = client.createStreamDataTask(request: request, dataCacheProvider: nil)
 		task.taskProgress.subscribe(onNext: { result in
 			if case StreamTaskEvents.error(let error as NSError) = result , error.code == -999 {
 				expectation.fulfill()
@@ -204,7 +204,7 @@ class StreamDataTaskTests: XCTestCase {
 		let expectation = self.expectation(description: "Should complete stream task")
 		
 		// creating stream task
-		let task = client.createStreamDataTask(request: request, cacheProvider: nil)
+		let task = client.createStreamDataTask(request: request, dataCacheProvider: nil)
 
 		task.taskProgress.subscribe(onNext: { result in
 			// checking if session was explicitly invalidated (while deinit of HttpClient)

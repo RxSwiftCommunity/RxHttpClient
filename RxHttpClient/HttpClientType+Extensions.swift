@@ -5,21 +5,21 @@ public extension HttpClientType {
 	/**
 	Creates StreamDataTask
 	- parameter request: URL request
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
+	- parameter dataCacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created data task
 	*/
-	func createStreamDataTask(request: URLRequest, cacheProvider: DataCacheProviderType?) -> StreamDataTaskType {
-		return createStreamDataTask(taskUid: UUID().uuidString, request: request, cacheProvider: cacheProvider)
+	func createStreamDataTask(request: URLRequest, dataCacheProvider: DataCacheProviderType?) -> StreamDataTaskType {
+		return createStreamDataTask(taskUid: UUID().uuidString, request: request, dataCacheProvider: dataCacheProvider)
 	}
 	
 	/**
 	Creates streaming observable for URL
 	- parameter request: URL
-	- parameter cacheProvider: Cache provider, that will be used to cache downloaded data
+	- parameter dataCacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created observable that emits stream events
 	*/
-	func request(url: URL, cacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
-		return request(URLRequest(url: url), cacheProvider: cacheProvider)
+	func request(url: URL, dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
+		return request(URLRequest(url: url), dataCacheProvider: dataCacheProvider)
 	}
 	
 	/**
@@ -28,7 +28,7 @@ public extension HttpClientType {
 	- returns: Created observable that emits stream events
 	*/
 	func request(_ urlRequest: URLRequest) -> Observable<StreamTaskEvents> {
-		return request(urlRequest, cacheProvider: nil)
+		return request(urlRequest, dataCacheProvider: nil)
 	}
 	
 	/**
@@ -73,11 +73,11 @@ public extension HttpClientType {
 	*/
 	func requestData(_ urlRequest: URLRequest)	-> Observable<Data> {
 		// provider for caching data
-		let cacheProvider = MemoryDataCacheProvider(uid: UUID().uuidString)
+		let dataCacheProvider = MemoryDataCacheProvider(uid: UUID().uuidString)
 		// variable for response with error
 		var errorResponse: HTTPURLResponse? = nil
 
-		return request(urlRequest, cacheProvider: cacheProvider)
+		return request(urlRequest, dataCacheProvider: dataCacheProvider)
 			.flatMapLatest { result -> Observable<Data> in
 				switch result {
 				case .error(let error):
@@ -96,10 +96,10 @@ public extension HttpClientType {
 				case .success:
 					guard let errorResponse = errorResponse else {
 						// if we don't have errorResponse, request completed successfuly and we simply return data
-						return Observable.just(cacheProvider.getData())
+						return Observable.just(dataCacheProvider.getData())
 					}
 					
-					return Observable.error(HttpClientError.invalidResponse(response: errorResponse, data: cacheProvider.getData()))
+					return Observable.error(HttpClientError.invalidResponse(response: errorResponse, data: dataCacheProvider.getData()))
 				default: return Observable.empty()
 				}
 		}

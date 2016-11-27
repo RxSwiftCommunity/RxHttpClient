@@ -72,7 +72,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
-		httpClient.request(request, cacheProvider: MemoryDataCacheProvider(uid: UUID().uuidString)).subscribe(onNext: { result in
+		httpClient.request(request, dataCacheProvider: MemoryDataCacheProvider(uid: UUID().uuidString)).subscribe(onNext: { result in
 			if case StreamTaskEvents.cacheData = result {
 				receiveChunkCounter += 1
 			} else if case .success(let cacheProvider) = result {
@@ -102,7 +102,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let task = StreamDataTask(taskUid: UUID().uuidString,
 		                          dataTask: dataTask,
 		                          sessionEvents: httpClient.sessionObserver.sessionEvents,
-		                          cacheProvider: MemoryDataCacheProvider(uid: UUID().uuidString))
+		                          dataCacheProvider: MemoryDataCacheProvider(uid: UUID().uuidString))
 
 		task.taskProgress.subscribe(onNext: { result in
 			if case StreamTaskEvents.cacheData = result {
@@ -137,7 +137,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
 		// create memory cache provider with explicitly specified mime type
-		httpClient.request(request, cacheProvider: MemoryDataCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).subscribe(onNext: { result in
+		httpClient.request(request, dataCacheProvider: MemoryDataCacheProvider(uid: UUID().uuidString, contentMimeType: "application/octet-stream")).subscribe(onNext: { result in
 			if case .success(let cacheProvider) = result {
 				XCTAssertNotNil(cacheProvider, "Cache provider should be specified")
 				XCTAssertEqual(cacheProvider?.contentMimeType, "application/octet-stream", "Mime type should be preserved")
