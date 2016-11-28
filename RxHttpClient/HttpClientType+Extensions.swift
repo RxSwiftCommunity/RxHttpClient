@@ -2,19 +2,19 @@ import Foundation
 import RxSwift
 
 public struct CacheMode {
-	let cacheResponse: Bool
-	let returnCachedResponse: Bool
-	let invokeRequest: Bool
+	public let cacheResponse: Bool
+	public let returnCachedResponse: Bool
+	public let invokeRequest: Bool
 	
-	init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true) {
+	public init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true) {
 		self.cacheResponse = cacheResponse
 		self.returnCachedResponse = returnCachedResponse
 		self.invokeRequest = invokeRequest
 	}
 	
-	static let cacheOnly = { return CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false) }()
-	static let withoutCache = { return CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true) }()
-	static let notCacheResponse = { return CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true) }()
+	public static let cacheOnly = { return CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false) }()
+	public static let withoutCache = { return CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true) }()
+	public static let notCacheResponse = { return CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true) }()
 }
 
 public extension HttpClientType {	
@@ -94,13 +94,15 @@ public extension HttpClientType {
 		var errorResponse: HTTPURLResponse? = nil
 		
 		let cachedRequest: Observable<Data> = {
-			if requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
-					return Observable.just(cached)
+			if urlRequest.httpMethod == "GET", requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
+				// return cached response
+				return Observable.just(cached)
 			}
 			return Observable.empty()
 		}()
 		
 		guard requestCacheMode.invokeRequest else {
+			// if we should not invoke request, simply return cache request
 			return cachedRequest
 		}
 
@@ -124,7 +126,8 @@ public extension HttpClientType {
 					guard let errorResponse = errorResponse else {
 						let requestData = dataCacheProvider.getData()
 						
-						if requestCacheMode.cacheResponse, let url = urlRequest.url  {
+						if urlRequest.httpMethod == "GET", requestCacheMode.cacheResponse, let url = urlRequest.url  {
+							// sache response
 							self?.urlRequestCacheProvider?.save(resourceUrl: url, data: requestData)
 						}
 						
