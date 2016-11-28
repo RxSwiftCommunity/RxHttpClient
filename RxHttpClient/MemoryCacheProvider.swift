@@ -1,6 +1,6 @@
 import Foundation
 
-public final class MemoryCacheProvider {
+public final class MemoryDataCacheProvider {
 	/// Expected length of data, that should be cached
 	public var expectedDataLength: Int64 = 0
 	
@@ -36,7 +36,7 @@ public final class MemoryCacheProvider {
 	}
 }
 
-extension MemoryCacheProvider : CacheProviderType {
+extension MemoryDataCacheProvider : DataCacheProviderType {
 	/**
 	Deletes current cached data
 	*/

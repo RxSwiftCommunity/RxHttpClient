@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol CacheProviderType {
+public protocol DataCacheProviderType {
 	/// UID of cache provider
 	var uid: String { get }
 	/// Length of cached data
@@ -44,7 +44,7 @@ public protocol CacheProviderType {
 	func clearData()
 }
 
-public extension CacheProviderType {
+public extension DataCacheProviderType {
 	public func saveData(fileExtension: String?) -> URL? {
 		return saveData(destinationDirectory: URL(fileURLWithPath: NSTemporaryDirectory()), fileExtension: fileExtension)
 	}
