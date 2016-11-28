@@ -60,4 +60,44 @@ class MimeTypeConverterTests: XCTestCase {
 	func testNotConvertUtiToExtension() {
 		XCTAssertNil(MimeTypeConverter.getFileExtensionFromUti("wrong.uti"))
 	}
+	
+	func testShortConvertExtensionToUti() {
+		XCTAssertEqual("mp3".asFileExtension.utiType, "public.mp3")
+	}
+	
+	func testShortConvertExtensionToMime() {
+		XCTAssertEqual("mp3".asFileExtension.mimeType, "audio/mpeg")
+	}
+	
+	func testShortConvertMimeToUti() {
+		XCTAssertEqual("audio/mpeg".asMimeType.utiType, "public.mp3")
+	}
+	
+	func testShortConvertMimeToExtension() {
+		XCTAssertEqual("audio/mpeg".asMimeType.fileExtension, "mp3")
+	}
+	
+	func testShortConvertUtiTiMime() {
+		XCTAssertEqual("public.mp3".asUtiType.mimeType, "audio/mpeg")
+	}
+	
+	func testShortConvertUtiToExtension() {
+		XCTAssertEqual("public.mp3".asUtiType.fileExtension, "mp3")
+	}
+	
+	func testShortNotConvertExtensionToMime() {
+		XCTAssertNil("wrngExtension".asFileExtension.mimeType)
+	}
+	
+	func testShortNotConvertMimeToExtension() {
+		XCTAssertNil("wrong/mime".asMimeType.fileExtension)
+	}
+	
+	func testShortNotConvertUtiToMime() {
+		XCTAssertNil("wrong.uti".asUtiType.mimeType)
+	}
+	
+	func testShortNotConvertUtiToExtension() {
+		XCTAssertNil("wrong.uti".asUtiType.fileExtension)
+	}
 }
