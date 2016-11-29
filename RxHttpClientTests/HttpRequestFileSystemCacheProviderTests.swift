@@ -9,6 +9,13 @@
 import XCTest
 @testable import RxHttpClient
 
+extension FileManager {
+    @nonobjc func fileExists(atPath path: String, isDirectory: Bool = false) -> Bool {
+        var isDir = ObjCBool(isDirectory)
+        return fileExists(atPath: path, isDirectory: &isDir)
+    }
+}
+
 class HttpRequestFileSystemCacheProviderTests: XCTestCase {
 	var cacheDirectory: URL!
 	override func setUp() {
@@ -70,7 +77,8 @@ class HttpRequestFileSystemCacheProviderTests: XCTestCase {
 		
 		let provider = UrlRequestFileSystemCacheProvider(cacheDirectory: cacheDirectory)
 		provider.clear()
-		
-		XCTAssertEqual(try! FileManager.default.contentsOfDirectory(atPath: cacheDirectory.path).count, 0)
+	
+        XCTAssertTrue(FileManager.default.fileExists(atPath: cacheDirectory.path, isDirectory: true))
+		XCTAssertEqual(try? FileManager.default.contentsOfDirectory(atPath: cacheDirectory.path).count, 0)
 	}
 }
