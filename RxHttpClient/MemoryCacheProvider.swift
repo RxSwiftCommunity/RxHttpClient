@@ -111,7 +111,7 @@ extension MemoryDataCacheProvider : DataCacheProviderType {
 	public func saveData(destinationDirectory: URL, fileExtension: String?) -> URL? {
 		var resultPath: URL?
 		invokeSerial {
-			let fileName = "\(UUID().uuidString).\(fileExtension ?? MimeTypeConverter.getFileExtensionFromMime(self.contentMimeType ?? "") ?? "dat")"
+			let fileName = "\(UUID().uuidString).\(fileExtension ?? self.contentMimeType?.asMimeType.fileExtension ?? "dat")"
 			
 			let path = destinationDirectory.appendingPathComponent(fileName)
 			

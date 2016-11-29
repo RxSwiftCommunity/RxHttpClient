@@ -22,43 +22,43 @@ class MimeTypeConverterTests: XCTestCase {
 	}
 	
 	func testConvertExtensionToUti() {
-		XCTAssertEqual(MimeTypeConverter.getUtiTypeFromFileExtension("mp3"), "public.mp3")
+		XCTAssertEqual(MimeTypeConverter.fileExtensionToUti("mp3"), "public.mp3")
 	}
 	
 	func testConvertExtensionToMime() {
-		XCTAssertEqual(MimeTypeConverter.getMimeTypeFromFileExtension("mp3"), "audio/mpeg")
+		XCTAssertEqual(MimeTypeConverter.fileExtensionToMime("mp3"), "audio/mpeg")
 	}
 	
 	func testConvertMimeToUti() {
-		XCTAssertEqual(MimeTypeConverter.getUtiFromMime("audio/mpeg"), "public.mp3")
+		XCTAssertEqual(MimeTypeConverter.mimeToUti("audio/mpeg"), "public.mp3")
 	}
 	
 	func testConvertMimeToExtension() {
-		XCTAssertEqual(MimeTypeConverter.getFileExtensionFromMime("audio/mpeg"), "mp3")
+		XCTAssertEqual(MimeTypeConverter.mimeToFileExtension("audio/mpeg"), "mp3")
 	}
 	
 	func testConvertUtiTiMime() {
-		XCTAssertEqual(MimeTypeConverter.getMimeTypeFromUti("public.mp3"), "audio/mpeg")
+		XCTAssertEqual(MimeTypeConverter.utiToMime("public.mp3"), "audio/mpeg")
 	}
 	
 	func testConvertUtiToExtension() {
-		XCTAssertEqual(MimeTypeConverter.getFileExtensionFromUti("public.mp3"), "mp3")
+		XCTAssertEqual(MimeTypeConverter.utiToFileExtension("public.mp3"), "mp3")
 	}
 	
 	func testNotConvertExtensionToMime() {
-		XCTAssertNil(MimeTypeConverter.getMimeTypeFromFileExtension("wrngExtension"))
+		XCTAssertNil(MimeTypeConverter.fileExtensionToMime("wrngExtension"))
 	}
 	
 	func testNotConvertMimeToExtension() {
-		XCTAssertNil(MimeTypeConverter.getFileExtensionFromMime("wrong/mime"))
+		XCTAssertNil(MimeTypeConverter.mimeToFileExtension("wrong/mime"))
 	}
 	
 	func testNotConvertUtiToMime() {
-		XCTAssertNil(MimeTypeConverter.getMimeTypeFromUti("wrong.uti"))
+		XCTAssertNil(MimeTypeConverter.utiToMime("wrong.uti"))
 	}
 	
 	func testNotConvertUtiToExtension() {
-		XCTAssertNil(MimeTypeConverter.getFileExtensionFromUti("wrong.uti"))
+		XCTAssertNil(MimeTypeConverter.utiToFileExtension("wrong.uti"))
 	}
 	
 	func testShortConvertExtensionToUti() {

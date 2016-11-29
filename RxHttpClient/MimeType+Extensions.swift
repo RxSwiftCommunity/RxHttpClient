@@ -29,16 +29,16 @@ public extension String {
 }
 
 public extension MimeType where Base : ExpressibleByStringLiteral {
-	var utiType: String? { return MimeTypeConverter.getUtiFromMime(self.base as! String) }
-	var fileExtension: String? { return MimeTypeConverter.getFileExtensionFromMime(self.base as! String) }
+	var utiType: String? { return MimeTypeConverter.mimeToUti(self.base as! String) }
+	var fileExtension: String? { return MimeTypeConverter.mimeToFileExtension(self.base as! String) }
 }
 
 public extension FileExtensionType where Base : ExpressibleByStringLiteral {
-	var utiType: String? { return MimeTypeConverter.getUtiTypeFromFileExtension(self.base as! String) }
-	var mimeType: String? { return MimeTypeConverter.getMimeTypeFromFileExtension(self.base as! String) }
+	var utiType: String? { return MimeTypeConverter.fileExtensionToUti(self.base as! String) }
+	var mimeType: String? { return MimeTypeConverter.fileExtensionToMime(self.base as! String) }
 }
 
 public extension UtiType where Base : ExpressibleByStringLiteral {
-	var mimeType: String? { return MimeTypeConverter.getMimeTypeFromUti(self.base as! String) }
-	var fileExtension: String? { return MimeTypeConverter.getFileExtensionFromUti(self.base as! String) }
+	var mimeType: String? { return MimeTypeConverter.utiToMime(self.base as! String) }
+	var fileExtension: String? { return MimeTypeConverter.utiToFileExtension(self.base as! String) }
 }
