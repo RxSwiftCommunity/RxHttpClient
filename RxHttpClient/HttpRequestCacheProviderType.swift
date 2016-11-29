@@ -1,8 +1,19 @@
 import Foundation
 
 public protocol UrlRequestCacheProviderType {
+    /**
+    Loads cached data for resource URL if exists
+    - parameter resourceUrl: Resource for which data will be loaded
+    - returns: Cached Data if exists
+    */
 	func load(resourceUrl url: URL) -> Data?
+    /**
+    Saves data for specified resource URL
+    - parameter resourceUrl: Resource for which data will be stored
+    - parameter data: Data to store
+    */
 	func save(resourceUrl url: URL, data: Data)
+    /// Clears cache
 	func clear()
 }
 

@@ -1,9 +1,13 @@
 import Foundation
 import RxSwift
 
+/// Represents caching settings
 public struct CacheMode {
+    /// If true, response for GET request will be cached
 	public let cacheResponse: Bool
+    /// If true, HttpClient will immediately return cacged respons if it exists
 	public let returnCachedResponse: Bool
+    /// If true, HttpClient will invoke request
 	public let invokeRequest: Bool
 	
 	public init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true) {
@@ -12,8 +16,11 @@ public struct CacheMode {
 		self.invokeRequest = invokeRequest
 	}
 	
+    /// Only cached response will be returned
 	public static let cacheOnly = { return CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false) }()
+    /// Cached response will not be returned even if exists
 	public static let withoutCache = { return CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true) }()
+    /// Response will not be cached
 	public static let notCacheResponse = { return CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true) }()
 }
 
@@ -24,7 +31,7 @@ public extension HttpClientType {
 	- parameter dataCacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created data task
 	*/
-	func createStreamDataTask(request: URLRequest, dataCacheProvider: DataCacheProviderType?) -> StreamDataTaskType {
+	func createStreamDataTask(request: URLRequest, dataCacheProvider: DataCacheProviderType? = nil) -> StreamDataTaskType {
 		return createStreamDataTask(taskUid: UUID().uuidString, request: request, dataCacheProvider: dataCacheProvider)
 	}
 	
@@ -50,6 +57,7 @@ public extension HttpClientType {
 	/**
 	Creates streaming observable for URL
 	- parameter request: URL
+    - parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
 	func requestJson(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
@@ -59,6 +67,7 @@ public extension HttpClientType {
 	/**
 	Creates streaming observable for request
 	- parameter request: URL request
+    - parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
 	func requestJson(_ urlRequest: URLRequest, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
@@ -76,6 +85,7 @@ public extension HttpClientType {
 	/**
 	Creates an observable for URL
 	- parameter request: URL
+    - parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits Data of HTTP request
 	*/
 	func requestData(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
@@ -85,6 +95,7 @@ public extension HttpClientType {
 	/**
 	Creates an observable for request
 	- parameter request: URL request
+    - parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits Data of HTTP request
 	*/
 	func requestData(_ urlRequest: URLRequest, requestCacheMode: CacheMode = CacheMode())	-> Observable<Data> {
