@@ -3,6 +3,7 @@ import XCTest
 import OHHTTPStubs
 
 class HttpClientCachingTests: XCTestCase {
+    let waitTimeout = 0.5
 	var cacheDirectory: URL!
 	var client: HttpClient!
 	
@@ -25,7 +26,7 @@ class HttpClientCachingTests: XCTestCase {
 		
 		let exp = expectation(description: "Should complete request")
 		_ = client.requestData(url: requestUrl).subscribe(onCompleted: { exp.fulfill() })
-		waitForExpectations(timeout: 0.01, handler: nil)
+		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
 		let cachedData = try! Data(contentsOf: cacheDirectory.appendingPathComponent(requestUrl.sha1()))
 		XCTAssertTrue(cachedData.elementsEqual(data), "Should cache data")
@@ -47,7 +48,7 @@ class HttpClientCachingTests: XCTestCase {
 		var returnCount = 0
 		_ = client.requestData(url: requestUrl).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
 		
-		waitForExpectations(timeout: 0.01, handler: nil)
+		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
 		XCTAssertEqual(returnCount, 2, "Should return data twice")
 	}
@@ -65,7 +66,7 @@ class HttpClientCachingTests: XCTestCase {
 		var returnCount = 0
 		_ = client.requestData(url: requestUrl).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
 		
-		waitForExpectations(timeout: 0.01, handler: nil)
+		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
 		XCTAssertEqual(returnCount, 1, "Should return data only once")
 	}
@@ -86,7 +87,7 @@ class HttpClientCachingTests: XCTestCase {
 		var returnCount = 0
 		_ = client.requestData(url: requestUrl, requestCacheMode: .cacheOnly).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
 		
-		waitForExpectations(timeout: 0.01, handler: nil)
+		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
 		XCTAssertEqual(returnCount, 1, "Should return data once from cache")
 	}
@@ -106,7 +107,7 @@ class HttpClientCachingTests: XCTestCase {
 		var returnCount = 0
 		_ = client.requestData(url: requestUrl, requestCacheMode: .cacheOnly).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
 		
-		waitForExpectations(timeout: 0.01, handler: nil)
+		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
 		XCTAssertEqual(returnCount, 0, "Should not return data")
 	}
@@ -124,7 +125,7 @@ class HttpClientCachingTests: XCTestCase {
 		var returnCount = 0
 		_ = client.requestData(url: requestUrl, requestCacheMode: .notCacheResponse).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
 		
-		waitForExpectations(timeout: 0.01, handler: nil)
+		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
 		XCTAssertEqual(returnCount, 1, "Should return data once from server")
 		XCTAssertEqual(0, try! FileManager.default.contentsOfDirectory(atPath: cacheDirectory.path).count, "Should not save data")
