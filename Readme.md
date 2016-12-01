@@ -8,8 +8,8 @@ RxHttpClient
 RxHttpClient is a "reactive wrapper" around NSURLSession. Under the hood it implements session delegates (like NSURLSessionDelegate or NSURLSessionTaskDelegate) and translates session events into Observables using [RxSwift](https://github.com/ReactiveX/RxSwift). Main purpose of this framework is to make "streaming" data as simple as possible and provide convenient features for caching data.
 
 ##Requirements
-- Xcode 8.0
-- Swift 3.0
+- Xcode 8.1
+- Swift 3.0.1
 
 ##Installation
 Now only [Carthage](https://github.com/Carthage/Carthage) supported:
@@ -48,12 +48,12 @@ If dealing with every chunk of data is not necessary it's possible to pass an in
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
-client.request(url: url, cacheProvider: MemoryCacheProvider()).subscribe(onNext: { event in
-  guard case StreamTaskEvents.success(let cacheProvider) = event else { return }
+client.request(url: url, dataCacheProvider: MemoryCacheProvider()).subscribe(onNext: { event in
+  guard case StreamTaskEvents.success(let dataCacheProvider) = event else { return }
 
-  if let cacheProvider = cacheProvider {
+  if let dataCacheProvider = dataCacheProvider {
     // getting cached data from provider
-    let downloadedData = cacheProvider.getData()
+    let downloadedData = dataCacheProvider.getData()
   }
 }).addDisposableTo(bag)
 ```
@@ -88,6 +88,28 @@ client.requestJson(url: url).subscribe(onNext: { json in /* do something with re
 }).addDisposableTo(bag)
 ```
 
+####Response caching
+HttpClient can cache latest response for GET request. To use caching, HttpClient should be initialized with instance of UrlRequestCacheProviderType:
+
+```
+// directory where cache data will be saved
+let cacheDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("Cache")
+// instance of UrlRequestFileSystemCacheProvider that will store cached data in specified directory
+let urlCacheProvider = UrlRequestFileSystemCacheProvider(cacheDirectory: cacheDirectory)
+let client = HttpClient(urlRequestCacheProvider: urlCacheProvider)
+
+// Use specific cache mode for request
+// If data for URL already cached, this data will be returned immediately and after that request to the server will be invoked
+client.requestJson(url: url, requestCacheMode: CacheMode(cacheResponse: true, returnCachedResponse: true, invokeRequest: true)).subscribe( /* */).addDisposableTo(bag)
+
+// If returnCachedResponse is false, cached data will not be returned even if exists
+client.requestJson(url: url, requestCacheMode: CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true)).subscribe( /* */).addDisposableTo(bag)
+
+// use predefined mode
+// "offline mode", use only cache and don't invoke request to server
+client.requestJson(url: url, requestCacheMode: .cacheOnly).subscribe( /* */).addDisposableTo(bag)
+```  
+
 ####StreamDataTask
 StreamDataTask is a more "low level" object that wraps NSURLSessionDataTask. In most situations is't more convenient to use loadStreamData method (it actually simply forwards events from StreamDataTask), but if necessary StreamDataTask may be used in this way:
 ```
@@ -110,6 +132,16 @@ task.taskProgress.subscribe(onNext: { event in
 
 // resume task
 task.resume()
+```
+
+####MIME type conversion
+This framework also contains useful methods to convert, for example, MIME type to file extension, or UTI type to MIME type:
+```
+let extension = MimeTypeConverter.utiToFileExtension("public.mp3") // returns "mp3"
+let uti = MimeTypeConverter.mimeToUti("audio/mpeg") // returns "public.mp3"
+
+// it also works with strings
+let mime = "public.mp3".asUtiType.mimeType // returns "audio/mpeg"
 ```
 
 ##How it works

@@ -1,5 +1,5 @@
 language: objective-c
-osx_image: xcode8
+osx_image: xcode8.1
 xcode_project: RxHttpClient.xcodeproj
 
 env:
@@ -7,11 +7,11 @@ env:
   #- WORKSPACE=
   - PROJECT=RxHttpClient.xcodeproj
   - FRAMEWORK_SCHEME=RxHttpClient
-  - SDK=iphonesimulator10.0
-  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6s,OS=10.0'
+  - SDK=iphonesimulator10.1
+  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6s,OS=10.1'
 
 before_install:
-  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.0) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
+#  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.1) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
 
 before_script:
 - carthage version
@@ -28,7 +28,7 @@ before_script:
 - cp -R -f ./Build/Release-iphonesimulator/ ./Carthage/Build/iOS
 
 script:
-- open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID
+#- open -a "simulator" --args -CurrentDeviceUDID $SIMULATOR_ID
 #- set -o pipefail && xcodebuild -scheme "$FRAMEWORK_SCHEME" -project "$PROJECT" -sdk "$SDK" -configuration Debug ONLY_ACTIVE_ARCH=YES -destination "$DESTINATION_PLATFORM" GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES clean build  | xcpretty -c
 - set -o pipefail && xcodebuild -scheme "$FRAMEWORK_SCHEME" -project "$PROJECT" -sdk "$SDK" -configuration Debug ONLY_ACTIVE_ARCH=YES -destination "$DESTINATION_PLATFORM" -enableCodeCoverage YES GCC_INSTRUMENT_PROGRAM_FLOW_ARCS=YES GCC_GENERATE_TEST_COVERAGE_FILES=YES clean test  | xcpretty -c
 

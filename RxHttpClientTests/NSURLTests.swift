@@ -1,5 +1,5 @@
 import XCTest
-import RxHttpClient
+@testable import RxHttpClient
 
 class NSURLTests: XCTestCase {
 	
@@ -31,5 +31,10 @@ class NSURLTests: XCTestCase {
 	func testNotCreateNSURL() {
 		let url = URL(baseUrl: "some string", parameters: ["param1": "value1", "param2": "value2"])
 		XCTAssertNil(url)
+	}
+	
+	func testSha1() {
+		XCTAssertEqual("72fe95c5576ec634e214814a32ab785568eda76a", URL(baseUrl: "https://google.com")?.sha1())
+		XCTAssertEqual("72fe95c5576ec634e214814a32ab785568eda76a", URL(baseUrl: "https://Google.coM")?.sha1())
 	}
 }

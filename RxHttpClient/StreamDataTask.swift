@@ -21,7 +21,7 @@ public protocol StreamDataTaskType : StreamTaskType {
 	/// Observable sequence, that emits events associated with underlying data task.
 	var taskProgress: Observable<StreamTaskEvents> { get }
 	/// Instance of cache provider, associated with this task.
-	var cacheProvider: CacheProviderType? { get }
+	var dataCacheProvider: DataCacheProviderType? { get }
 }
 
 /**
@@ -30,7 +30,7 @@ Represents the events that will be sended to observers of StreamDataTask
 public enum StreamTaskEvents {
 	/// This event will be sended after receiving (and cacnhing) new chunk of data. 
 	/// This event will be sended only if CacheProvider was specified.
-	case cacheData(CacheProviderType)
+	case cacheData(DataCacheProviderType)
 	/// This event will be sended after receiving new chunk of data.
 	/// This event will be sended only if CacheProvider was not specified.
 	case receiveData(Data)
@@ -42,13 +42,13 @@ public enum StreamTaskEvents {
 	*/
 	case error(Error)
 	/// This event will be sended after completion of underlying data task.
-	case success(cache: CacheProviderType?)
+	case success(cache: DataCacheProviderType?)
 }
 
 internal final class StreamDataTask {
 	let uid: String
 	var state: StreamTaskState = .suspended
-	var cacheProvider: CacheProviderType?
+	var dataCacheProvider: DataCacheProviderType?
 
 	var response: URLResponse?
 	let scheduler = SerialDispatchQueueScheduler(qos: .utility)
@@ -56,10 +56,10 @@ internal final class StreamDataTask {
 	let sessionEvents: Observable<SessionDataEvents>
 
 	init(taskUid: String, dataTask: URLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
-	            cacheProvider: CacheProviderType?) {
+	            dataCacheProvider: DataCacheProviderType?) {
 		self.dataTask = dataTask
 		self.sessionEvents = sessionEvents
-		self.cacheProvider = cacheProvider
+		self.dataCacheProvider = dataCacheProvider
 		uid = taskUid
 	}
 	
@@ -75,13 +75,13 @@ internal final class StreamDataTask {
 						completionHandler(.allow)
 						
 						object.response = response
-						object.cacheProvider?.expectedDataLength = response.expectedContentLength
-						object.cacheProvider?.setContentMimeTypeIfEmpty(mimeType: response.mimeType ?? "")
+						object.dataCacheProvider?.expectedDataLength = response.expectedContentLength
+						object.dataCacheProvider?.setContentMimeTypeIfEmpty(mimeType: response.mimeType ?? "")
 						observer.onNext(StreamTaskEvents.receiveResponse(response))
 					case .didReceiveData(_, let task, let data):
 						guard task.isEqual(object.dataTask) else { return }
 						
-						if let cacheProvider = object.cacheProvider {
+						if let cacheProvider = object.dataCacheProvider {
 							cacheProvider.append(data: data)
 							observer.onNext(StreamTaskEvents.cacheData(cacheProvider))
 						} else {
@@ -95,7 +95,7 @@ internal final class StreamDataTask {
 							observer.onNext(StreamTaskEvents.error(error))
 						} else {
 							object.state = .completed
-							observer.onNext(StreamTaskEvents.success(cache: object.cacheProvider))
+							observer.onNext(StreamTaskEvents.success(cache: object.dataCacheProvider))
 						}
 
 						observer.onCompleted()
