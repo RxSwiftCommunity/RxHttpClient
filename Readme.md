@@ -1,7 +1,7 @@
 RxHttpClient
 ----
-[![Build Status](https://travis-ci.org/reloni/RxHttpClient.svg?branch=master)](https://travis-ci.org/reloni/RxHttpClient)
-[![codecov](https://codecov.io/gh/reloni/RxHttpClient/branch/master/graph/badge.svg)](https://codecov.io/gh/reloni/RxHttpClient)
+[![Build Status](https://travis-ci.org/RxSwiftCommunity/RxHttpClient.svg?branch=master)](https://travis-ci.org/RxSwiftCommunity/RxHttpClient)
+[![codecov](https://codecov.io/gh/RxSwiftCommunity/RxHttpClient/branch/master/graph/badge.svg)](https://codecov.io/gh/RxSwiftCommunity/RxHttpClient)
 ![Platform iOS](https://img.shields.io/badge/platform-iOS-lightgray.svg)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
