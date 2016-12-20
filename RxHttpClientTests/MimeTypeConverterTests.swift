@@ -3,7 +3,7 @@
 //  RxHttpClient
 //
 //  Created by Anton Efimenko on 06.07.16.
-//  Copyright © 2016 Anton Efimenko. All rights reserved.
+//  Copyright © 2016 RxSwift Community. All rights reserved.
 //
 
 import XCTest

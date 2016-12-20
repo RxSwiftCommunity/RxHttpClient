@@ -222,7 +222,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0800;
-				ORGANIZATIONNAME = "Anton Efimenko";
+				ORGANIZATIONNAME = RxSwiftCommunity;
 				TargetAttributes = {
 					6EFB9EB71D2A4E2600E30A5D = {
 						CreatedOnToolsVersion = 7.3;
