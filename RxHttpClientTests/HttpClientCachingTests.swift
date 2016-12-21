@@ -46,7 +46,7 @@ class HttpClientCachingTests: XCTestCase {
 		let exp = expectation(description: "Should complete request")
 		
 		var returnCount = 0
-		_ = client.requestData(url: requestUrl).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
+		_ = client.requestData(url: requestUrl, requestCacheMode: .default).subscribe(onNext: { _ in returnCount += 1 }, onCompleted: { exp.fulfill() })
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		

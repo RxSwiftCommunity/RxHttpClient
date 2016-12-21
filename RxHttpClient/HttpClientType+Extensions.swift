@@ -17,11 +17,13 @@ public struct CacheMode {
 	}
 	
     /// Only cached response will be returned
-	public static let cacheOnly = { return CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false) }()
+	public static let cacheOnly = CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false)
     /// Cached response will not be returned even if exists
-	public static let withoutCache = { return CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true) }()
+	public static let withoutCache = CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true)
     /// Response will not be cached
-	public static let notCacheResponse = { return CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true) }()
+	public static let notCacheResponse = CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true)
+    /// All conditions are true
+    public static let `default` = CacheMode(cacheResponse: true, returnCachedResponse: true, invokeRequest: true)
 }
 
 public extension HttpClientType {	
