@@ -43,8 +43,9 @@ public extension HttpClientType {
 	- parameter dataCacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created observable that emits stream events
 	*/
-	func request(url: URL, dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
-		return request(URLRequest(url: url), dataCacheProvider: dataCacheProvider)
+	func request(url: URL, method: HttpMethod = .get, body: Data? = nil, httpHeaders: [String: String] = [:],
+	             dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
+		return request(URLRequest(url: url, method: method, body: body, headers: httpHeaders), dataCacheProvider: dataCacheProvider)
 	}
 	
 	/**
@@ -62,8 +63,9 @@ public extension HttpClientType {
     - parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
-	func requestJson(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
-		return requestJson(URLRequest(url: url), requestCacheMode: requestCacheMode)
+	func requestJson(url: URL, method: HttpMethod = .get, body: Data? = nil, httpHeaders: [String: String] = [:],
+	                 requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
+		return requestJson(URLRequest(url: url, method: method, body: body, headers: httpHeaders), requestCacheMode: requestCacheMode)
 	}
 	
 	/**
@@ -90,8 +92,9 @@ public extension HttpClientType {
     - parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits Data of HTTP request
 	*/
-	func requestData(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
-		return requestData(URLRequest(url: url), requestCacheMode: requestCacheMode)
+	func requestData(url: URL, method: HttpMethod = .get, body: Data? = nil, httpHeaders: [String: String] = [:],
+	                 requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
+		return requestData(URLRequest(url: url, method: method, body: body, headers: httpHeaders), requestCacheMode: requestCacheMode)
 	}
 	
 	/**
@@ -107,7 +110,7 @@ public extension HttpClientType {
 		var errorResponse: HTTPURLResponse? = nil
 		
 		let cachedRequest: Observable<Data> = {
-			if urlRequest.httpMethod == "GET", requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
+			if urlRequest.httpMethod == HttpMethod.get.rawValue, requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
 				// return cached response
 				return Observable.just(cached)
 			}
@@ -139,7 +142,7 @@ public extension HttpClientType {
 					guard let errorResponse = errorResponse else {
 						let requestData = dataCacheProvider.getData()
 						
-						if urlRequest.httpMethod == "GET", requestCacheMode.cacheResponse, let url = urlRequest.url  {
+						if urlRequest.httpMethod == HttpMethod.get.rawValue, requestCacheMode.cacheResponse, let url = urlRequest.url  {
 							// sache response
 							self?.urlRequestCacheProvider?.save(resourceUrl: url, data: requestData)
 						}

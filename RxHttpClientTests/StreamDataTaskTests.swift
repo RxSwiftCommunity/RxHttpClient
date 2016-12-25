@@ -138,7 +138,7 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testCheckDeinitOfHttpClientNotCancellingRunningTasks() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
 		}
 		
@@ -166,7 +166,7 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testCheckCancellingRunningTasksIfForcellyCancelSession() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
 		}
 		
@@ -193,7 +193,7 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testCheckTaskNotStartedIfHttpClientWasDeinited() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil).requestTime(1, responseTime: 0)
 		}
 		
