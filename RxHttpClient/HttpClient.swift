@@ -39,7 +39,7 @@ public final class HttpClient {
 }
 
 extension HttpClient : HttpClientType {
-	public func request(_ request: URLRequest, dataCacheProvider: DataCacheProviderType?) -> Observable<StreamTaskEvents> {
+	public func request(_ request: URLRequest, dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
 		return Observable.create { [weak self] observer in
 			guard let object = self else { observer.onCompleted(); return Disposables.create() }
 			
