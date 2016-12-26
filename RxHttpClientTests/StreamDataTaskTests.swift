@@ -30,7 +30,7 @@ class StreamDataTaskTests: XCTestCase {
 		
 		let fakeResponse = URLResponse(url: request.url!, mimeType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		// when fake task will resumed it will invoke this closure
-		let resumeActions = {
+		let resumeActions: (FakeDataTask) -> () = { _ in
 			let fakeUrlEvents = [
 				SessionDataEvents.didReceiveResponse(session: self.session,
 					dataTask: self.session.task,
@@ -53,7 +53,7 @@ class StreamDataTaskTests: XCTestCase {
 			}
 		}
 		
-		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { cancelTaskExpectation.fulfill() })
+		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { _ in cancelTaskExpectation.fulfill() })
 		
 		var receiveCounter = 0
 		let dataReceived = NSMutableData()
@@ -78,7 +78,7 @@ class StreamDataTaskTests: XCTestCase {
 	}
 	
 	func testReturnNSError() {
-		let resumeActions = {
+		let resumeActions: (FakeDataTask) -> () = { _ in
 			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { [unowned self] in
 				self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: self.session.task, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 			}
@@ -100,7 +100,7 @@ class StreamDataTaskTests: XCTestCase {
 		let fakeResponse = URLResponse(url: request.url!, mimeType: nil, expectedContentLength: 64587, textEncodingName: nil)
 		let dispositionExpectation = self.expectation(description: "Should set correct completion disposition in completionHandler")
 		
-		let resumeActions = {
+		let resumeActions: (FakeDataTask) -> () = { _ in
 			let completion: (URLSession.ResponseDisposition) -> () = { disposition in
 				XCTAssertEqual(disposition, URLSession.ResponseDisposition.allow, "Check correct completion disposition in completionHandler")
 				dispositionExpectation.fulfill()

@@ -26,7 +26,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testTerminateRequest() {
 		let fakeSession = FakeSession()
 		let cancelExpectation = expectation(description: "Should cancel task")
-		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { cancelExpectation.fulfill() })
+		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { _ in cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
 		let disposable = client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(qos: .utility))

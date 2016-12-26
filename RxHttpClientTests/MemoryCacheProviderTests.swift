@@ -9,7 +9,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	var httpClient: HttpClient!
 	let waitTimeout: Double = 2
 	var fakeResponse: URLResponse!
-	var resumeActions: (() -> ())!
+	var resumeActions: ((FakeDataTask) -> ())!
 	
 	override func setUp() {
 		super.setUp()
@@ -22,7 +22,7 @@ class MemoryCacheProviderTests: XCTestCase {
 		
 		fakeResponse = URLResponse(url: request.url!, mimeType: "audio/mpeg", expectedContentLength: 26, textEncodingName: nil)
 		// when fake task will resumed it will invoke this closure
-		resumeActions = {
+		resumeActions = { _ in
 			let fakeUrlEvents = [
 				SessionDataEvents.didReceiveResponse(session: self.session,
 					dataTask: self.session.task,
@@ -66,7 +66,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	
 	func testCacheCorrectData() {
 		let taskCancelExpectation = expectation(description: "Should cancel task and not invalidate tession")
-		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { taskCancelExpectation.fulfill() })
+		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { _ in taskCancelExpectation.fulfill() })
 
 		var receiveChunkCounter = 0
 		
@@ -132,7 +132,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	
 	func testNotOverrideMimeType() {
 		let taskCancelExpectation = expectation(description: "Should cancel task and not invalidate session")
-		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { taskCancelExpectation.fulfill() })
+		session.task = FakeDataTask(resumeClosure: resumeActions, cancelClosure: { _ in taskCancelExpectation.fulfill() })
 		
 		let successExpectation = expectation(description: "Should successfuly cache data")
 		
