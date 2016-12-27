@@ -26,4 +26,8 @@ public enum HttpClientError : Error {
 	- parameter error: The error occurred while deserialization (throwed by JSONSerialization object)
 	*/
 	case jsonDeserializationError(error: Error)
+	/**
+	This error occurred when invalid JSON object was passed
+	*/
+	case invalidJsonObject
 }

@@ -55,9 +55,13 @@ public extension URLRequest {
 		headers.forEach { addValue($1, forHTTPHeaderField: $0) }
 	}
 	
-	init(url: URL, method: HttpMethod = .get, jsonBody: [String: Any],
-	     options: JSONSerialization.WritingOptions = [], headers: [String: String]) throws {
-		let body: Data? = try JSONSerialization.data(withJSONObject: jsonBody, options: options)
-		self.init(url: url, method: method, body: body, headers: headers)
+	init?(url: URL, method: HttpMethod = .get, jsonBody: Any,
+	     options: JSONSerialization.WritingOptions = [], headers: [String: String]) {
+		guard JSONSerialization.isValidJSONObject(jsonBody) else { return nil }
+		if let body: Data = try? JSONSerialization.data(withJSONObject: jsonBody, options: options) {
+			self.init(url: url, method: method, body: body, headers: headers)
+		} else {
+			return nil
+		}
 	}
 }
