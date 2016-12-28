@@ -7,7 +7,7 @@
 //
 
 import XCTest
-import RxHttpClient
+@testable import RxHttpClient
 
 class URLRequestTests: XCTestCase {
 	
@@ -23,7 +23,7 @@ class URLRequestTests: XCTestCase {
 	
 	func testInitRequest() {
 		let url = URL(string: "https://test.com")!
-		let request = URLRequest(url: url, headers: nil)
+		let request = URLRequest(url: url)
 		XCTAssertEqual(url, request.url)
 		XCTAssertNil(request.allHTTPHeaderFields)
 	}
@@ -34,5 +34,40 @@ class URLRequestTests: XCTestCase {
 		let request = URLRequest(url: url, headers: headers)
 		XCTAssertEqual(url, request.url)
 		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
+	}
+	
+	func testInitWithCustomMethodAndBody() {
+		let url = URL(string: "https://test.com")!
+		let headers = ["header1": "value1", "header2": "value2"]
+		let bodyData = "test body data".data(using: .utf8)!
+		let request = URLRequest(url: url, method: .put, body: bodyData, headers: headers)
+		XCTAssertEqual(url, request.url)
+		XCTAssertEqual(HttpMethod.put.rawValue, request.httpMethod)
+		XCTAssertTrue(request.httpBody?.elementsEqual(bodyData) ?? false)
+		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
+	}
+	
+	func testInitWithJsonBody() {
+		let url = URL(string: "https://test.com")!
+		let headers = ["header1": "value1", "header2": "value2"]
+		let bodyJson: [String: Any] = ["key1": "val1", "key2": "val2", "key3": "val3"]
+		let request = URLRequest(url: url, method: .patch, jsonBody: bodyJson, options: [JSONSerialization.WritingOptions.prettyPrinted], headers: headers)!
+		XCTAssertEqual(url, request.url)
+		XCTAssertEqual(HttpMethod.patch.rawValue, request.httpMethod)
+		XCTAssertEqual(headers, request.allHTTPHeaderFields!)
+		
+		let bodyData = try! JSONSerialization.data(withJSONObject: bodyJson, options: [JSONSerialization.WritingOptions.prettyPrinted])
+		XCTAssertTrue(request.httpBody?.elementsEqual(bodyData) ?? false)
+		
+		let deserialized = try! JSONSerialization.jsonObject(with: request.httpBody!, options: []) as! [String: String]
+		XCTAssertEqual(bodyJson as! [String: String], deserialized)
+	}
+	
+	func testNotInitWithInvalidJsonBody() {
+		let url = URL(string: "https://test.com")!
+		let headers = ["header1": "value1", "header2": "value2"]
+		let bodyJson: Any = "shit"
+		let request = URLRequest(url: url, method: .patch, jsonBody: bodyJson, options: [JSONSerialization.WritingOptions.prettyPrinted], headers: headers)
+		XCTAssertNil(request, "Should return nil because invalid json body object passed")
 	}
 }

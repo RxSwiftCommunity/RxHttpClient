@@ -48,8 +48,20 @@ public extension URL {
 
 //URLRequest
 public extension URLRequest {
-	init(url: URL, headers: [String: String]?) {
+	init(url: URL, method: HttpMethod = .get, body: Data? = nil, headers: [String: String]) {
 		self = URLRequest(url: url)
-		headers?.forEach { addValue($1, forHTTPHeaderField: $0) }
+		self.httpMethod = method.rawValue
+		self.httpBody = body
+		headers.forEach { addValue($1, forHTTPHeaderField: $0) }
+	}
+	
+	init?(url: URL, method: HttpMethod = .get, jsonBody: Any,
+	     options: JSONSerialization.WritingOptions = [], headers: [String: String]) {
+		guard JSONSerialization.isValidJSONObject(jsonBody) else { return nil }
+		if let body: Data = try? JSONSerialization.data(withJSONObject: jsonBody, options: options) {
+			self.init(url: url, method: method, body: body, headers: headers)
+		} else {
+			return nil
+		}
 	}
 }

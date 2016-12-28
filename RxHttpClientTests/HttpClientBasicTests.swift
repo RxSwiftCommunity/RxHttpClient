@@ -26,7 +26,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testTerminateRequest() {
 		let fakeSession = FakeSession()
 		let cancelExpectation = expectation(description: "Should cancel task")
-		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { cancelExpectation.fulfill() })
+		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { _ in cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
 		let disposable = client.requestData(url: url).observeOn(SerialDispatchQueueScheduler(qos: .utility))
@@ -42,7 +42,7 @@ class HttpClientBasicTests: XCTestCase {
 	
 	func testLoadCorrectData() {
 		let sendData = "testData".data(using: String.Encoding.utf8)!
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json" && $0.httpMethod == HttpMethod.get.rawValue	}) { _ in
 			return OHHTTPStubsResponse(data: sendData, statusCode: 200, headers: nil)
 		}
 		
@@ -60,7 +60,7 @@ class HttpClientBasicTests: XCTestCase {
 	}
 	
 	func testLoadCorrectEmptyData() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
 		}
 		
@@ -79,7 +79,7 @@ class HttpClientBasicTests: XCTestCase {
 	
 	
 	func testNotLoadDataIfHttpClientDisposed() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			XCTFail("Should not invoke HTTP request")
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
 		}
@@ -104,7 +104,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testLoadCorrectDataAndRetryAfterError() {
 		let totalSendedData = NSMutableData()
 		var stubIncrement = 0
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			stubIncrement += 1
 			let sendData = "testData-\(stubIncrement)".data(using: String.Encoding.utf8)!
 			totalSendedData.append(sendData)
@@ -141,7 +141,7 @@ class HttpClientBasicTests: XCTestCase {
 	}
 	
 	func testReturnErrorWhileLoadingData() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(error: NSError(domain: "TestDomain", code: 1, userInfo: nil))
 		}
 		
@@ -163,7 +163,7 @@ class HttpClientBasicTests: XCTestCase {
 	
 	func testReceiveErrorResponse() {
 		let sendData = "Not implemented".data(using: String.Encoding.utf8)!
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: sendData, statusCode: 501, headers: nil)
 		}
 		
@@ -191,15 +191,15 @@ class HttpClientBasicTests: XCTestCase {
 		let data2 = "testData2".data(using: String.Encoding.utf8)!
 		let data3 = "testData3".data(using: String.Encoding.utf8)!
 		
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json1"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json1"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data1, statusCode: 200, headers: nil).responseTime(OHHTTPStubsDownloadSpeed1KBPS)
 		}
 		
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json2"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json2"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data2, statusCode: 200, headers: nil).responseTime(OHHTTPStubsDownloadSpeed1KBPS)
 		}
 		
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json3"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json3"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data3, statusCode: 200, headers: nil).responseTime(OHHTTPStubsDownloadSpeed1KBPS)
 		}
 		
@@ -282,7 +282,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testLoadCorrectJson_1() {
 		let sendJson: [String: Any] = ["Test": 123, "StrVal": "Some", "Dict": ["Inner": "Str"]]
 		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
 		}
 		
@@ -306,7 +306,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testLoadCorrectJson_2() {
 		let sendJson: [Any] = ["testStr", 123, ["Dict": "DictVal"]]
 		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
 		}
 		
@@ -330,7 +330,7 @@ class HttpClientBasicTests: XCTestCase {
 	
 	func testLoadIncorrectJson() {
 		let sendJsonData = "incorrect".data(using: .utf8)!
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: sendJsonData, statusCode: 200, headers: nil)
 		}
 		
@@ -355,7 +355,7 @@ class HttpClientBasicTests: XCTestCase {
 	}
 	
 	func testLoadEmptyDataJson() {
-		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	}) { _ in
+		let _ = stub(condition: { $0.url?.absoluteString == "https://test.com/json"	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: Data(), statusCode: 200, headers: nil)
 		}
 		

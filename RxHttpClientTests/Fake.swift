@@ -6,12 +6,12 @@ class FakeDataTask : NSObject, URLSessionDataTaskType {
 	var originalRequest: URLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0
-	let resumeClosure: () -> ()!
-	let cancelClosure: (() -> ())?
+	let resumeClosure: (FakeDataTask) -> ()!
+	let cancelClosure: ((FakeDataTask) -> ())?
 	
 	var state: URLSessionTask.State = URLSessionTask.State.suspended
 	
-	init(resumeClosure: @escaping () -> (), cancelClosure: (() -> ())? = nil) {
+	init(resumeClosure: @escaping (FakeDataTask) -> (), cancelClosure: ((FakeDataTask) -> ())? = nil) {
 		self.resumeClosure = resumeClosure
 		self.cancelClosure = cancelClosure
 	}
@@ -19,12 +19,12 @@ class FakeDataTask : NSObject, URLSessionDataTaskType {
 	open func resume() {
 		resumeInvokeCount += 1
 		state = .running
-		resumeClosure()
+		resumeClosure(self)
 	}
 	
 	open func cancel() {
 		if !isCancelled {
-			cancelClosure?()
+			cancelClosure?(self)
 			state = .suspended
 			isCancelled = true
 		}
@@ -34,6 +34,8 @@ class FakeDataTask : NSObject, URLSessionDataTaskType {
 class FakeSession : URLSessionType {
 	var task: FakeDataTask!
 	var isFinished = false
+	
+	var customFakeTask: ((URLRequest) -> (FakeDataTask))?
 	
 	var state: URLSessionTask.State { return task.state }
 	
@@ -54,6 +56,10 @@ class FakeSession : URLSessionType {
 	}
 	
 	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
+		if let customFakeTask = customFakeTask?(request) {
+			return customFakeTask
+		}
+		
 		if task == nil { fatalError("Data task not specified") }
 		task.originalRequest = request
 		return task
