@@ -62,7 +62,7 @@ public extension HttpClientType {
 	- returns: Created observable that emits stream events
 	*/
 	func request(url: URL, method: HttpMethod = .get, jsonBody: Any, options: JSONSerialization.WritingOptions = [], httpHeaders: [String: String] = [:],
-	             dataCacheProvider: DataCacheProviderType? = nil) throws -> Observable<StreamTaskEvents> {
+	             dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
 		guard let req = URLRequest(url: url, method: method, jsonBody: jsonBody, options: options, headers: httpHeaders) else {
 				return Observable.error(HttpClientError.invalidJsonObject)
 		}
