@@ -3,11 +3,11 @@ import RxSwift
 
 /// Represents caching settings
 public struct CacheMode {
-    /// If true, response for GET request will be cached
+	/// If true, response for GET request will be cached
 	public let cacheResponse: Bool
-    /// If true, HttpClient will immediately return cacged respons if it exists
+	/// If true, HttpClient will immediately return cacged respons if it exists
 	public let returnCachedResponse: Bool
-    /// If true, HttpClient will invoke request
+	/// If true, HttpClient will invoke request
 	public let invokeRequest: Bool
 	
 	public init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true) {
@@ -16,17 +16,17 @@ public struct CacheMode {
 		self.invokeRequest = invokeRequest
 	}
 	
-    /// Only cached response will be returned
+	/// Only cached response will be returned
 	public static let cacheOnly = CacheMode(cacheResponse: false, returnCachedResponse: true, invokeRequest: false)
-    /// Cached response will not be returned even if exists
+	/// Cached response will not be returned even if exists
 	public static let withoutCache = CacheMode(cacheResponse: true, returnCachedResponse: false, invokeRequest: true)
-    /// Response will not be cached
+	/// Response will not be cached
 	public static let notCacheResponse = CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true)
-    /// All conditions are true
-    public static let `default` = CacheMode(cacheResponse: true, returnCachedResponse: true, invokeRequest: true)
+	/// All conditions are true
+	public static let `default` = CacheMode(cacheResponse: true, returnCachedResponse: true, invokeRequest: true)
 }
 
-public extension HttpClientType {	
+public extension HttpClientType {
 	/**
 	Creates StreamDataTask
 	- parameter request: URL request
@@ -40,36 +40,73 @@ public extension HttpClientType {
 	/**
 	Creates streaming observable for URL
 	- parameter request: URL
+	- parameter method: HTTP method for request
+	- parameter body: Data that will be set to httpBody property of URLRequest
+	- parameter httpHeaders: HTTP headers for request
 	- parameter dataCacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created observable that emits stream events
 	*/
-	func request(url: URL, dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
-		return request(URLRequest(url: url), dataCacheProvider: dataCacheProvider)
+	func request(url: URL, method: HttpMethod = .get, body: Data? = nil, httpHeaders: [String: String] = [:],
+	             dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
+		return request(URLRequest(url: url, method: method, body: body, headers: httpHeaders), dataCacheProvider: dataCacheProvider)
 	}
-	
+
 	/**
-	Creates streaming observable for request
-	- parameter request: URL request
+	Creates streaming observable for URL
+	- parameter request: URL
+	- parameter method: HTTP method for request
+	- parameter jsonBody: JSON object that will be serialized and send as HTTP Body
+	- parameter options: Options for JSON serialization
+	- parameter httpHeaders: HTTP headers for request
+	- parameter dataCacheProvider: Cache provider, that will be used to cache downloaded data
 	- returns: Created observable that emits stream events
 	*/
-	func request(_ urlRequest: URLRequest) -> Observable<StreamTaskEvents> {
-		return request(urlRequest, dataCacheProvider: nil)
+	func request(url: URL, method: HttpMethod = .get, jsonBody: Any, options: JSONSerialization.WritingOptions = [], httpHeaders: [String: String] = [:],
+	             dataCacheProvider: DataCacheProviderType? = nil) -> Observable<StreamTaskEvents> {
+		guard let req = URLRequest(url: url, method: method, jsonBody: jsonBody, options: options, headers: httpHeaders) else {
+				return Observable.error(HttpClientError.invalidJsonObject)
+		}
+		
+		return request(req, dataCacheProvider: dataCacheProvider)
 	}
 	
 	/**
 	Creates streaming observable for URL
 	- parameter request: URL
-    - parameter requestCacheMode: CacheMode for request
+	- parameter method: HTTP method for request
+	- parameter body: Data that will be set to httpBody property of URLRequest
+	- parameter httpHeaders: HTTP headers for request
+	- parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
-	func requestJson(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
-		return requestJson(URLRequest(url: url), requestCacheMode: requestCacheMode)
+	func requestJson(url: URL, method: HttpMethod = .get, body: Data? = nil, httpHeaders: [String: String] = [:],
+	                 requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
+		return requestJson(URLRequest(url: url, method: method, body: body, headers: httpHeaders), requestCacheMode: requestCacheMode)
+	}
+	
+	/**
+	Creates streaming observable for URL
+	- parameter request: URL
+	- parameter method: HTTP method for request
+	- parameter jsonBody: JSON object that will be serialized and send as HTTP Body
+	- parameter options: Options for JSON serialization
+	- parameter httpHeaders: HTTP headers for request
+	- parameter requestCacheMode: CacheMode for request
+	- returns: Created observable that emits deserialized JSON object of HTTP request
+	*/
+	func requestJson(url: URL, method: HttpMethod = .get, jsonBody: Any, options: JSONSerialization.WritingOptions = [], httpHeaders: [String: String] = [:],
+	                 requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
+		guard let req = URLRequest(url: url, method: method, jsonBody: jsonBody, options: options, headers: httpHeaders) else {
+			return Observable.error(HttpClientError.invalidJsonObject)
+		}
+		
+		return requestJson(req, requestCacheMode: requestCacheMode)
 	}
 	
 	/**
 	Creates streaming observable for request
 	- parameter request: URL request
-    - parameter requestCacheMode: CacheMode for request
+	- parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits deserialized JSON object of HTTP request
 	*/
 	func requestJson(_ urlRequest: URLRequest, requestCacheMode: CacheMode = CacheMode()) -> Observable<Any> {
@@ -87,17 +124,40 @@ public extension HttpClientType {
 	/**
 	Creates an observable for URL
 	- parameter request: URL
-    - parameter requestCacheMode: CacheMode for request
+	- parameter method: HTTP method for request
+	- parameter body: Data that will be set to httpBody property of URLRequest
+	- parameter httpHeaders: HTTP headers for request
+	- parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits Data of HTTP request
 	*/
-	func requestData(url: URL, requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
-		return requestData(URLRequest(url: url), requestCacheMode: requestCacheMode)
+	func requestData(url: URL, method: HttpMethod = .get, body: Data? = nil, httpHeaders: [String: String] = [:],
+	                 requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
+		return requestData(URLRequest(url: url, method: method, body: body, headers: httpHeaders), requestCacheMode: requestCacheMode)
+	}
+	
+	/**
+	Creates an observable for URL
+	- parameter request: URL
+	- parameter method: HTTP method for request
+	- parameter jsonBody: JSON object that will be serialized and send as HTTP Body
+	- parameter options: Options for JSON serialization
+	- parameter httpHeaders: HTTP headers for request
+	- parameter requestCacheMode: CacheMode for request
+	- returns: Created observable that emits Data of HTTP request
+	*/
+	func requestData(url: URL, method: HttpMethod = .get, jsonBody: Any, options: JSONSerialization.WritingOptions = [], httpHeaders: [String: String] = [:],
+	                 requestCacheMode: CacheMode = CacheMode()) -> Observable<Data> {
+		guard let req = URLRequest(url: url, method: method, jsonBody: jsonBody, options: options, headers: httpHeaders) else {
+			return Observable.error(HttpClientError.invalidJsonObject)
+		}
+		
+		return requestData(req, requestCacheMode: requestCacheMode)
 	}
 	
 	/**
 	Creates an observable for request
 	- parameter request: URL request
-    - parameter requestCacheMode: CacheMode for request
+	- parameter requestCacheMode: CacheMode for request
 	- returns: Created observable that emits Data of HTTP request
 	*/
 	func requestData(_ urlRequest: URLRequest, requestCacheMode: CacheMode = CacheMode())	-> Observable<Data> {
@@ -107,7 +167,7 @@ public extension HttpClientType {
 		var errorResponse: HTTPURLResponse? = nil
 		
 		let cachedRequest: Observable<Data> = {
-			if urlRequest.httpMethod == "GET", requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
+			if urlRequest.httpMethod == HttpMethod.get.rawValue, requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
 				// return cached response
 				return Observable.just(cached)
 			}
@@ -118,7 +178,7 @@ public extension HttpClientType {
 			// if we should not invoke request, simply return cache request
 			return cachedRequest
 		}
-
+		
 		return cachedRequest.concat(request(urlRequest, dataCacheProvider: dataCacheProvider)
 			.flatMapLatest { [weak self] result -> Observable<Data> in
 				switch result {
@@ -139,7 +199,7 @@ public extension HttpClientType {
 					guard let errorResponse = errorResponse else {
 						let requestData = dataCacheProvider.getData()
 						
-						if urlRequest.httpMethod == "GET", requestCacheMode.cacheResponse, let url = urlRequest.url  {
+						if urlRequest.httpMethod == HttpMethod.get.rawValue, requestCacheMode.cacheResponse, let url = urlRequest.url  {
 							// sache response
 							self?.urlRequestCacheProvider?.save(resourceUrl: url, data: requestData)
 						}

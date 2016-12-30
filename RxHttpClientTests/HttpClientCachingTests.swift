@@ -20,7 +20,7 @@ class HttpClientCachingTests: XCTestCase {
 	func testCacheResponse() {
 		let data = "Some responded data".data(using: .utf8)!
 		let requestUrl = URL(string: "https://test.com/json")!
-		let _ = stub(condition: { $0.url == requestUrl	}) { _ in
+		let _ = stub(condition: { $0.url == requestUrl	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
 		}
 		
@@ -39,7 +39,7 @@ class HttpClientCachingTests: XCTestCase {
 		
 		try! data.write(to: cacheDirectory.appendingPathComponent(requestUrl.sha1()))
 		
-		let _ = stub(condition: { $0.url == requestUrl	}) { _ in
+		let _ = stub(condition: { $0.url == requestUrl	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
 		}
 		
@@ -57,7 +57,7 @@ class HttpClientCachingTests: XCTestCase {
 		let data = "Some responded data".data(using: .utf8)!
 		let requestUrl = URL(string: "https://test.com/json")!
 		
-		let _ = stub(condition: { $0.url == requestUrl	}) { _ in
+		let _ = stub(condition: { $0.url == requestUrl	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
 		}
 		
@@ -77,7 +77,7 @@ class HttpClientCachingTests: XCTestCase {
 		
 		try! data.write(to: cacheDirectory.appendingPathComponent(requestUrl.sha1()))
 		
-		let _ = stub(condition: { $0.url == requestUrl	}) { _ in
+		let _ = stub(condition: { $0.url == requestUrl	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			XCTFail("Should not invoke request")
 			return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
 		}
@@ -97,7 +97,7 @@ class HttpClientCachingTests: XCTestCase {
 		let data = "Some responded data".data(using: .utf8)!
 		let requestUrl = URL(string: "https://test.com/json")!
 		
-		let _ = stub(condition: { $0.url == requestUrl	}) { _ in
+		let _ = stub(condition: { $0.url == requestUrl	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			XCTFail("Should not invoke request")
 			return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
 		}
@@ -116,7 +116,7 @@ class HttpClientCachingTests: XCTestCase {
 		let data = "Some responded data".data(using: .utf8)!
 		let requestUrl = URL(string: "https://test.com/json")!
 		
-		let _ = stub(condition: { $0.url == requestUrl	}) { _ in
+		let _ = stub(condition: { $0.url == requestUrl	&& $0.httpMethod == HttpMethod.get.rawValue }) { _ in
 			return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
 		}
 		
