@@ -8,13 +8,13 @@ RxHttpClient
 RxHttpClient is a "reactive wrapper" around NSURLSession. Under the hood it implements session delegates (like NSURLSessionDelegate or NSURLSessionTaskDelegate) and translates session events into Observables using [RxSwift](https://github.com/ReactiveX/RxSwift). Main purpose of this framework is to make "streaming" data as simple as possible and provide convenient features for caching data.
 
 ##Requirements
-- Xcode 8.1
-- Swift 3.0.1
+- Xcode 8.2
+- Swift 3.0
 
 ##Installation
 Now only [Carthage](https://github.com/Carthage/Carthage) supported:
 ```
-github "ReactiveX/RxSwift" ~> 3.0
+github "ReactiveX/RxSwift" ~> 3.1
 github "Reloni/RxHttpClient"
 ```
 RxHttpClient uses RxSwift so it should be included into cartfile.
@@ -64,6 +64,7 @@ It's also possible to simply invoke request and receive data using loadData meth
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
+// by default HTTP GET request will be performed
 client.requestData(url: url).subscribe(onNext: { data in /* do something with returned data */ }, onError: { error in
   switch error {
   case HttpClientError.clientSideError(let error): break /* Client-side error */
@@ -71,6 +72,15 @@ client.requestData(url: url).subscribe(onNext: { data in /* do something with re
   default: break
   }
 }).addDisposableTo(bag)
+
+// use HTTP POST and send data
+let sendJson = ["Key1":"Value1", "Key2":"Value2"]
+let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
+client.requestData(url: url, method: .post, body: sendJsonData).subscribe(onNext: { data in /* do something with returned data */ }).addDisposableTo(bag)
+
+// or simply pass JSON as parameter
+let sendJson = ["Key1":"Value1", "Key2":"Value2"]
+client.requestData(url: url, method: .put, jsonBody: sendJson, options: [], httpHeaders: ["Header1": "HeaderVal1"]).subscribe(onNext: { _ in expectation.fulfill() }).addDisposableTo(bag)
 ```
 
 JSON deserialized object may be requested in same way:
