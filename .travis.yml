@@ -15,14 +15,14 @@ before_install:
 
 before_script:
 - carthage version
-- carthage checkout
+- carthage checkout --no-use-binaries
 
 - mkdir -p ./Carthage/Build/iOS
 
 #build OHHTTPStubs
 - (cd ./Carthage/Checkouts/OHHTTPStubs/OHHTTPStubs && set -o pipefail && xcodebuild -scheme "OHHTTPStubs iOS Framework" -workspace "OHHTTPStubs.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../../Build  | xcpretty -c)
 #build RxSwift
-#- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
+- (cd ./Carthage/Checkouts/RxSwift && set -o pipefail && xcodebuild -scheme "RxSwift-iOS" -workspace "Rx.xcworkspace" -sdk "$SDK" -configuration Release SYMROOT=../../../Build  | xcpretty -c)
 
 #copy frameworks to Carthage/Build folder
 - cp -R -f ./Build/Release-iphonesimulator/ ./Carthage/Build/iOS
