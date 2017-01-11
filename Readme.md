@@ -28,7 +28,7 @@ Commands above are necessary if Carthage trying to build RxHttpClient before RxS
 ##Usage
 ####StreamData
 For create request and streaming data:
-```
+```swift
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
@@ -44,7 +44,7 @@ client.request(url: url).subscribe (onNext: { event in
 ```
 
 If dealing with every chunk of data is not necessary it's possible to pass an instance of cache provider and in success event grab all data from that provider (for now there is only MemoryCacheProvider object):
-```
+```swift
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
@@ -60,7 +60,7 @@ client.request(url: url, dataCacheProvider: MemoryCacheProvider()).subscribe(onN
 
 ####Convenience methods
 It's also possible to simply invoke request and receive data using loadData method (in this case errors are forwarded with RxSwift error mechanism):
-```
+```swift
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
@@ -85,7 +85,7 @@ client.requestData(url: url, method: .put, jsonBody: sendJson, options: [], http
 
 JSON deserialized object may be requested in same way:
 
-```
+```swift
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
@@ -101,7 +101,7 @@ client.requestJson(url: url).subscribe(onNext: { json in /* do something with re
 ####Response caching
 HttpClient can cache latest response for GET request. To use caching, HttpClient should be initialized with instance of UrlRequestCacheProviderType:
 
-```
+```swift
 // directory where cache data will be saved
 let cacheDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("Cache")
 // instance of UrlRequestFileSystemCacheProvider that will store cached data in specified directory
@@ -122,7 +122,7 @@ client.requestJson(url: url, requestCacheMode: .cacheOnly).subscribe( /* */).add
 
 ####StreamDataTask
 StreamDataTask is a more "low level" object that wraps NSURLSessionDataTask. In most situations is't more convenient to use loadStreamData method (it actually simply forwards events from StreamDataTask), but if necessary StreamDataTask may be used in this way:
-```
+```swift
 let client = HttpClient()
 let bag = DisposeBag()
 let url = URL(string: "url_to_resource")!
@@ -146,7 +146,7 @@ task.resume()
 
 ####MIME type conversion
 This framework also contains useful methods to convert, for example, MIME type to file extension, or UTI type to MIME type:
-```
+```swift
 let extension = MimeTypeConverter.utiToFileExtension("public.mp3") // returns "mp3"
 let uti = MimeTypeConverter.mimeToUti("audio/mpeg") // returns "public.mp3"
 
