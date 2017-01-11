@@ -158,12 +158,9 @@ let mime = "public.mp3".asUtiType.mimeType // returns "audio/mpeg"
 HttpClient object holds it's own NSURLSession. It creates session by providing a session delegate object for handling session-related events. So StreamTaskEvents enum actually represents this session events, for example `case receiveResponse(URLResponse)` means that `URLSession(_:dataTask:didReceiveResponse:completionHandler:)` delegate method was invoked.
 Because NSURLSession holds strong reference to delegate it should be invalidated, HttpClient do that in deinitializer by invoking finishTasksAndInvalidate() method, so session will allow running tasks to finish work.
 
-## Contributing
-For contributing please check out **develop** branch and also target it in pull request.
-
 ## License
 
-Copyright (c) 2016 RxSwiftCommunity https://github.com/RxSwiftCommunity
+Copyright (c) 2017 RxSwiftCommunity https://github.com/RxSwiftCommunity
 
 Distributed under The MIT License:
 
