@@ -19,6 +19,7 @@
 		6E2690311DEB49BC00EA5CCE /* (null) in Sources */ = {isa = PBXBuildFile; };
 		6E42A8C01DEA26FE003687E3 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		6E42A8C41DEA2EA8003687E3 /* (null) in Sources */ = {isa = PBXBuildFile; };
+		6E4344E21E3B7738005D0DDE /* RequestPluginType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4344E11E3B7738005D0DDE /* RequestPluginType.swift */; };
 		6E4823B11DECAF1900F1A8DC /* (null) in Sources */ = {isa = PBXBuildFile; };
 		6E4823B41DECBD1B00F1A8DC /* MimeType+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E4823B31DECBD1B00F1A8DC /* MimeType+Extensions.swift */; };
 		6E556B591D57447A00E43388 /* RxSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E556B581D57447A00E43388 /* RxSwift.framework */; };
@@ -58,6 +59,7 @@
 		6E190F8B1DECC320002BA10F /* HttpClientCachingTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpClientCachingTests.swift; sourceTree = "<group>"; };
 		6E190F8C1DECC320002BA10F /* HttpRequestFileSystemCacheProviderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpRequestFileSystemCacheProviderTests.swift; sourceTree = "<group>"; };
 		6E1C07C11D48FF92009513FD /* HttpClientType+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "HttpClientType+Extensions.swift"; sourceTree = "<group>"; };
+		6E4344E11E3B7738005D0DDE /* RequestPluginType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestPluginType.swift; sourceTree = "<group>"; };
 		6E4823B31DECBD1B00F1A8DC /* MimeType+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "MimeType+Extensions.swift"; sourceTree = "<group>"; };
 		6E556B581D57447A00E43388 /* RxSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RxSwift.framework; path = Carthage/Build/iOS/RxSwift.framework; sourceTree = "<group>"; };
 		6E5B3CE71D2D1F7400775D9F /* HttpClientBasicTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = HttpClientBasicTests.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
@@ -141,6 +143,7 @@
 				6EFB9ED71D2A53FD00E30A5D /* NSURLSessionDataEventsObserver.swift */,
 				6EFB9EE51D2A563000E30A5D /* MimeTypeConverter.swift */,
 				6E4823B31DECBD1B00F1A8DC /* MimeType+Extensions.swift */,
+				6E4344E11E3B7738005D0DDE /* RequestPluginType.swift */,
 				6EFB9EBD1D2A4E2600E30A5D /* Info.plist */,
 			);
 			path = RxHttpClient;
@@ -310,6 +313,7 @@
 				6E1C07C21D48FF92009513FD /* HttpClientType+Extensions.swift in Sources */,
 				6EFB9EF61D2A5BC300E30A5D /* HttpExtensions.swift in Sources */,
 				6EFB9EF81D2A5BC300E30A5D /* NSURLSessionDataEventsObserver.swift in Sources */,
+				6E4344E21E3B7738005D0DDE /* RequestPluginType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

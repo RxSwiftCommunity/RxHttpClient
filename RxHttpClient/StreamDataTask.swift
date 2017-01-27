@@ -54,12 +54,17 @@ internal final class StreamDataTask {
 	let scheduler = SerialDispatchQueueScheduler(qos: .utility)
 	let dataTask: URLSessionDataTaskType
 	let sessionEvents: Observable<SessionDataEvents>
+    let requestPlugin: RequestPluginType?
 
-	init(taskUid: String, dataTask: URLSessionDataTaskType, sessionEvents: Observable<SessionDataEvents>,
-	            dataCacheProvider: DataCacheProviderType?) {
+	init(taskUid: String,
+	     dataTask: URLSessionDataTaskType,
+	     sessionEvents: Observable<SessionDataEvents>,
+	     dataCacheProvider: DataCacheProviderType?,
+	     requestPlugin: RequestPluginType?) {
 		self.dataTask = dataTask
 		self.sessionEvents = sessionEvents
 		self.dataCacheProvider = dataCacheProvider
+        self.requestPlugin = requestPlugin
 		uid = taskUid
 	}
 	
@@ -91,15 +96,23 @@ internal final class StreamDataTask {
 						guard task.isEqual(object.dataTask) else { return }
 						
 						if let error = error {
+                            object.requestPlugin?.afterFailure(response: object.response, error: error, data: object.dataCacheProvider?.getData())
+                            
 							object.state = .suspended
 							observer.onNext(StreamTaskEvents.error(error))
 						} else {
+                            object.requestPlugin?.afterSuccess(response: object.response, data: object.dataCacheProvider?.getData())
+                            
 							object.state = .completed
 							observer.onNext(StreamTaskEvents.success(cache: object.dataCacheProvider))
 						}
 
 						observer.onCompleted()
 					case .didBecomeInvalidWithError(_, let error):
+                        object.requestPlugin?.afterFailure(response: object.response,
+                                                           error: error ?? HttpClientError.sessionExplicitlyInvalidated,
+                                                           data: object.dataCacheProvider?.getData())
+                        
 						object.state = .suspended						
 						// dealing with session invalidation
 						guard let error = error else {
@@ -121,6 +134,7 @@ internal final class StreamDataTask {
 
 extension StreamDataTask : StreamDataTaskType {
 	func resume() {
+        if let request = dataTask.originalRequest { requestPlugin?.beforeSend(request: request) }
 		state = .running
 		dataTask.resume()
 	}
