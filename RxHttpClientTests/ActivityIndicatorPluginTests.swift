@@ -109,4 +109,15 @@ class ActivityIndicatorPluginTests: XCTestCase {
 		XCTAssertEqual(activityPlugin.counter, 0)
 	}
 
+	/// shit tests in order to increase code coverage:)
+	func testPassRealUIApplication() {
+		let plugin = NetworkActivityIndicatorPlugin(application: UIApplication.shared)
+		XCTAssertEqual(UIApplication.shared, plugin.application as? UIApplication)
+	}
+	
+	func testCompositePluginSavedPassedPlugins() {
+		let plugins: [RequestPluginType] = [NetworkActivityIndicatorPlugin(applicationType: DummyUIApplication()), NetworkActivityIndicatorPlugin(applicationType: DummyUIApplication())]
+		let composite = CompositeRequestPlugin(plugins: plugins)
+		XCTAssertEqual(2, composite.plugins.count)
+	}
 }

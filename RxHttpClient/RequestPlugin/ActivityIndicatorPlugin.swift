@@ -24,8 +24,8 @@ public final class NetworkActivityIndicatorPlugin : RequestPluginType {
 		}
 	}
 	
-	public init(application: UIApplication) {
-		self.application = application
+	convenience public init(application: UIApplication) {
+		self.init(applicationType: application)
 	}
 	
 	init(applicationType: UIApplicationType) {
