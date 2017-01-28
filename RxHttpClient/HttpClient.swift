@@ -12,6 +12,8 @@ public final class HttpClient {
 	internal let urlSession: URLSessionType
 	
 	public let urlRequestCacheProvider: UrlRequestCacheProviderType?
+    
+    public let requestPlugin: RequestPluginType?
 	
 	/**
 	Creates an instance of HttpClient
@@ -20,17 +22,22 @@ public final class HttpClient {
 	- parameter urlRequestCacheProvider: Cache provider that will be used for caching requests
 	*/
 	public init(sessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
-	            urlRequestCacheProvider: UrlRequestCacheProviderType? = nil) {
+	            urlRequestCacheProvider: UrlRequestCacheProviderType? = nil,
+	            requestPlugin: RequestPluginType? = nil) {
 		urlSession = URLSession(configuration: sessionConfiguration,
 		                          delegate: self.sessionObserver,
 		                          delegateQueue: nil)
 		self.urlRequestCacheProvider = urlRequestCacheProvider
+        self.requestPlugin = requestPlugin
 	}
 	
 	/// Initializer for unit tests only
-	internal init(session urlSession: URLSessionType, urlRequestCacheProvider: UrlRequestCacheProviderType? = nil) {
+	internal init(session urlSession: URLSessionType,
+	              urlRequestCacheProvider: UrlRequestCacheProviderType? = nil,
+	              requestPlugin: RequestPluginType? = nil) {
 		self.urlSession = urlSession
 		self.urlRequestCacheProvider = urlRequestCacheProvider
+        self.requestPlugin = requestPlugin
 	}
 	
 	deinit {
@@ -46,10 +53,12 @@ extension HttpClient : HttpClientType {
 			// clears cache provider before start
 			dataCacheProvider?.clearData()
 			
-			let task = object.createStreamDataTask(request: request, dataCacheProvider: dataCacheProvider)
+            let useRequest = object.requestPlugin?.prepare(request: request) ?? request
+            
+			let task = object.createStreamDataTask(request: useRequest, dataCacheProvider: dataCacheProvider)
 			
 			let disposable = task.taskProgress.observeOn(object.dataTaskScheduler).subscribe(observer)
-			
+            
 			task.resume()
 			
 			return Disposables.create {
@@ -61,6 +70,10 @@ extension HttpClient : HttpClientType {
 	
 	public func createStreamDataTask(taskUid: String, request: URLRequest, dataCacheProvider: DataCacheProviderType?) -> StreamDataTaskType {
 		let dataTask = urlSession.dataTaskWithRequest(request)
-		return StreamDataTask(taskUid: taskUid, dataTask: dataTask, sessionEvents: sessionObserver.sessionEvents, dataCacheProvider: dataCacheProvider)
+        return StreamDataTask(taskUid: taskUid,
+                              dataTask: dataTask, 
+                              sessionEvents: sessionObserver.sessionEvents, 
+                              dataCacheProvider: dataCacheProvider, 
+                              requestPlugin: requestPlugin)
 	}
 }
