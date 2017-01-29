@@ -29,7 +29,7 @@ class HttpClientBasicTests: XCTestCase {
 		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { _ in cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
-		let disposable = client.requestData(url: url).subscribeOn(SerialDispatchQueueScheduler(qos: .utility)).observeOn(SerialDispatchQueueScheduler(qos: .utility))
+		let disposable = client.requestData(url: url)
 			.do(
 				onNext: { e in
 				XCTFail("Should not receive responce")
