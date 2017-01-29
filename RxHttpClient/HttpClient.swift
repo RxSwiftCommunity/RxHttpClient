@@ -3,17 +3,15 @@ import RxSwift
 
 public final class HttpClient {
 	/// Scheduler for observing data task events
-	internal let dataTaskScheduler =
-		SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
+	internal let dataTaskScheduler = SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
 	/// Default concurrent scheduler for observing observable sequence created by loadStreamData method
-	internal let streamDataObservingScheduler =
-		SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
+	internal let streamDataObservingScheduler = SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
 	internal let sessionObserver = NSURLSessionDataEventsObserver()
 	internal let urlSession: URLSessionType
 	
 	public let urlRequestCacheProvider: UrlRequestCacheProviderType?
-    
-    public let requestPlugin: RequestPluginType?
+	
+	public let requestPlugin: RequestPluginType?
 	
 	/**
 	Creates an instance of HttpClient
@@ -53,7 +51,7 @@ extension HttpClient : HttpClientType {
 			// clears cache provider before start
 			dataCacheProvider?.clearData()
 			
-            let useRequest = object.requestPlugin?.prepare(request: request) ?? request
+			let useRequest = object.requestPlugin?.prepare(request: request) ?? request
             
 			let task = object.createStreamDataTask(request: useRequest, dataCacheProvider: dataCacheProvider)
 			
@@ -65,7 +63,7 @@ extension HttpClient : HttpClientType {
 				task.cancel()
 				disposable.dispose()
 			}
-			}.observeOn(streamDataObservingScheduler)
+			}.subscribeOn(dataTaskScheduler).observeOn(streamDataObservingScheduler)
 	}
 	
 	public func createStreamDataTask(taskUid: String, request: URLRequest, dataCacheProvider: DataCacheProviderType?) -> StreamDataTaskType {

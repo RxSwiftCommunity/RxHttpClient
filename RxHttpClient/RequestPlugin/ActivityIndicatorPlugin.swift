@@ -15,16 +15,15 @@ protocol UIApplicationType : class {
 
 extension UIApplication : UIApplicationType { }
 
+/// Plugin that shows Network activity indicator if there is active network request
 public final class NetworkActivityIndicatorPlugin : RequestPluginType {
 	let application: UIApplicationType
 	
 	var counter = 0 {
-		didSet {
-			application.isNetworkActivityIndicatorVisible = counter != 0
-		}
+		didSet { application.isNetworkActivityIndicatorVisible = counter != 0 }
 	}
 	
-	convenience public init(application: UIApplication) {
+	convenience public init(application: UIApplication = UIApplication.shared) {
 		self.init(applicationType: application)
 	}
 	

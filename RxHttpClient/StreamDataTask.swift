@@ -102,7 +102,7 @@ internal final class StreamDataTask {
 						observer.onNext(StreamTaskEvents.error(error))
 					} else {
 						if let response = object.response as? HTTPURLResponse, !(200...299 ~= response.statusCode) {
-							// send failure message to plugin because HTTP response cone is not within 200...299 range
+							// send failure message to plugin because HTTP response code is not within 200...299 range
 							object.requestPlugin?.afterFailure(response: object.response,
 							                                   error: error ?? HttpClientError.sessionExplicitlyInvalidated,
 							                                   data: object.dataCacheProvider?.getData())

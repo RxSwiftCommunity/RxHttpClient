@@ -8,13 +8,22 @@
 
 import Foundation
 
+/// Plugin that receives callbacks from HttpClient and StreamDataTask
+/// HttpClient calls only prepare method, all onter methods are called by StreamDataTask
 public protocol RequestPluginType {
+	/// HttpClient calls this method before creting actual URLSessionDataTask (and StreamDataTask)
 	func prepare(request: URLRequest) -> URLRequest
+	/// Called right before StreamDataTask starts underluing URLSessionDataTask
 	func beforeSend(request: URLRequest)
+	/// Called after StreamDataTask received didCompleteWithError event from URLSession 
+	///(and this method does not contain error)
 	func afterSuccess(response: URLResponse?, data: Data?)
+	/// Called after StreamDataTask received didCompleteWithError with error or if HTTPURLResponse status code is not within 200...299 range.
+	/// Also this method is callded if StreamDataTask receives didBecomeInvalidWithError event from URLSession
 	func afterFailure(response: URLResponse?, error: Error, data: Data?)
 }
 
+/// Plugin that holds collection of plugins and send all events to them
 public final class CompositeRequestPlugin : RequestPluginType {
 	let plugins: [RequestPluginType]
 	

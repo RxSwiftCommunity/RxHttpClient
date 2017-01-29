@@ -15,7 +15,7 @@ RxHttpClient is a "reactive wrapper" around NSURLSession. Under the hood it impl
 Now only [Carthage](https://github.com/Carthage/Carthage) supported:
 ```
 github "ReactiveX/RxSwift" ~> 3.1
-github "Reloni/RxHttpClient"
+github "RxSwiftCommunity/RxHttpClient"
 ```
 RxHttpClient uses RxSwift so it should be included into cartfile.
 
