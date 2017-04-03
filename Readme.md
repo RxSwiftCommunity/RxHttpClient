@@ -7,11 +7,11 @@ RxHttpClient
 
 RxHttpClient is a "reactive wrapper" around NSURLSession. Under the hood it implements session delegates (like NSURLSessionDelegate or NSURLSessionTaskDelegate) and translates session events into Observables using [RxSwift](https://github.com/ReactiveX/RxSwift). Main purpose of this framework is to make "streaming" data as simple as possible and provide convenient features for caching data.
 
-##Requirements
+## Requirements
 - Xcode 8.2
 - Swift 3.0
 
-##Installation
+## Installation
 Now only [Carthage](https://github.com/Carthage/Carthage) supported:
 ```
 github "ReactiveX/RxSwift" ~> 3.1
@@ -25,8 +25,8 @@ carthage update RxHttpClient
 ```
 Commands above are necessary if Carthage trying to build RxHttpClient before RxSwift.
 
-##Usage
-####StreamData
+## Usage
+#### StreamData
 For create request and streaming data:
 ```swift
 let client = HttpClient()
@@ -58,7 +58,7 @@ client.request(url: url, dataCacheProvider: MemoryCacheProvider()).subscribe(onN
 }).addDisposableTo(bag)
 ```
 
-####Convenience methods
+#### Convenience methods
 It's also possible to simply invoke request and receive data using loadData method (in this case errors are forwarded with RxSwift error mechanism):
 ```swift
 let client = HttpClient()
@@ -98,7 +98,7 @@ client.requestJson(url: url).subscribe(onNext: { json in /* do something with re
 }).addDisposableTo(bag)
 ```
 
-####Response caching
+#### Response caching
 HttpClient can cache latest response for GET request. To use caching, HttpClient should be initialized with instance of UrlRequestCacheProviderType:
 
 ```swift
@@ -120,7 +120,7 @@ client.requestJson(url: url, requestCacheMode: CacheMode(cacheResponse: true, re
 client.requestJson(url: url, requestCacheMode: .cacheOnly).subscribe( /* */).addDisposableTo(bag)
 ```  
 
-####StreamDataTask
+#### StreamDataTask
 StreamDataTask is a more "low level" object that wraps NSURLSessionDataTask. In most situations is't more convenient to use loadStreamData method (it actually simply forwards events from StreamDataTask), but if necessary StreamDataTask may be used in this way:
 ```swift
 let client = HttpClient()
@@ -144,7 +144,7 @@ task.taskProgress.subscribe(onNext: { event in
 task.resume()
 ```
 
-####MIME type conversion
+#### MIME type conversion
 This framework also contains useful methods to convert, for example, MIME type to file extension, or UTI type to MIME type:
 ```swift
 let extension = MimeTypeConverter.utiToFileExtension("public.mp3") // returns "mp3"
@@ -154,7 +154,7 @@ let uti = MimeTypeConverter.mimeToUti("audio/mpeg") // returns "public.mp3"
 let mime = "public.mp3".asUtiType.mimeType // returns "audio/mpeg"
 ```
 
-##How it works
+## How it works
 HttpClient object holds it's own NSURLSession. It creates session by providing a session delegate object for handling session-related events. So StreamTaskEvents enum actually represents this session events, for example `case receiveResponse(URLResponse)` means that `URLSession(_:dataTask:didReceiveResponse:completionHandler:)` delegate method was invoked.
 Because NSURLSession holds strong reference to delegate it should be invalidated, HttpClient do that in deinitializer by invoking finishTasksAndInvalidate() method, so session will allow running tasks to finish work.
 
