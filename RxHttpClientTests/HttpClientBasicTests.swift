@@ -26,7 +26,8 @@ class HttpClientBasicTests: XCTestCase {
 	func testTerminateRequest() {
 		let fakeSession = FakeSession()
 		let cancelExpectation = expectation(description: "Should cancel task")
-		fakeSession.task = FakeDataTask(resumeClosure: { _ in }, cancelClosure: { _ in cancelExpectation.fulfill() })
+		let resumeExpectation = expectation(description: "Should start task")
+		fakeSession.task = FakeDataTask(resumeClosure: { _ in resumeExpectation.fulfill() }, cancelClosure: { _ in cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!
 		let disposable = client.requestData(url: url)
@@ -38,8 +39,12 @@ class HttpClientBasicTests: XCTestCase {
 			.subscribe()
 		
 		XCTAssertEqual(false, fakeSession.task?.isCancelled)
+		
 		disposable.dispose()
-		waitForExpectations(timeout: waitTimeout, handler: nil)
+		
+		let waitResult = XCTWaiter().wait(for: [resumeExpectation, cancelExpectation], timeout: 0.2, enforceOrder: true)
+		
+		XCTAssertEqual(waitResult, .completed)
 		XCTAssertEqual(true, fakeSession.task!.isCancelled)
 	}
 	
