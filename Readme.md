@@ -4,6 +4,7 @@ RxHttpClient
 [![codecov](https://codecov.io/gh/RxSwiftCommunity/RxHttpClient/branch/master/graph/badge.svg)](https://codecov.io/gh/RxSwiftCommunity/RxHttpClient)
 ![Platform iOS](https://img.shields.io/badge/platform-iOS-lightgray.svg)
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+[![codebeat badge](https://codebeat.co/badges/be008a71-5755-48fa-a861-8ce0d880ee14)](https://codebeat.co/projects/github-com-rxswiftcommunity-rxhttpclient-master)
 
 RxHttpClient is a "reactive wrapper" around NSURLSession. Under the hood it implements session delegates (like NSURLSessionDelegate or NSURLSessionTaskDelegate) and translates session events into Observables using [RxSwift](https://github.com/ReactiveX/RxSwift). Main purpose of this framework is to make "streaming" data as simple as possible and provide convenient features for caching data.
 
