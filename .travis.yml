@@ -1,5 +1,5 @@
 language: objective-c
-osx_image: xcode8.3
+osx_image: xcode9.0
 xcode_project: RxHttpClient.xcodeproj
 
 env:
@@ -8,7 +8,7 @@ env:
   - PROJECT=RxHttpClient.xcodeproj
   - FRAMEWORK_SCHEME=RxHttpClient
   - SDK=iphonesimulator
-  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6s,OS=10.3'
+  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6s,OS=11.0'
 
 before_install:
 #  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.1) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
