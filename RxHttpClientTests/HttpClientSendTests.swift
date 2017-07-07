@@ -28,7 +28,7 @@ class HttpClientSendTests: XCTestCase {
 		let sendData = "testData".data(using: String.Encoding.utf8)!
 		
 		let actions: (FakeDataTask) -> () = { task in
-			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { _ in
+			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async {
 				guard task.originalRequest!.url! == URL(baseUrl: "https://test.com/post", parameters: ["post":"Request"])!,
 					task.originalRequest!.httpMethod == HttpMethod.post.rawValue,
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
@@ -66,7 +66,7 @@ class HttpClientSendTests: XCTestCase {
 		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
 		
 		let actions: (FakeDataTask) -> () = { task in
-			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { _ in
+			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async {
 				guard task.originalRequest!.url! == URL(baseUrl: "https://test.com/post", parameters: ["post":"Request"])!,
 					task.originalRequest!.httpMethod == HttpMethod.patch.rawValue,
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
@@ -104,7 +104,7 @@ class HttpClientSendTests: XCTestCase {
 		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
 		
 		let actions: (FakeDataTask) -> () = { task in
-			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { _ in
+			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { 
 				guard task.originalRequest!.url! == URL(baseUrl: "https://test.com/post", parameters: ["post":"Request"])!,
 					task.originalRequest!.httpMethod == HttpMethod.patch.rawValue,
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
@@ -147,7 +147,7 @@ class HttpClientSendTests: XCTestCase {
 		let sendJsonData = try! JSONSerialization.data(withJSONObject: sendJson, options: [])
 		
 		let actions: (FakeDataTask) -> () = { task in
-			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { _ in
+			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async {
 				guard task.originalRequest!.url! == URL(baseUrl: "https://test.com/post", parameters: ["post":"Request"])!,
 					task.originalRequest!.httpMethod == HttpMethod.patch.rawValue,
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
