@@ -8,7 +8,7 @@ env:
   - PROJECT=RxHttpClient.xcodeproj
   - FRAMEWORK_SCHEME=RxHttpClient
   - SDK=iphonesimulator
-  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 6s,OS=11.0'
+  - DESTINATION_PLATFORM='platform=iOS Simulator,name=iPhone 7,OS=latest'
 
 before_install:
 #  - SIMULATOR_ID=$(xcrun instruments -s | grep -o "iPhone 6s (10.1) \[.*\]" | grep -o "\[.*\]" | sed "s/^\[\(.*\)\]$/\1/")
