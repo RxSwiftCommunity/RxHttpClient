@@ -42,7 +42,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		disposable.dispose()
 		
-		let waitResult = XCTWaiter().wait(for: [resumeExpectation, cancelExpectation], timeout: 0.2, enforceOrder: true)
+		let waitResult = XCTWaiter().wait(for: [resumeExpectation, cancelExpectation], timeout: waitTimeout, enforceOrder: true)
 		
 		XCTAssertEqual(waitResult, .completed)
 		XCTAssertEqual(true, fakeSession.task!.isCancelled)
