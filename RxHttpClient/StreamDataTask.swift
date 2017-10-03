@@ -135,7 +135,7 @@ internal final class StreamDataTask {
 			return Disposables.create {
 				disposable.dispose()
 			}
-			}.shareReplay(0)
+			}.share(replay: 0, scope: SubjectLifetimeScope.whileConnected)
 	}()
 }
 

@@ -70,7 +70,7 @@ class StreamDataTaskTests: XCTestCase {
 				XCTAssertEqual(receiveCounter, 4, "Should receive correct amount of data chuncks")
 				successExpectaton.fulfill()
 			}
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
@@ -91,7 +91,7 @@ class StreamDataTaskTests: XCTestCase {
 			if (error as NSError).code == 1 {
 				expectation.fulfill()
 			}
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -118,7 +118,7 @@ class StreamDataTaskTests: XCTestCase {
 				XCTAssertEqual(response.url, self.request.url!)
 				expectation.fulfill()
 			}
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -154,7 +154,7 @@ class StreamDataTaskTests: XCTestCase {
 			if case StreamTaskEvents.success = result {
 				expectation.fulfill()
 			}
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		// resuming task
 		task.resume()
@@ -182,7 +182,7 @@ class StreamDataTaskTests: XCTestCase {
 			if case StreamTaskEvents.error(let error as NSError) = result , error.code == -999 {
 				expectation.fulfill()
 			}
-			}).addDisposableTo(bag)
+			}).disposed(by: bag)
 		
 		// resuming task
 		task.resume()
@@ -211,7 +211,7 @@ class StreamDataTaskTests: XCTestCase {
 			if case StreamTaskEvents.error(let error) = result, case HttpClientError.sessionExplicitlyInvalidated = error {
 				expectation.fulfill()
 			}
-			}).addDisposableTo(bag)
+			}).disposed(by: bag)
 		
 		// setting cient to nil before resume a task
 		client = nil
