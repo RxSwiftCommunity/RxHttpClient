@@ -20,7 +20,11 @@ public final class NetworkActivityIndicatorPlugin : RequestPluginType {
 	let application: UIApplicationType
 	
 	var counter = 0 {
-		didSet { application.isNetworkActivityIndicatorVisible = counter != 0 }
+		didSet {
+			DispatchQueue.main.async {
+				self.application.isNetworkActivityIndicatorVisible = self.counter != 0
+			}
+		}
 	}
 	
 	convenience public init(application: UIApplication = UIApplication.shared) {
