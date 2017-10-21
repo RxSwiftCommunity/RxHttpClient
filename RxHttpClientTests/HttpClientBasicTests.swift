@@ -40,9 +40,9 @@ class HttpClientBasicTests: XCTestCase {
 		
 		XCTAssertEqual(false, fakeSession.task?.isCancelled)
 		
-		disposable.dispose()
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { disposable.dispose() }
 		
-		let waitResult = XCTWaiter().wait(for: [resumeExpectation, cancelExpectation], timeout: 0.2, enforceOrder: true)
+		let waitResult = XCTWaiter().wait(for: [resumeExpectation, cancelExpectation], timeout: waitTimeout, enforceOrder: true)
 		
 		XCTAssertEqual(waitResult, .completed)
 		XCTAssertEqual(true, fakeSession.task!.isCancelled)
@@ -62,7 +62,7 @@ class HttpClientBasicTests: XCTestCase {
 		client.requestData(url: url).subscribe(onNext: { data in
 			XCTAssertEqual(true, data == sendData, "Received data should be equal to sended")
 			expectation.fulfill()
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -80,7 +80,7 @@ class HttpClientBasicTests: XCTestCase {
 		client.requestData(request).subscribe(onNext: { data in
 			XCTAssertEqual(true, data == Data(), "Sended data should be empty")
 			expectation.fulfill()
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -104,7 +104,7 @@ class HttpClientBasicTests: XCTestCase {
 		client = nil
 		
 		//invoke task
-		task.subscribe().addDisposableTo(bag)
+		task.subscribe().disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -139,7 +139,7 @@ class HttpClientBasicTests: XCTestCase {
 					return Observable.just(1)
 				}
 			}
-			.do(onCompleted: { expectation.fulfill() }).subscribe().addDisposableTo(bag)
+			.do(onCompleted: { expectation.fulfill() }).subscribe().disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		
@@ -164,7 +164,7 @@ class HttpClientBasicTests: XCTestCase {
 			XCTAssertEqual((error as NSError).code, 1, "Check error code")
 			XCTAssertEqual((error as NSError).domain, "TestDomain", "Check error domain")
 			expectation.fulfill()
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -189,7 +189,7 @@ class HttpClientBasicTests: XCTestCase {
 			XCTAssertEqual(response.statusCode, 501, "Check status code of request")
 			XCTAssertEqual(true, data == sendData, "Check received data equals to sended")
 			expectation.fulfill()
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -238,9 +238,9 @@ class HttpClientBasicTests: XCTestCase {
 		})
 		
 		let concurrent = ConcurrentDispatchQueueScheduler(qos: .utility)
-		task1.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
-		task2.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
-		task3.subscribeOn(concurrent).subscribe().addDisposableTo(bag)
+		task1.subscribeOn(concurrent).subscribe().disposed(by: bag)
+		task2.subscribeOn(concurrent).subscribe().disposed(by: bag)
+		task3.subscribeOn(concurrent).subscribe().disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -282,7 +282,7 @@ class HttpClientBasicTests: XCTestCase {
 			if case HttpClientError.sessionInvalidatedWithError(let error as NSError) = error , error.code == 123 {
 				expectation.fulfill()
 			}
-		}).subscribe().addDisposableTo(bag)
+		}).subscribe().disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -306,7 +306,7 @@ class HttpClientBasicTests: XCTestCase {
 			XCTAssertEqual((json["Dict"] as? [String: Any])?["Inner"] as? String, "Str")
 			
 			expectation.fulfill()
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -331,7 +331,7 @@ class HttpClientBasicTests: XCTestCase {
 			XCTAssertEqual((json[2] as? [String: Any])?["Dict"] as? String, "DictVal")
 			
 			expectation.fulfill()
-		}).addDisposableTo(bag)
+		}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -357,7 +357,7 @@ class HttpClientBasicTests: XCTestCase {
 					XCTAssertEqual((jsonError as NSError).code, 3840)
 					XCTAssertEqual((jsonError as NSError).domain, "NSCocoaErrorDomain")
 					expectation.fulfill()
-			}).addDisposableTo(bag)
+			}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}
@@ -377,7 +377,7 @@ class HttpClientBasicTests: XCTestCase {
 				onNext: { json in
 			XCTFail("Should not return data")
 		},
-				onCompleted: { expectation.fulfill() }).addDisposableTo(bag)
+				onCompleted: { expectation.fulfill() }).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 	}

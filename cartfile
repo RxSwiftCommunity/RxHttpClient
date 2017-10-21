@@ -1,2 +1,1 @@
-github "ReactiveX/RxSwift" == 3.1.0
-github "AliSoftware/OHHTTPStubs" "57fecea"
+github "ReactiveX/RxSwift" == 4.0.0

@@ -32,8 +32,8 @@ extension URLSession : URLSessionType {
 public extension URL {
 	init?(baseUrl: String, parameters: [String: String]? = nil) {
 		var components = URLComponents(string: baseUrl)
-		components?.queryItems = parameters?.map { key, value in
-			URLQueryItem(name: key, value: value)
+		components?.queryItems = parameters?.map {
+			return URLQueryItem(name: $0.key, value: $0.value)
 		}
 		
 		guard let absoluteString = components?.url?.absoluteString else { return nil }
@@ -52,7 +52,7 @@ public extension URLRequest {
 		self = URLRequest(url: url)
 		self.httpMethod = method.rawValue
 		self.httpBody = body
-		headers.forEach { addValue($1, forHTTPHeaderField: $0) }
+		headers.forEach { addValue($0.1, forHTTPHeaderField: $0.0) }
 	}
 	
 	init?(url: URL, method: HttpMethod = .get, jsonBody: Any,

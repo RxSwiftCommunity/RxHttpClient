@@ -85,7 +85,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-			}).addDisposableTo(bag)
+			}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")
@@ -117,10 +117,10 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-			}).addDisposableTo(bag)
+			}).disposed(by: bag)
 		
 		// bind to task events one more time
-		task.taskProgress.subscribe(onNext: { _ in }).addDisposableTo(bag)
+		task.taskProgress.subscribe(onNext: { _ in }).disposed(by: bag)
 		
 		task.resume()
 		
@@ -145,7 +145,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			} else if case StreamTaskEvents.receiveData = result {
 				XCTFail("Shouldn't rise this event because CacheProvider was specified")
 			}
-			}).addDisposableTo(bag)
+			}).disposed(by: bag)
 		
 		waitForExpectations(timeout: waitTimeout, handler: nil)
 		XCTAssertFalse(self.session.isFinished, "Session should not be invalidated")

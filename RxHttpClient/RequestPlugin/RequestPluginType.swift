@@ -36,7 +36,7 @@ public final class CompositeRequestPlugin : RequestPluginType {
 	}
 	
 	public func prepare(request: URLRequest) -> URLRequest {
-		return plugins.reduce(request, { $0.1.prepare(request: $0.0) })
+		return plugins.reduce(request, { $1.prepare(request: $0) })
 	}
 	
 	public func beforeSend(request: URLRequest) {
