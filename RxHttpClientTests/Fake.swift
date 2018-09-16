@@ -6,7 +6,7 @@ class FakeDataTask : NSObject, URLSessionDataTaskType {
 	var originalRequest: URLRequest?
 	var isCancelled = false
 	var resumeInvokeCount = 0
-	let resumeClosure: (FakeDataTask) -> ()!
+	let resumeClosure: (FakeDataTask) -> ()?
 	let cancelClosure: ((FakeDataTask) -> ())?
 	
 	var state: URLSessionTask.State = URLSessionTask.State.suspended

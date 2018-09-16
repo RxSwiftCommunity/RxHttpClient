@@ -14,8 +14,8 @@ class NSURLTests: XCTestCase {
 	}
 		
 	func testCreateNSURLWithParameters() {
-		let url = URL(baseUrl: "http://test.com", parameters: ["param1": "value1", "param2": "value2"])
-		XCTAssertEqual(url?.absoluteString, "http://test.com?param1=value1&param2=value2")
+		let url = URL(baseUrl: "http://test.com", parameters: ["param1": "value1"])
+		XCTAssertEqual(url?.absoluteString, "http://test.com?param1=value1")
 	}
 	
 	func testCreateNSURLWithEscapedParameters() {
