@@ -255,9 +255,10 @@ class HttpClientBasicTests: XCTestCase {
 	
 	func testCreateHttpClientWithCorrectConfiguration() {
 		let config = URLSessionConfiguration.default
+        XCTAssertNotEqual(config.httpCookieAcceptPolicy, .always)
 		config.httpCookieAcceptPolicy = .always
 		let client = HttpClient(sessionConfiguration: config)
-		XCTAssertEqual(config, client.urlSession.configuration)
+        XCTAssertEqual(config.httpCookieAcceptPolicy, client.urlSession.configuration.httpCookieAcceptPolicy)
 	}
 	
 	func testCreateHttpClientWithCorrectUrlSession() {

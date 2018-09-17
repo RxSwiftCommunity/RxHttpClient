@@ -206,7 +206,7 @@ class MemoryCacheProviderTests: XCTestCase {
 	
 	func testSaveDataToSpecificDir() {
 		let dir = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(UUID().uuidString)
-		try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: false, attributes: nil)
+		try! FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
 		let provider = MemoryDataCacheProvider(uid: "test")
 		let testData = "Some test data string".data(using: String.Encoding.utf8)!
 		provider.append(data: testData)

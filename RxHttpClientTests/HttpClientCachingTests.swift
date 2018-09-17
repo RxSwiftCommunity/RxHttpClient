@@ -9,7 +9,7 @@ class HttpClientCachingTests: XCTestCase {
 	
 	override func setUp() {
 		cacheDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(UUID().uuidString)
-		try! FileManager.default.createDirectory(atPath: cacheDirectory.path, withIntermediateDirectories: false, attributes: nil)
+		try! FileManager.default.createDirectory(atPath: cacheDirectory.path, withIntermediateDirectories: true, attributes: nil)
 		client = HttpClient(urlRequestCacheProvider: UrlRequestFileSystemCacheProvider(cacheDirectory: cacheDirectory))
 	}
 	
