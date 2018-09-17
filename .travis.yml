@@ -15,7 +15,7 @@ before_install:
 
 before_script:
 - carthage version
-- carthage checkout --no-use-binaries
+- carthage checkout
 
 - mkdir -p ./Carthage/Build/iOS
 
