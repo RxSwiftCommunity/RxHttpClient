@@ -103,7 +103,7 @@ class ActivityIndicatorPluginTests: XCTestCase {
 		
 		_ = client.requestData(URLRequest(url: URL(string: "https://test.com/json")!)).subscribe(onError: { _ in completeExpectation.fulfill() })
 		
-		waitForExpectations(timeout: 1, handler: nil)
+		waitForExpectations(timeout: 5, handler: nil)
 		
 		XCTAssertFalse(activityPlugin.application.isNetworkActivityIndicatorVisible)
 		XCTAssertEqual(activityPlugin.counter, 0)
