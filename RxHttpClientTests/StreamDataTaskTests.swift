@@ -46,7 +46,7 @@ class StreamDataTaskTests: XCTestCase {
 			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { [unowned self] in
 				for event in fakeUrlEvents {
 					// send events to session observer (simulates NSURLSession behavior)
-					self.httpClient.sessionObserver.sessionEventsSubject.onNext(event)
+					self.httpClient.sessionDelegate.sessionEventsSubject.onNext(event)
 					// simulate delay
 					Thread.sleep(forTimeInterval: 0.005)
 				}
@@ -80,7 +80,7 @@ class StreamDataTaskTests: XCTestCase {
 	func testReturnNSError() {
 		let resumeActions: (FakeDataTask) -> () = { _ in
 			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { [unowned self] in
-				self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: self.session.task, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
+				self.httpClient.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: self.session, dataTask: self.session.task, error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 			}
 		}
 		session.task = FakeDataTask(resumeClosure: resumeActions)
@@ -106,7 +106,7 @@ class StreamDataTaskTests: XCTestCase {
 				dispositionExpectation.fulfill()
 			}
 			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { [unowned self] in
-				self.httpClient.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: self.session.task, response: fakeResponse, completion: completion))
+				self.httpClient.sessionDelegate.sessionEventsSubject.onNext(.didReceiveResponse(session: self.session, dataTask: self.session.task, response: fakeResponse, completion: completion))
 			}
 		}
 		session.task = FakeDataTask(resumeClosure: resumeActions)

@@ -272,7 +272,7 @@ class HttpClientBasicTests: XCTestCase {
 		let client = HttpClient(session: session)
 		
 		session.task = FakeDataTask(resumeClosure: { _ in
-			client.sessionObserver.sessionEventsSubject.onNext(.didBecomeInvalidWithError(session: session, error: NSError(domain: "Test", code: 123, userInfo: nil)))
+			client.sessionDelegate.sessionEventsSubject.onNext(.didBecomeInvalidWithError(session: session, error: NSError(domain: "Test", code: 123, userInfo: nil)))
 		})
 		
 		let url = URL(baseUrl: "https://test.com/json", parameters: nil)!

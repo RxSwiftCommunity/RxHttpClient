@@ -1,13 +1,13 @@
 import Foundation
 
-protocol URLSessionTaskType {
+public protocol URLSessionTaskType {
 	func isEqual(_ object: Any?) -> Bool
 	var state: URLSessionTask.State { get }
 }
 extension URLSessionTask : URLSessionTaskType { }
 
 // URLSessionDataTaskType
-protocol URLSessionDataTaskType : URLSessionTaskType {
+public protocol URLSessionDataTaskType : URLSessionTaskType {
 	func resume()
 	func cancel()
 	var originalRequest: URLRequest? { get }
@@ -16,13 +16,13 @@ extension URLSessionDataTask : URLSessionDataTaskType { }
 
 // URLSessionType
 public typealias DataTaskResult = (Data?, URLResponse?, NSError?) -> Void
-protocol URLSessionType {
+public protocol URLSessionType {
 	var configuration: URLSessionConfiguration { get }
 	func finishTasksAndInvalidate()
 	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType
 }
 extension URLSession : URLSessionType {
-	func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
+	public func dataTaskWithRequest(_ request: URLRequest) -> URLSessionDataTaskType {
 		return dataTask(with: request) as URLSessionDataTask
 	}
 }
