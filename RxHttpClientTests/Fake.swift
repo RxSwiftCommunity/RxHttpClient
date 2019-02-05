@@ -2,6 +2,12 @@ import Foundation
 @testable import RxHttpClient
 import RxSwift
 
+extension HttpClient {
+    var sessionDelegate: NSURLSessionDataEventsObserver {
+        return self.sessionObserver as! NSURLSessionDataEventsObserver
+    }
+}
+
 class FakeDataTask : NSObject, URLSessionDataTaskType {
 	var originalRequest: URLRequest?
 	var isCancelled = false

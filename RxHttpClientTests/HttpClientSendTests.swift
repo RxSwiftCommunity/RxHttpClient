@@ -34,14 +34,14 @@ class HttpClientSendTests: XCTestCase {
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
 					task.originalRequest!.httpBody?.elementsEqual(sendData) ?? false else {
 						
-						client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+						client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 						                                                                         dataTask: task,
 						                                                                         error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 						
 						return
 				}
 				
-				client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+				client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 				                                                                         dataTask: task,
 				                                                                         error: nil))
 			}
@@ -72,14 +72,14 @@ class HttpClientSendTests: XCTestCase {
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
 					task.originalRequest!.httpBody?.elementsEqual(sendJsonData) ?? false else {
 						
-						client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+						client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 						                                                                         dataTask: task,
 						                                                                         error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 						
 						return
 				}
 				
-				client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+				client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 				                                                                         dataTask: task,
 				                                                                         error: nil))
 			}
@@ -109,20 +109,20 @@ class HttpClientSendTests: XCTestCase {
 					task.originalRequest!.httpMethod == HttpMethod.patch.rawValue,
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
 					task.originalRequest!.httpBody?.elementsEqual(sendJsonData) ?? false else {
-						client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+						client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 						                                                                         dataTask: task,
 						                                                                         error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 						
 						return
 				}
 				
-				client.sessionObserver.sessionEventsSubject.onNext(
+				client.sessionDelegate.sessionEventsSubject.onNext(
 					SessionDataEvents.didReceiveResponse(session: session,
 					                                     dataTask: task,
 					                                     response: URLResponse(url: task.originalRequest!.url!, mimeType: "Application/json", expectedContentLength: 26, textEncodingName: nil),
 					                                     completion: { _ in }))
-				client.sessionObserver.sessionEventsSubject.onNext(.didReceiveData(session: session, dataTask: task, data: sendJsonData))
-				client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+				client.sessionDelegate.sessionEventsSubject.onNext(.didReceiveData(session: session, dataTask: task, data: sendJsonData))
+				client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 				                                                                         dataTask: task,
 				                                                                         error: nil))
 			}
@@ -152,14 +152,14 @@ class HttpClientSendTests: XCTestCase {
 					task.originalRequest!.httpMethod == HttpMethod.patch.rawValue,
 					task.originalRequest!.allHTTPHeaderFields?["Header1"] == "HeaderVal1",
 					task.originalRequest!.httpBody?.elementsEqual(sendJsonData) ?? false else {
-						client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+						client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 						                                                                         dataTask: task,
 						                                                                         error: NSError(domain: "HttpRequestTests", code: 1, userInfo: nil)))
 						
 						return
 				}
 			
-				client.sessionObserver.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
+				client.sessionDelegate.sessionEventsSubject.onNext(.didCompleteWithError(session: session,
 				                                                                         dataTask: task,
 				                                                                         error: nil))
 			}

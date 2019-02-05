@@ -38,7 +38,7 @@ class MemoryCacheProviderTests: XCTestCase {
 			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async { [unowned self] in
 				for event in fakeUrlEvents {
 					// send events to session observer (simulates NSURLSession behavior)
-					self.httpClient.sessionObserver.sessionEventsSubject.onNext(event)
+					self.httpClient.sessionDelegate.sessionEventsSubject.onNext(event)
 					// simulate delay
 					Thread.sleep(forTimeInterval: 0.005)
 				}

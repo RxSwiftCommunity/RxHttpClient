@@ -6,7 +6,7 @@ public final class HttpClient {
 	internal let dataTaskScheduler = SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.DataTask")
 	/// Default concurrent scheduler for observing observable sequence created by loadStreamData method
 	internal let streamDataObservingScheduler = SerialDispatchQueueScheduler(qos: .utility, internalSerialQueueName: "com.RxHttpClient.HttpClient.Stream")
-	internal let sessionObserver = NSURLSessionDataEventsObserver()
+    internal let sessionObserver: NSURLSessionDataEventsObserverType
 	internal let urlSession: URLSessionType
 	
 	public let urlRequestCacheProvider: UrlRequestCacheProviderType?
@@ -18,10 +18,15 @@ public final class HttpClient {
 	- parameter sessionConfiguration: NSURLSessionConfiguration that will be used to create NSURLSession
 	(this session will be canceled while deiniting of HttpClient)
 	- parameter urlRequestCacheProvider: Cache provider that will be used for caching requests
+    - parameter requestPlugin: Plugin for HttpClient
+    - parameter sessionDelegate: Delegate for UrlSession
 	*/
 	public init(sessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
 	            urlRequestCacheProvider: UrlRequestCacheProviderType? = nil,
-	            requestPlugin: RequestPluginType? = nil) {
+	            requestPlugin: RequestPluginType? = nil,
+                sessionDelegate: NSURLSessionDataEventsObserverType = NSURLSessionDataEventsObserver()) {
+        
+        self.sessionObserver = sessionDelegate
 		urlSession = URLSession(configuration: sessionConfiguration,
 		                          delegate: self.sessionObserver,
 		                          delegateQueue: nil)
@@ -32,10 +37,12 @@ public final class HttpClient {
 	/// Initializer for unit tests only
 	internal init(session urlSession: URLSessionType,
 	              urlRequestCacheProvider: UrlRequestCacheProviderType? = nil,
-	              requestPlugin: RequestPluginType? = nil) {
+	              requestPlugin: RequestPluginType? = nil,
+                  sessionDelegate: NSURLSessionDataEventsObserverType = NSURLSessionDataEventsObserver()) {
 		self.urlSession = urlSession
 		self.urlRequestCacheProvider = urlRequestCacheProvider
         self.requestPlugin = requestPlugin
+        self.sessionObserver = sessionDelegate
 	}
 	
 	deinit {

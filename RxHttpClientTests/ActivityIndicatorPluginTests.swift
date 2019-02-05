@@ -40,8 +40,8 @@ class ActivityIndicatorPluginTests: XCTestCase {
 			let completion: (URLSession.ResponseDisposition) -> () = { _ in }
 			DispatchQueue.global(qos: DispatchQoS.QoSClass.utility).async {
 				switch task.originalRequest!.url!.absoluteString {
-				case "https://test.com/post1": client.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: session, dataTask: task, response: fakeResponse1, completion: completion))
-				case "https://test.com/post2": client.sessionObserver.sessionEventsSubject.onNext(.didReceiveResponse(session: session, dataTask: task, response: fakeResponse2, completion: completion))
+				case "https://test.com/post1": client.sessionDelegate.sessionEventsSubject.onNext(.didReceiveResponse(session: session, dataTask: task, response: fakeResponse1, completion: completion))
+				case "https://test.com/post2": client.sessionDelegate.sessionEventsSubject.onNext(.didReceiveResponse(session: session, dataTask: task, response: fakeResponse2, completion: completion))
 				default: break
 				}
 			}
