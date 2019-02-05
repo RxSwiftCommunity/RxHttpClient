@@ -18,6 +18,8 @@ public final class HttpClient {
 	- parameter sessionConfiguration: NSURLSessionConfiguration that will be used to create NSURLSession
 	(this session will be canceled while deiniting of HttpClient)
 	- parameter urlRequestCacheProvider: Cache provider that will be used for caching requests
+    - parameter requestPlugin: Plugin for HttpClient
+    - parameter sessionDelegate: Delegate for UrlSession
 	*/
 	public init(sessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default,
 	            urlRequestCacheProvider: UrlRequestCacheProviderType? = nil,
