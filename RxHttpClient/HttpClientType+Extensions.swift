@@ -9,11 +9,14 @@ public struct CacheMode {
 	public let returnCachedResponse: Bool
 	/// If true, HttpClient will invoke request
 	public let invokeRequest: Bool
+    /// Specifies which HTTP methods should be cached
+    public let cacheHttpMethods: Set<HttpMethod>
 	
-	public init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true) {
+	public init(cacheResponse: Bool = true, returnCachedResponse: Bool = true, invokeRequest: Bool = true, cacheHttpMethods: [HttpMethod] = [.get]) {
 		self.cacheResponse = cacheResponse
 		self.returnCachedResponse = returnCachedResponse
 		self.invokeRequest = invokeRequest
+        self.cacheHttpMethods = Set(cacheHttpMethods)
 	}
 	
 	/// Only cached response will be returned
@@ -24,6 +27,14 @@ public struct CacheMode {
 	public static let notCacheResponse = CacheMode(cacheResponse: false, returnCachedResponse: false, invokeRequest: true)
 	/// All conditions are true
 	public static let `default` = CacheMode(cacheResponse: true, returnCachedResponse: true, invokeRequest: true)
+}
+
+extension CacheMode {
+    func shouldCache(_ request: URLRequest) -> Bool {
+        guard let raw = request.httpMethod else { return false }
+        guard let method = HttpMethod(rawValue: raw) else { return false }
+        return cacheHttpMethods.contains(method)
+    }
 }
 
 public extension HttpClientType {
@@ -165,9 +176,9 @@ public extension HttpClientType {
 		let dataCacheProvider = MemoryDataCacheProvider(uid: UUID().uuidString)
 		// variable for response with error
 		var errorResponse: HTTPURLResponse? = nil
-		
+        
 		let cachedRequest: Observable<Data> = {
-			if urlRequest.httpMethod == HttpMethod.get.rawValue, requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
+			if requestCacheMode.shouldCache(urlRequest), requestCacheMode.returnCachedResponse, let url = urlRequest.url, let cached = urlRequestCacheProvider?.load(resourceUrl: url) {
 				// return cached response
 				return Observable.just(cached)
 			}
@@ -199,7 +210,7 @@ public extension HttpClientType {
 					guard let errorResponse = errorResponse else {
 						let requestData = dataCacheProvider.getData()
 						
-						if urlRequest.httpMethod == HttpMethod.get.rawValue, requestCacheMode.cacheResponse, let url = urlRequest.url  {
+						if requestCacheMode.shouldCache(urlRequest), requestCacheMode.cacheResponse, let url = urlRequest.url  {
 							// sache response
 							self?.urlRequestCacheProvider?.save(resourceUrl: url, data: requestData)
 						}
