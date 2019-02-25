@@ -32,6 +32,23 @@ class HttpClientCachingTests: XCTestCase {
 		XCTAssertTrue(cachedData.elementsEqual(data), "Should cache data")
 		XCTAssertEqual(1, try! FileManager.default.contentsOfDirectory(atPath: cacheDirectory.path).count, "Should save data on disk")
 	}
+    
+    func testCacheCustomMethodResponse() {
+        let data = "Some responded data".data(using: .utf8)!
+        let requestUrl = URL(string: "https://test.com/json")!
+        let _ = stub(condition: { $0.url == requestUrl    && $0.httpMethod == HttpMethod.put.rawValue }) { _ in
+            return OHHTTPStubsResponse(data: data, statusCode: 200, headers: nil)
+        }
+        
+        let cacheMode = CacheMode(cacheResponse: true, returnCachedResponse: true, invokeRequest: true, cacheHttpMethods: [.put])
+        let exp = expectation(description: "Should complete request")
+        _ = client.requestData(url: requestUrl, method: .put, requestCacheMode: cacheMode).subscribe(onCompleted: { exp.fulfill() })
+        waitForExpectations(timeout: waitTimeout, handler: nil)
+        
+        let cachedData = try! Data(contentsOf: cacheDirectory.appendingPathComponent(requestUrl.sha1()))
+        XCTAssertTrue(cachedData.elementsEqual(data), "Should cache data")
+        XCTAssertEqual(1, try! FileManager.default.contentsOfDirectory(atPath: cacheDirectory.path).count, "Should save data on disk")
+    }
 	
 	func testReturnCachedResponse() {
 		let data = "Some responded data".data(using: .utf8)!
