@@ -40,7 +40,7 @@ class HttpClientBasicTests: XCTestCase {
 		
 		XCTAssertEqual(false, fakeSession.task?.isCancelled)
 		
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { disposable.dispose() }
+		DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { disposable.dispose() }
 		
 		let waitResult = XCTWaiter().wait(for: [resumeExpectation, cancelExpectation], timeout: waitTimeout, enforceOrder: true)
 		

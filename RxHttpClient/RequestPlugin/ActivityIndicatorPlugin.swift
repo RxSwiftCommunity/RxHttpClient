@@ -21,6 +21,11 @@ public final class NetworkActivityIndicatorPlugin : RequestPluginType {
 	
 	var counter = 0 {
 		didSet {
+            guard !Thread.isMainThread else {
+                application.isNetworkActivityIndicatorVisible = counter != 0
+                return
+            }
+            
 			DispatchQueue.main.async {
 				self.application.isNetworkActivityIndicatorVisible = self.counter != 0
 			}
