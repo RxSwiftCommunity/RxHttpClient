@@ -30,9 +30,9 @@ class FakeDataTask : NSObject, URLSessionDataTaskType {
 	
 	open func cancel() {
 		if !isCancelled {
+            state = .suspended
+            isCancelled = true
 			cancelClosure?(self)
-			state = .suspended
-			isCancelled = true
 		}
 	}
 }
