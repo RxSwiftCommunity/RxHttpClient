@@ -26,6 +26,7 @@ class HttpClientBasicTests: XCTestCase {
 	func testTerminateRequest() {
 		let fakeSession = FakeSession()
 		let cancelExpectation = expectation(description: "Should cancel task")
+        cancelExpectation.assertForOverFulfill = false
 		let resumeExpectation = expectation(description: "Should start task")
 		fakeSession.task = FakeDataTask(resumeClosure: { _ in resumeExpectation.fulfill() }, cancelClosure: { _ in cancelExpectation.fulfill() })
 		let client = HttpClient(session: fakeSession)
