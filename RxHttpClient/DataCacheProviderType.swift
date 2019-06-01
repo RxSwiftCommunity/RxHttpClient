@@ -51,7 +51,7 @@ public extension DataCacheProviderType {
      If nil, extension will be inferred by MIME type, if inferring fails, extension will be "dat"
      - returns: NSURL for saved file or nil, if file not saved
      */
-	public func saveData(fileExtension: String?) -> URL? {
+	func saveData(fileExtension: String?) -> URL? {
 		return saveData(destinationDirectory: URL(fileURLWithPath: NSTemporaryDirectory()), fileExtension: fileExtension)
 	}
 
@@ -60,7 +60,7 @@ public extension DataCacheProviderType {
      Extension will be inferred by MIME type, if inferring fails, extension will be "dat"
      - returns: NSURL for saved file or nil, if file not saved
      */
-	public func saveData() -> URL? {
+	func saveData() -> URL? {
 		return saveData(fileExtension: nil)
 	}
 	
@@ -70,7 +70,7 @@ public extension DataCacheProviderType {
      - parameter destinationDirectory: NSURL of directory, where data will be saved
      - returns: NSURL for saved file or nil, if file not saved
      */
-	public func saveData(destinationDirectory: URL) -> URL? {
+	func saveData(destinationDirectory: URL) -> URL? {
 		return saveData(destinationDirectory: destinationDirectory, fileExtension: nil)
 	}
 	
